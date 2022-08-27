@@ -43,7 +43,9 @@ defer:
 }
 
 void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
-                      int x0, int y0, size_t w, size_t h,
+                      int x0, int y0,
+                      // TODO: enable w, h in olivec_fill_rect to be int instead of size_t
+                      size_t w, size_t h,
                       uint32_t color)
 {
     for (int dy = 0; dy < (int) h; ++dy) {
@@ -63,6 +65,7 @@ void olivec_fill_circle(uint32_t *pixels, size_t pixels_width, size_t pixels_hei
                         int cx, int cy, int r,
                         uint32_t color)
 {
+    // TODO: olivec_fill_circle does not handle the situation when r is negative
     int x1 = cx - r;
     int y1 = cy - r;
     int x2 = cx + r;
@@ -82,10 +85,12 @@ void olivec_fill_circle(uint32_t *pixels, size_t pixels_width, size_t pixels_hei
     }
 }
 
+// TODO: lines with different thicness
 void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
                       int x1, int y1, int x2, int y2,
                       uint32_t color)
 {
+    // TODO: fix the olivec_draw_line stairs
     int dx = x2 - x1;
     int dy = y2 - y1;
 
@@ -117,5 +122,10 @@ void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
         }
     }
 }
+
+// TODO: supersampling for circles and lines
+// TODO: olivec_fill_triangle
+// TODO: olivec_draw_circle
+// TODO: olivec_(draw|fill)_ellipse
 
 #endif // OLIVE_C_
