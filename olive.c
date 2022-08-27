@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
+#include <png.h>
 
 typedef int Errno;
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
+#define return_defer_png(value) do { result = (value); goto deferpng; } while (0)
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x)*(x))
@@ -17,6 +19,79 @@ void olivec_fill(uint32_t *pixels, size_t width, size_t height, uint32_t color)
     for (size_t i = 0; i < width*height; ++i) {
         pixels[i] = color;
     }
+}
+
+Errno olivec_save_to_png_file(uint32_t *pixels, size_t width, size_t height, const char *file_path)
+{
+    int result = 0;
+    png_byte **row_pointers = NULL;
+    png_structp png = NULL;
+    png_infop info = NULL;
+    FILE *f = NULL;
+    int pixel_size = 3;
+    int depth = 8;
+    size_t x, y;
+
+    f = fopen(file_path, "wb");
+    if (f == NULL) return_defer_png(errno);
+
+    png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (png == NULL) return_defer_png(errno);
+
+    info = png_create_info_struct(png);
+    if (info == NULL) return_defer_png(errno);
+
+    if (setjmp(png_jmpbuf(png)))
+    {
+       return_defer_png(errno);
+    }
+
+    // Output is 8 bit depth, RGB format.
+    png_set_IHDR(
+        png,
+        info,
+        width, height,
+        depth,
+        PNG_COLOR_TYPE_RGB,
+        PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_DEFAULT,
+        PNG_FILTER_TYPE_DEFAULT
+        );
+
+    row_pointers = png_malloc(png, height * sizeof(png_byte*));
+
+    uint32_t* p = (uint32_t*)pixels;
+
+    for (y = 0; y < height; y++)
+    {
+        png_byte *row = png_malloc (png, sizeof(uint8_t) * width * pixel_size);
+        row_pointers[y] = row;
+        for (x = 0; x < width; x++)
+        {
+            int ix = y * width + x;
+            uint32_t pixel = p[ix];
+
+            *row++ = (pixel & 0x0000FF) >> 0;
+            *row++ = (pixel & 0x00FF00) >> 8;
+            *row++ = (pixel & 0xFF0000) >> 16;
+        }
+    }
+
+    png_init_io(png, f);
+    png_set_rows(png, info, row_pointers);
+    png_write_png(png, info, PNG_TRANSFORM_IDENTITY, NULL);
+    png_write_end(png, NULL);
+
+    for (y = 0; y < height; y++)
+    {
+        png_free(png, row_pointers[y]);
+    }
+
+    png_destroy_write_struct(&png, &info);
+
+deferpng:
+    if (f) fclose(f);
+    return result;
 }
 
 Errno olivec_save_to_ppm_file(uint32_t *pixels, size_t width, size_t height, const char *file_path)

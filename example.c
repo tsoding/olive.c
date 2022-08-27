@@ -39,6 +39,13 @@ bool checker_example(void)
         return false;
     }
 
+    const char *file_path_png = "checker.png";
+    err = olivec_save_to_png_file(pixels, WIDTH, HEIGHT, file_path_png);
+    if (err) {
+        fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path_png, strerror(errno));
+        return false;
+    }
+
     return true;
 }
 
@@ -73,6 +80,14 @@ bool circle_example(void)
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
         return false;
     }
+
+    const char *file_path_png = "circle.png";
+    err = olivec_save_to_png_file(pixels, WIDTH, HEIGHT, file_path_png);
+    if (err) {
+        fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path_png, strerror(errno));
+        return false;
+    }
+
     return true;
 }
 
@@ -118,6 +133,14 @@ bool lines_example(void)
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
         return false;
     }
+
+    const char *file_path_png = "lines.png";
+    err = olivec_save_to_png_file(pixels, WIDTH, HEIGHT, file_path_png);
+    if (err) {
+        fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path_png, strerror(errno));
+        return false;
+    }
+
     return true;
 }
 

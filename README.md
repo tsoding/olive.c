@@ -2,6 +2,14 @@
 
 Simple 2D Graphics Library for C.
 
+## Dependencies
+
+*libpng*
+
+```console
+$ sudo apt-get install libpng-dev      *(or equivalent)*
+```
+
 ## Quick Start
 
 ```console
