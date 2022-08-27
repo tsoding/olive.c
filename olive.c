@@ -62,7 +62,7 @@ void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
     if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
 
     for (int y = y1; y <= y2; ++y) {
-        // TODO: move boundaries check out of olivec_fill_rect
+        // TODO: move boundary checks out of the loops in olivec_fill_rect
         if (0 <= y && y < (int) pixels_height) {
             for (int x = x1; x <= x2; ++x) {
                 if (0 <= x && x < (int) pixels_width) {
@@ -73,16 +73,26 @@ void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
     }
 }
 
+// TODO: implement automatic test for olivec_fill_circle
+// Check for
+//  - negative radius of the circle
+//  - out-of-bound cases
 void olivec_fill_circle(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
                         int cx, int cy, int r,
                         uint32_t color)
 {
-    // TODO: olivec_fill_circle does not handle the situation when r is negative
+    if (r == 0) return;
+
     int x1 = cx - r;
-    int y1 = cy - r;
     int x2 = cx + r;
+    if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
+
+    int y1 = cy - r;
     int y2 = cy + r;
+    if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+
     for (int y = y1; y <= y2; ++y) {
+        // TODO: move boundary checks out of the loops in olivec_fill_circle
         if (0 <= y && y < (int) pixels_height) {
             for (int x = x1; x <= x2; ++x) {
                 if (0 <= x && x < (int) pixels_width) {
