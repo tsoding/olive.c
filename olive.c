@@ -1,10 +1,16 @@
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
+#include <stdio.h>
+#include <stdint.h>
+#include <errno.h>
+
 typedef int Errno;
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
+#define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
+#define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x)*(x))
 
 void olivec_fill(uint32_t *pixels, size_t width, size_t height, uint32_t color)
 {
@@ -42,17 +48,23 @@ defer:
     return result;
 }
 
+// TODO: implement automatic test for olivec_fill_rect
+// Check for
+//  - negative width and height of the rect
+//  - out-of-bound cases
 void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
-                      int x0, int y0,
-                      // TODO: enable w, h in olivec_fill_rect to be int instead of size_t
-                      size_t w, size_t h,
+                      int x1, int y1, int w, int h,
                       uint32_t color)
 {
-    for (int dy = 0; dy < (int) h; ++dy) {
-        int y = y0 + dy;
+    int x2 = x1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
+    if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
+    int y2 = y1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
+    if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+
+    for (int y = y1; y <= y2; ++y) {
+        // TODO: move boundaries check out of olivec_fill_rect
         if (0 <= y && y < (int) pixels_height) {
-            for (int dx = 0; dx < (int) w; ++dx) {
-                int x = x0 + dx;
+            for (int x = x1; x <= x2; ++x) {
                 if (0 <= x && x < (int) pixels_width) {
                     pixels[y*pixels_width + x] = color;
                 }
