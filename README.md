@@ -1,6 +1,6 @@
 # Olive.c
 
-Simple 2D Graphics Library for C
+Simple 2D Graphics Library for C.
 
 ## Quick Start
 

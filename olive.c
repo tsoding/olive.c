@@ -150,5 +150,6 @@ void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
 // TODO: olivec_draw_circle
 // TODO: olivec_(draw|fill)_ellipse
 // TODO: WebAssembly Demo
+// TODO: Alpha blending
 
 #endif // OLIVE_C_
