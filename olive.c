@@ -7,7 +7,6 @@
 
 typedef int Errno;
 
-#define return_defer(value) do { result = (value); goto defer; } while (0)
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x)*(x))
@@ -19,10 +18,6 @@ void olivec_fill(uint32_t *pixels, size_t width, size_t height, uint32_t color)
     }
 }
 
-// TODO: implement automatic test for olivec_fill_rect
-// Check for
-//  - negative width and height of the rect
-//  - out-of-bound cases
 void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
                       int x1, int y1, int w, int h,
                       uint32_t color)
@@ -44,10 +39,6 @@ void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
     }
 }
 
-// TODO: implement automatic test for olivec_fill_circle
-// Check for
-//  - negative radius of the circle
-//  - out-of-bound cases
 void olivec_fill_circle(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
                         int cx, int cy, int r,
                         uint32_t color)
