@@ -6,7 +6,7 @@ Simple 2D Graphics Library for C.
 
 ```console
 $ ./build.sh
-$ ./example
+$ ./bin/example
 ```
 
 ## Gallery

@@ -16,6 +16,8 @@
 #define BACKGROUND_COLOR 0xFF202020
 #define FOREGROUND_COLOR 0xFF2020FF
 
+#define IMGS_DIR_PATH "./imgs"
+
 static uint32_t pixels[WIDTH*HEIGHT];
 
 bool checker_example(void)
@@ -32,7 +34,8 @@ bool checker_example(void)
         }
     }
 
-    const char *file_path = "checker.ppm";
+    const char *file_path = IMGS_DIR_PATH"/checker.ppm";
+    printf("Generated %s\n", file_path);
     Errno err = olivec_save_to_ppm_file(pixels, WIDTH, HEIGHT, file_path);
     if (err) {
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
@@ -67,7 +70,8 @@ bool circle_example(void)
         }
     }
 
-    const char *file_path = "circle.ppm";
+    const char *file_path = IMGS_DIR_PATH"/circle.ppm";
+    printf("Generated %s\n", file_path);
     Errno err = olivec_save_to_ppm_file(pixels, WIDTH, HEIGHT, file_path);
     if (err) {
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
@@ -112,7 +116,8 @@ bool lines_example(void)
                      WIDTH/2, 0, WIDTH/2, HEIGHT,
                      0xFFFF3030);
 
-    const char *file_path = "lines.ppm";
+    const char *file_path = IMGS_DIR_PATH"/lines.ppm";
+    printf("Generated %s\n", file_path);
     Errno err = olivec_save_to_ppm_file(pixels, WIDTH, HEIGHT, file_path);
     if (err) {
         fprintf(stderr, "ERROR: could not save file %s: %s\n", file_path, strerror(errno));
