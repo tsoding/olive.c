@@ -1,9 +1,7 @@
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
-#include <stdio.h>
 #include <stdint.h>
-#include <errno.h>
 
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
@@ -172,7 +170,6 @@ void olivec_fill_triangle(uint32_t *pixels, size_t width, size_t height,
 }
 
 // TODO: supersampling for circles and lines
-// TODO: olivec_fill_triangle
 // TODO: olivec_draw_circle
 // TODO: olivec_(draw|fill)_ellipse
 // TODO: WebAssembly Demo
