@@ -88,6 +88,7 @@ bool replay_test_case(const char *program_path, const char *file_path, const cha
         }
 
         // TODO: it would be cool if "unexpected image size" error would generate the image diff as well
+        // The size of the image diff should be max(expected_width, actual_width) by max(expected_height, actual_height) with the paddings on the right and bottom edges filled with ERROR_COLOR
         if (expected_width != WIDTH || expected_height != HEIGHT) {
             fprintf(stderr, "%s: TEST FAILURE: unexpected image size. Expected %dx%d, but got %dx%d\n",
                     file_path, expected_width, expected_height, WIDTH, HEIGHT);
