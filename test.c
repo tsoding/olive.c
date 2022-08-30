@@ -36,6 +36,29 @@
 
 #define TEST_DIR_PATH "./test"
 
+char hexchar(uint8_t x)
+{
+    if (x < 10) return x + '0';
+    if (10 <= x && x < 16) return x - 10 + 'A';
+    UNREACHABLE("hexchar");
+}
+
+const char *display_hexcolor(uint32_t c)
+{
+    static char buffer[1 + 8 + 1];
+    buffer[0] = '#';
+    buffer[1] = hexchar((c>>(1*4))&0xF);
+    buffer[2] = hexchar((c>>(0*4))&0xF);
+    buffer[3] = hexchar((c>>(3*4))&0xF);
+    buffer[4] = hexchar((c>>(2*4))&0xF);
+    buffer[5] = hexchar((c>>(5*4))&0xF);
+    buffer[6] = hexchar((c>>(4*4))&0xF);
+    buffer[7] = hexchar((c>>(7*4))&0xF);
+    buffer[8] = hexchar((c>>(6*4))&0xF);
+    buffer[9] = '\0';
+    return buffer;
+}
+
 uint32_t pixels[WIDTH*HEIGHT];
 
 bool record_test_case(const char *file_path)
@@ -59,7 +82,7 @@ bool replay_test_case(const char *program_path, const char *file_path, const cha
         if (expected_pixels == NULL) {
             fprintf(stderr, "%s: TEST FAILURE: could not read the file: %s\n", file_path, strerror(errno));
             if (errno == ENOENT) {
-                fprintf(stderr, "%s: HINT: Consider running `%s record` to create it\n", file_path, program_path);
+                fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", file_path, program_path);
             }
             return_defer(false);
         }
@@ -88,7 +111,8 @@ bool replay_test_case(const char *program_path, const char *file_path, const cha
             if (!stbi_write_png(failure_file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
                 fprintf(stderr, "ERROR: could not generate image diff %s: %s\n", failure_file_path, strerror(errno));
             } else {
-                printf("See image diff %s for more info\n", failure_file_path);
+                fprintf(stderr, "%s: HINT: See image diff %s for more info. The pixels with color %s are the ones that differ from the expected ones.\n", file_path, failure_file_path, display_hexcolor(ERROR_COLOR));
+                fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", file_path, program_path);
             }
             return_defer(false);
         }
@@ -134,7 +158,7 @@ void test_draw_line(void)
 {
     olivec_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
     olivec_draw_line(pixels, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, RED_COLOR);
-    olivec_draw_line(pixels, WIDTH, HEIGHT, WIDTH, 0, 0, HEIGHT, RED_COLOR);
+    olivec_draw_line(pixels, WIDTH, HEIGHT, WIDTH, 0, 0, HEIGHT, BLUE_COLOR);
 }
 
 Test_Case test_cases[] = {
