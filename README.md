@@ -2,19 +2,27 @@
 
 Simple 2D Graphics Library for C.
 
+## Gallery
+
+![checker](./imgs/checker.png)
+
+![circle](./imgs/circle.png)
+
+![lines](./imgs/lines.png)
+
 ## Quick Start
 
-### Test the Library
+> The truly reusable code is the one that you can simply copy-paste.
+
+The library itself does not require any special building. You can simple copy-paste [./olive.c](./olive.c) to your project and `#include` it. But you may want to build the binary tools for this project that are located in `./bin/`:
 
 ```console
 $ ./build.sh
 ```
 
-### Use the Library
+## How to Use the Library
 
-> The truly reusable code is the one that you can simply copy-paste.
-
-Copy-paste [./olive.c](./olive.c) to your project.
+*This example uses [stb_image_write.h](https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h) to create the PNG image*
 
 ```c
 // flag_jp.c
@@ -43,10 +51,29 @@ int main(void)
 }
 ```
 
-## Gallery
+## Test the Library
 
-![checker](./imgs/checker.png)
+```console
+$ ./bin/test
+```
 
-![circle](./imgs/circle.png)
+### Update the test cases
 
-![lines](./imgs/lines.png)
+If the expected behaviour of the library has changed in the way that breaks current test cases, you probably want to update them:
+
+```console
+$ ./bin/test record
+```
+
+## Regenerate the Gallery Above
+
+```console
+$ ./bin/gallery
+```
+
+## WebAssembly Triangle Example
+
+```console
+$ python3 -m http.server 6969
+$ iexplore.exe http://localhost:6969/
+```

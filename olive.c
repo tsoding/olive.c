@@ -1,6 +1,7 @@
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
+#include <stddef.h>
 #include <stdint.h>
 
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)

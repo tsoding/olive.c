@@ -1,3 +1,4 @@
+// This example generates the gallery that is displayed in the README of the project
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
