@@ -71,7 +71,6 @@ void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
                       int x1, int y1, int x2, int y2,
                       uint32_t color)
 {
-    // TODO: fix the olivec_draw_line stairs
     int dx = x2 - x1;
     int dy = y2 - y1;
 
@@ -81,16 +80,23 @@ void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
         if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
         for (int x = x1; x <= x2; ++x) {
             if (0 <= x && x < (int) pixels_width) {
-                int sy1 = dy*x/dx + c;
-                int sy2 = dy*(x + 1)/dx + c;
-                if (sy1 > sy2) OLIVEC_SWAP(int, sy1, sy2);
-                for (int y = sy1; y <= sy2; ++y) {
-                    if (0 <= y && y < (int) pixels_height) {
-                        pixels[y*pixels_width + x] = color;
-                    }
+				int y = dy*x/dx + c;
+                if (0 <= y && y < (int) pixels_height) {
+                    pixels[y*pixels_width + x] = color;
                 }
             }
         }
+		if (dy != 0){
+	        if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+    	    for (int y = y1; y <= y2; ++y) {
+        	    if (0 <= y && y < (int) pixels_height) {
+					int x = ((y-c)*dx)/dy;
+                	if (0 <= x && x < (int) pixels_width) {
+                    	pixels[y*pixels_width + x] = color;
+                	}
+            	}
+        	}
+		}
     } else {
         int x = x1;
         if (0 <= x && x < (int) pixels_width) {
