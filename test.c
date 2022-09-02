@@ -116,7 +116,6 @@ Replay_Result replay_test_case(const char *program_path, const char *expected_fi
             }
         }
 
-        // TODO: save the actual image along with the diff
         if (failed) {
             fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
 
