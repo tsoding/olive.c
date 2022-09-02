@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
@@ -15,23 +16,55 @@ void olivec_fill(uint32_t *pixels, size_t width, size_t height, uint32_t color)
     }
 }
 
+// The point of this function is to produce two ranges x1..x2 and y1..y2 that are guaranteed to be safe to iterate over the canvas of size pixels_width by pixels_height without any boundary checks.
+// 
+// if (olivec_normalize_rect(x, y, w, h, WIDTH, HEIGHT, &x1, &y1, &x2, &y2)) {
+//     for (int x = x1; x <= x2; ++x) {
+//         for (itn y = y1; y <= y2; ++y) {
+//             pixels[y*pixels_width + x] = 0x69696969;
+//         }
+//     }
+// } else {
+//     // Rectangle is invisible cause it's completely out-of-bounds
+// }
+bool olivec_normalize_rect(int x, int y, int w, int h,
+                           size_t pixels_width, size_t pixels_height,
+                           int *x1, int *x2, int *y1, int *y2)
+{
+    *x1 = x;
+    *y1 = y;
+
+    // Convert the rectangle to 2-points representation
+    *x2 = *x1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
+    if (*x1 > *x2) OLIVEC_SWAP(int, *x1, *x2);
+    *y2 = *y1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
+    if (*y1 > *y2) OLIVEC_SWAP(int, *y1, *y2);
+
+    // Cull out invisible rectangle
+    if (*x1 >= (int) pixels_width) return false;
+    if (*x2 < 0) return false;
+    if (*y1 >= (int) pixels_height) return false;
+    if (*y2 < 0) return false;
+
+    // Clamp the rectangle to the boundaries
+    if (*x1 < 0) *x1 = 0;
+    if (*x2 >= (int) pixels_width) *x2 = (int) pixels_width - 1;
+    if (*y1 < 0) *y1 = 0;
+    if (*y2 >= (int) pixels_height) *y2 = (int) pixels_height - 1;
+
+    return true;
+}
+
 void olivec_fill_rect(uint32_t *pixels, size_t pixels_width, size_t pixels_height,
-                      int x1, int y1, int w, int h,
+                      int x, int y, int w, int h,
                       uint32_t color)
 {
-    int x2 = x1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
-    if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
-    int y2 = y1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
-    if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+    int x1, y1, x2, y2;
+    if (!olivec_normalize_rect(x, y, w, h, pixels_width, pixels_height, &x1, &x2, &y1, &y2)) return;
 
     for (int y = y1; y <= y2; ++y) {
-        // TODO: move boundary checks out of the loops in olivec_fill_rect
-        if (0 <= y && y < (int) pixels_height) {
-            for (int x = x1; x <= x2; ++x) {
-                if (0 <= x && x < (int) pixels_width) {
-                    pixels[y*pixels_width + x] = color;
-                }
-            }
+        for (int x = x1; x <= x2; ++x) {
+            pixels[y*pixels_width + x] = color;
         }
     }
 }
@@ -40,27 +73,16 @@ void olivec_fill_circle(uint32_t *pixels, size_t pixels_width, size_t pixels_hei
                         int cx, int cy, int r,
                         uint32_t color)
 {
-    if (r == 0) return;
-
-    int x1 = cx - r;
-    int x2 = cx + r;
-    if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
-
-    int y1 = cy - r;
-    int y2 = cy + r;
-    if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+    int x1, y1, x2, y2;
+    int r1 = r + OLIVEC_SIGN(int, r);
+    if (!olivec_normalize_rect(cx - r1, cy - r1, 2*r1, 2*r1, pixels_width, pixels_height, &x1, &x2, &y1, &y2)) return;
 
     for (int y = y1; y <= y2; ++y) {
-        // TODO: move boundary checks out of the loops in olivec_fill_circle
-        if (0 <= y && y < (int) pixels_height) {
-            for (int x = x1; x <= x2; ++x) {
-                if (0 <= x && x < (int) pixels_width) {
-                    int dx = x - cx;
-                    int dy = y - cy;
-                    if (dx*dx + dy*dy <= r*r) {
-                        pixels[y*pixels_width + x] = color;
-                    }
-                }
+        for (int x = x1; x <= x2; ++x) {
+            int dx = x - cx;
+            int dy = y - cy;
+            if (dx*dx + dy*dy <= r*r) {
+                pixels[y*pixels_width + x] = color;
             }
         }
     }
@@ -80,6 +102,7 @@ void olivec_draw_line(uint32_t *pixels, size_t pixels_width, size_t pixels_heigh
 
         if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
         for (int x = x1; x <= x2; ++x) {
+            // TODO: move boundary checks out side of the loops in olivec_draw_line
             if (0 <= x && x < (int) pixels_width) {
                 int sy1 = dy*x/dx + c;
                 int sy2 = dy*(x + 1)/dx + c;
@@ -131,6 +154,7 @@ void olivec_fill_triangle(uint32_t *pixels, size_t width, size_t height,
     int dy13 = y3 - y1;
 
     for (int y = y1; y <= y2; ++y) {
+        // TODO: move boundary checks outside of loops in olivec_fill_triangle
         if (0 <= y && (size_t) y < height) {
             int s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
             int s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
