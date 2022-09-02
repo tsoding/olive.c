@@ -59,67 +59,84 @@ const char *display_hexcolor(uint32_t c)
     return buffer;
 }
 
-uint32_t pixels[WIDTH*HEIGHT];
+static uint32_t actual_pixels[WIDTH*HEIGHT];
+static uint32_t diff_pixels[WIDTH*HEIGHT];
 
-bool record_test_case(const char *file_path)
+bool record_test_case(const char *expected_file_path)
 {
-    if (!stbi_write_png(file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
-        fprintf(stderr, "ERROR: could not write file %s: %s\n", file_path, strerror(errno));
+    if (!stbi_write_png(expected_file_path, WIDTH, HEIGHT, 4, actual_pixels, sizeof(uint32_t)*WIDTH)) {
+        fprintf(stderr, "ERROR: could not write file %s: %s\n", expected_file_path, strerror(errno));
         return(false);
     }
-    printf("Generated %s\n", file_path);
+    printf("Generated %s\n", expected_file_path);
     return(true);
 }
 
-bool replay_test_case(const char *program_path, const char *file_path, const char *failure_file_path)
+typedef enum {
+    REPLAY_PASSED,
+    REPLAY_FAILED,
+    REPLAY_ERRORED,
+} Replay_Result;
+
+Replay_Result replay_test_case(const char *program_path, const char *expected_file_path, const char *actual_file_path, const char *diff_file_path)
 {
-    bool result = true;
+    Replay_Result result = REPLAY_PASSED;
     uint32_t *expected_pixels = NULL;
 
     {
         int expected_width, expected_height;
-        expected_pixels = (uint32_t*) stbi_load(file_path, &expected_width, &expected_height, NULL, 4);
+        expected_pixels = (uint32_t*) stbi_load(expected_file_path, &expected_width, &expected_height, NULL, 4);
         if (expected_pixels == NULL) {
-            fprintf(stderr, "%s: TEST FAILURE: could not read the file: %s\n", file_path, strerror(errno));
+            fprintf(stderr, "%s: ERROR: could not read the file: %s\n", expected_file_path, strerror(errno));
             if (errno == ENOENT) {
-                fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", file_path, program_path);
+                fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", expected_file_path, program_path);
             }
-            return_defer(false);
+            return_defer(REPLAY_ERRORED);
         }
 
         // TODO: it would be cool if "unexpected image size" error would generate the image diff as well
         // The size of the image diff should be max(expected_width, actual_width) by max(expected_height, actual_height) with the paddings on the right and bottom edges filled with ERROR_COLOR
         if (expected_width != WIDTH || expected_height != HEIGHT) {
             fprintf(stderr, "%s: TEST FAILURE: unexpected image size. Expected %dx%d, but got %dx%d\n",
-                    file_path, expected_width, expected_height, WIDTH, HEIGHT);
-            return_defer(false);
+                    expected_file_path, expected_width, expected_height, WIDTH, HEIGHT);
+            return_defer(REPLAY_FAILED);
         }
 
         bool failed = false;
         for (size_t y = 0; y < HEIGHT; ++y) {
             for (size_t x = 0; x < WIDTH; ++x) {
                 uint32_t expected_pixel = expected_pixels[y*WIDTH + x];
-                uint32_t actual_pixel = pixels[y*WIDTH + x];
+                uint32_t actual_pixel = actual_pixels[y*WIDTH + x];
                 if (expected_pixel != actual_pixel) {
-                    pixels[y*WIDTH + x] = ERROR_COLOR;
+                    diff_pixels[y*WIDTH + x] = ERROR_COLOR;
                     failed = true;
+                } else {
+                    diff_pixels[y*WIDTH + x] = expected_pixel;
                 }
             }
         }
 
         // TODO: save the actual image along with the diff
         if (failed) {
-            fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", file_path);
-            if (!stbi_write_png(failure_file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
-                fprintf(stderr, "ERROR: could not generate image diff %s: %s\n", failure_file_path, strerror(errno));
-            } else {
-                fprintf(stderr, "%s: HINT: See image diff %s for more info. The pixels with color %s are the ones that differ from the expected ones.\n", file_path, failure_file_path, display_hexcolor(ERROR_COLOR));
-                fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", file_path, program_path);
+            fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
+
+            if (!stbi_write_png(actual_file_path, WIDTH, HEIGHT, 4, actual_pixels, sizeof(uint32_t)*WIDTH)) {
+                fprintf(stderr, "ERROR: could not generate image with actual pixels %s: %s\n", actual_file_path, strerror(errno));
+                return_defer(REPLAY_ERRORED);
             }
-            return_defer(false);
+
+            if (!stbi_write_png(diff_file_path, WIDTH, HEIGHT, 4, diff_pixels, sizeof(uint32_t)*WIDTH)) {
+                fprintf(stderr, "ERROR: could not generate diff image %s: %s\n", diff_file_path, strerror(errno));
+                return_defer(REPLAY_ERRORED);
+            }
+            
+            fprintf(stderr, "%s: HINT: See actual image %s\n", expected_file_path, actual_file_path);
+            fprintf(stderr, "%s: HINT: See diff image %s\n", expected_file_path, diff_file_path);
+            fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", expected_file_path, program_path);
+            return_defer(REPLAY_FAILED);
         }
 
-        printf("%s OK\n", file_path);
+        printf("%s OK\n", expected_file_path);
     }
 
 defer:
@@ -128,65 +145,67 @@ defer:
 }
 
 typedef struct {
-    void (*run)(void);
-    const char *file_path;
-    const char *failure_file_path;
+    void (*generate_actual_pixels)(void);
+    const char *expected_file_path;
+    const char *actual_file_path;
+    const char *diff_file_path;
 } Test_Case;
 
 #define DEFINE_TEST_CASE(name) \
     { \
-        .run = name, \
-        .file_path = TEST_DIR_PATH "/" #name ".png", \
-        .failure_file_path = TEST_DIR_PATH "/" #name "_failure.png" \
+        .generate_actual_pixels = name, \
+        .expected_file_path = TEST_DIR_PATH "/" #name "_expected.png", \
+        .actual_file_path = TEST_DIR_PATH "/" #name "_actual.png", \
+        .diff_file_path = TEST_DIR_PATH "/" #name "_diff.png", \
     }
 
 void test_fill_rect(void)
 {
-    olivec_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_fill_rect(pixels, WIDTH, HEIGHT, WIDTH/2 - WIDTH/8, HEIGHT/2 - HEIGHT/8, WIDTH/4, HEIGHT/4, RED_COLOR);
-    olivec_fill_rect(pixels, WIDTH, HEIGHT, WIDTH - 1, HEIGHT - 1, -WIDTH/2, -HEIGHT/2, GREEN_COLOR);
-    olivec_fill_rect(pixels, WIDTH, HEIGHT, -WIDTH/4, -HEIGHT/4, WIDTH/2, HEIGHT/2, BLUE_COLOR);
+    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH/2 - WIDTH/8, HEIGHT/2 - HEIGHT/8, WIDTH/4, HEIGHT/4, RED_COLOR);
+    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH - 1, HEIGHT - 1, -WIDTH/2, -HEIGHT/2, GREEN_COLOR);
+    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, -WIDTH/4, -HEIGHT/4, WIDTH/2, HEIGHT/2, BLUE_COLOR);
 }
 
 void test_fill_circle(void)
 {
-    olivec_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_fill_circle(pixels, WIDTH, HEIGHT, 0, 0, WIDTH/2, RED_COLOR);
-    olivec_fill_circle(pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, WIDTH/4, BLUE_COLOR);
-    olivec_fill_circle(pixels, WIDTH, HEIGHT, WIDTH*3/4, HEIGHT*3/4, -WIDTH/4, GREEN_COLOR);
+    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH/2, RED_COLOR);
+    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, WIDTH/4, BLUE_COLOR);
+    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH*3/4, HEIGHT*3/4, -WIDTH/4, GREEN_COLOR);
 }
 
 void test_draw_line(void)
 {
-    olivec_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_draw_line(pixels, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, RED_COLOR);
-    olivec_draw_line(pixels, WIDTH, HEIGHT, WIDTH, 0, 0, HEIGHT, BLUE_COLOR);
-    olivec_draw_line(pixels, WIDTH, HEIGHT, WIDTH/2, 0, WIDTH/2, HEIGHT, GREEN_COLOR);
+    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, RED_COLOR);
+    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, WIDTH, 0, 0, HEIGHT, BLUE_COLOR);
+    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, WIDTH/2, 0, WIDTH/2, HEIGHT, GREEN_COLOR);
 }
 
 void test_fill_triangle(void)
 {
-    olivec_fill(pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
 
     {
         int x1 = WIDTH/2, y1 = HEIGHT/8;
         int x2 = WIDTH/8, y2 = HEIGHT/2;
         int x3 = WIDTH*7/8, y3 = HEIGHT*7/8;
-        olivec_fill_triangle(pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, RED_COLOR);
+        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, RED_COLOR);
     }
 
     {
         int x1 = WIDTH/2, y1 = HEIGHT*2/8;
         int x2 = WIDTH*2/8, y2 = HEIGHT/2;
         int x3 = WIDTH*6/8, y3 = HEIGHT/2;
-        olivec_fill_triangle(pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, GREEN_COLOR);
+        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, GREEN_COLOR);
     }
 
     {
         int x1 = WIDTH/8, y1 = HEIGHT/8;
         int x2 = WIDTH/8, y2 = HEIGHT*3/8;
         int x3 = WIDTH*3/8, y3 = HEIGHT*3/8;
-        olivec_fill_triangle(pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, BLUE_COLOR);
+        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, BLUE_COLOR);
     }
 }
 
@@ -205,11 +224,11 @@ int main(int argc, char **argv)
     bool record = argc >= 2 && strcmp(argv[1], "record") == 0;
 
     for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
-        test_cases[i].run();
+        test_cases[i].generate_actual_pixels();
         if (record) {
-            if (!record_test_case(test_cases[i].file_path)) return 1;
+            if (!record_test_case(test_cases[i].expected_file_path)) return 1;
         } else {
-            if (!replay_test_case(program_path, test_cases[i].file_path, test_cases[i].failure_file_path)) return 1;
+            if (replay_test_case(program_path, test_cases[i].expected_file_path, test_cases[i].actual_file_path, test_cases[i].diff_file_path) == REPLAY_ERRORED) return 1;
         }
     }
     return 0;
