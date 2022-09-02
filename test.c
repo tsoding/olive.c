@@ -128,7 +128,7 @@ Replay_Result replay_test_case(const char *program_path, const char *expected_fi
                 fprintf(stderr, "ERROR: could not generate diff image %s: %s\n", diff_file_path, strerror(errno));
                 return_defer(REPLAY_ERRORED);
             }
-            
+
             fprintf(stderr, "%s: HINT: See actual image %s\n", expected_file_path, actual_file_path);
             fprintf(stderr, "%s: HINT: See diff image %s\n", expected_file_path, diff_file_path);
             fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", expected_file_path, program_path);
@@ -208,11 +208,25 @@ void test_fill_triangle(void)
     }
 }
 
+void test_alpha_blending(void)
+{
+    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH*3/4, HEIGHT*3/4, RED_COLOR);
+    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH-1, HEIGHT-1, -WIDTH*3/4, -HEIGHT*3/4, 0x5520AA20);
+    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, WIDTH/4, 0xBBAA2020);
+    olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT,
+                         0,     HEIGHT,
+                         WIDTH, HEIGHT,
+                         WIDTH/2, 0,
+                         0xBB20AAAA);
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_fill_rect),
     DEFINE_TEST_CASE(test_fill_circle),
     DEFINE_TEST_CASE(test_draw_line),
     DEFINE_TEST_CASE(test_fill_triangle),
+    DEFINE_TEST_CASE(test_alpha_blending),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
