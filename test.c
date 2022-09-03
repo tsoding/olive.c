@@ -160,65 +160,67 @@ typedef struct {
 
 void test_fill_rect(void)
 {
-    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH/2 - WIDTH/8, HEIGHT/2 - HEIGHT/8, WIDTH/4, HEIGHT/4, RED_COLOR);
-    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH - 1, HEIGHT - 1, -WIDTH/2, -HEIGHT/2, GREEN_COLOR);
-    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, -WIDTH/4, -HEIGHT/4, WIDTH/2, HEIGHT/2, BLUE_COLOR);
+    Olivec_Canvas oc = olivec_make_canvas(actual_pixels, WIDTH, HEIGHT);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_rect(oc, WIDTH/2 - WIDTH/8, HEIGHT/2 - HEIGHT/8, WIDTH/4, HEIGHT/4, RED_COLOR);
+    olivec_rect(oc, WIDTH - 1, HEIGHT - 1, -WIDTH/2, -HEIGHT/2, GREEN_COLOR);
+    olivec_rect(oc, -WIDTH/4, -HEIGHT/4, WIDTH/2, HEIGHT/2, BLUE_COLOR);
 }
 
 void test_fill_circle(void)
 {
-    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH/2, RED_COLOR);
-    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, WIDTH/4, BLUE_COLOR);
-    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH*3/4, HEIGHT*3/4, -WIDTH/4, GREEN_COLOR);
+    Olivec_Canvas oc = olivec_make_canvas(actual_pixels, WIDTH, HEIGHT);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_circle(oc, 0, 0, WIDTH/2, RED_COLOR);
+    olivec_circle(oc, WIDTH/2, HEIGHT/2, WIDTH/4, BLUE_COLOR);
+    olivec_circle(oc, WIDTH*3/4, HEIGHT*3/4, -WIDTH/4, GREEN_COLOR);
 }
 
 void test_draw_line(void)
 {
-    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH, HEIGHT, RED_COLOR);
-    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, WIDTH, 0, 0, HEIGHT, BLUE_COLOR);
-    olivec_draw_line(actual_pixels, WIDTH, HEIGHT, WIDTH/2, 0, WIDTH/2, HEIGHT, GREEN_COLOR);
+    Olivec_Canvas oc = olivec_make_canvas(actual_pixels, WIDTH, HEIGHT);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_line(oc, 0, 0, WIDTH, HEIGHT, RED_COLOR);
+    olivec_line(oc, WIDTH, 0, 0, HEIGHT, BLUE_COLOR);
+    olivec_line(oc, WIDTH/2, 0, WIDTH/2, HEIGHT, GREEN_COLOR);
 }
 
 void test_fill_triangle(void)
 {
-    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
+    Olivec_Canvas oc = olivec_make_canvas(actual_pixels, WIDTH, HEIGHT);
+
+    olivec_fill(oc, BACKGROUND_COLOR);
 
     {
-        int x1 = WIDTH/2, y1 = HEIGHT/8;
-        int x2 = WIDTH/8, y2 = HEIGHT/2;
+        int x1 = WIDTH/2,   y1 = HEIGHT/8;
+        int x2 = WIDTH/8,   y2 = HEIGHT/2;
         int x3 = WIDTH*7/8, y3 = HEIGHT*7/8;
-        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, RED_COLOR);
+        olivec_triangle(oc, x1, y1, x2, y2, x3, y3, RED_COLOR);
     }
 
     {
-        int x1 = WIDTH/2, y1 = HEIGHT*2/8;
+        int x1 = WIDTH/2,   y1 = HEIGHT*2/8;
         int x2 = WIDTH*2/8, y2 = HEIGHT/2;
         int x3 = WIDTH*6/8, y3 = HEIGHT/2;
-        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, GREEN_COLOR);
+        olivec_triangle(oc, x1, y1, x2, y2, x3, y3, GREEN_COLOR);
     }
 
     {
-        int x1 = WIDTH/8, y1 = HEIGHT/8;
-        int x2 = WIDTH/8, y2 = HEIGHT*3/8;
+        int x1 = WIDTH/8,   y1 = HEIGHT/8;
+        int x2 = WIDTH/8,   y2 = HEIGHT*3/8;
         int x3 = WIDTH*3/8, y3 = HEIGHT*3/8;
-        olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT, x1, y1, x2, y2, x3, y3, BLUE_COLOR);
+        olivec_triangle(oc, x1, y1, x2, y2, x3, y3, BLUE_COLOR);
     }
 }
 
 void test_alpha_blending(void)
 {
-    olivec_fill(actual_pixels, WIDTH, HEIGHT, BACKGROUND_COLOR);
-    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, 0, 0, WIDTH*3/4, HEIGHT*3/4, RED_COLOR);
-    olivec_fill_rect(actual_pixels, WIDTH, HEIGHT, WIDTH-1, HEIGHT-1, -WIDTH*3/4, -HEIGHT*3/4, 0x5520AA20);
-    olivec_fill_circle(actual_pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, WIDTH/4, 0xBBAA2020);
-    olivec_fill_triangle(actual_pixels, WIDTH, HEIGHT,
-                         0,     HEIGHT,
-                         WIDTH, HEIGHT,
-                         WIDTH/2, 0,
-                         0xBB20AAAA);
+    Olivec_Canvas oc = olivec_make_canvas(actual_pixels, WIDTH, HEIGHT);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_rect(oc, 0, 0, WIDTH*3/4, HEIGHT*3/4, RED_COLOR);
+    olivec_rect(oc, WIDTH-1, HEIGHT-1, -WIDTH*3/4, -HEIGHT*3/4, 0x5520AA20);
+    olivec_circle(oc, WIDTH/2, HEIGHT/2, WIDTH/4, 0xBBAA2020);
+    olivec_triangle(oc, 0, HEIGHT, WIDTH, HEIGHT, WIDTH/2, 0, 0xBB20AAAA);
 }
 
 Test_Case test_cases[] = {
