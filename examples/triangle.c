@@ -1,6 +1,7 @@
 // This example renders a rotating triangle.
 // This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
 // native with SDL, WebAssembly with HTML5 canvas, etc.
+#define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 
 #define WIDTH 800
@@ -35,7 +36,7 @@ static inline void rotate_point(float *x, float *y)
 
 uint32_t *render(float dt)
 {
-    Olivec_Canvas oc = olivec_make_canvas(pixels, WIDTH, HEIGHT);
+    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT);
 
     olivec_fill(oc, BACKGROUND_COLOR);
 

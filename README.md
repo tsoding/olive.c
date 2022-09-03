@@ -26,6 +26,7 @@ $ ./build.sh
 
 ```c
 // flag_jp.c
+#define OLIVEC_IMPLEMENTATION
 #include "olive.c"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -38,9 +39,10 @@ uint32_t pixels[WIDTH*HEIGHT];
 
 int main(void)
 {
+    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT);
     // Taken from https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg
-    olivec_fill(pixels, WIDTH, HEIGHT, 0xFFFFFFFF);
-    olivec_circle(pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
+    olivec_fill(oc, 0xFFFFFFFF);
+    olivec_circle(oc, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
 
     const char *file_path = "flag_jp.png";
     if (!stbi_write_png(file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
