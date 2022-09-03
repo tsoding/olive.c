@@ -224,12 +224,24 @@ void test_alpha_blending(void)
     olivec_triangle(oc, 0, HEIGHT, WIDTH, HEIGHT, WIDTH/2, 0, 0xBB20AAAA);
 }
 
+void test_transparency(void)
+{
+    Olivec_Canvas oc = olivec_canvas(actual_pixels, WIDTH, HEIGHT);
+    olivec_fill(oc, 0);
+    olivec_rect(oc, WIDTH*1/6, HEIGHT*1/6, WIDTH, HEIGHT, 0x01FFFFFF);
+    olivec_rect(oc, WIDTH*2/6, HEIGHT*2/6, WIDTH, HEIGHT, 0x54FFFFFF);
+    olivec_rect(oc, WIDTH*3/6, HEIGHT*3/6, WIDTH, HEIGHT, 0x55FFFFFF);
+    olivec_rect(oc, WIDTH*4/6, HEIGHT*4/6, WIDTH, HEIGHT, 0x54FFFFFF);
+    olivec_rect(oc, WIDTH*5/6, HEIGHT*5/6, WIDTH, HEIGHT, 0x01FFFFFF);
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_fill_rect),
     DEFINE_TEST_CASE(test_fill_circle),
     DEFINE_TEST_CASE(test_draw_line),
     DEFINE_TEST_CASE(test_fill_triangle),
     DEFINE_TEST_CASE(test_alpha_blending),
+    DEFINE_TEST_CASE(test_transparency),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
