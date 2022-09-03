@@ -40,7 +40,7 @@ int main(void)
 {
     // Taken from https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg
     olivec_fill(pixels, WIDTH, HEIGHT, 0xFFFFFFFF);
-    olivec_fill_circle(pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
+    olivec_circle(pixels, WIDTH, HEIGHT, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
 
     const char *file_path = "flag_jp.png";
     if (!stbi_write_png(file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
