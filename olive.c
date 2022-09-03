@@ -138,20 +138,14 @@ OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color)
 {
     for (size_t y = 0; y < oc.height; ++y) {
         for (size_t x = 0; x < oc.width; ++x) {
-            OLIVEC_PIXEL(oc, x, y) = color;
+            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
         }
     }
 }
 
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color)
 {
-    int x1, x2, y1, y2;
-    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &x1, &x2, &y1, &y2)) return;
-    for (int x = x1; x <= x2; ++x) {
-        for (int y = y1; y <= y2; ++y) {
-            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
-        }
-    }
+    olivec_fill(olivec_subcanvas(oc, x, y, w, h), color);
 }
 
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color)
