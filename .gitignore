@@ -1,2 +1,3 @@
 *.ppm
 bin/
+*.pdb
