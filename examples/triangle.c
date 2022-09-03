@@ -119,7 +119,7 @@ int main(void)
             int pitch;
             if (SDL_LockTexture(texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
             for (size_t y = 0; y < HEIGHT; ++y) {
-                memcpy(pixels_dst + y*pitch, pixels_src + y*WIDTH, WIDTH*sizeof(uint32_t));
+                memcpy((char *)pixels_dst + y*pitch, pixels_src + y*WIDTH, WIDTH*sizeof(uint32_t));
             }
             SDL_UnlockTexture(texture);
 
