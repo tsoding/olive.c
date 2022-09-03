@@ -227,7 +227,7 @@ void test_alpha_blending(void)
 void test_transparency(void)
 {
     Olivec_Canvas oc = olivec_canvas(actual_pixels, WIDTH, HEIGHT);
-    olivec_fill(oc, 0);
+    olivec_clear(oc);
     olivec_rect(oc, WIDTH*1/6, HEIGHT*1/6, WIDTH, HEIGHT, 0x01FFFFFF);
     olivec_rect(oc, WIDTH*2/6, HEIGHT*2/6, WIDTH, HEIGHT, 0x54FFFFFF);
     olivec_rect(oc, WIDTH*3/6, HEIGHT*3/6, WIDTH, HEIGHT, 0x55FFFFFF);
