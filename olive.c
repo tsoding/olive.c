@@ -9,6 +9,10 @@
 #define OLIVECDEF static inline
 #endif
 
+#ifndef OLIVEC_AA_RES
+#define OLIVEC_AA_RES 2
+#endif
+
 #define OLIVEC_SWAP(T, a, b) do { T t = a; a = b; b = t; } while (0)
 #define OLIVEC_SIGN(T, x) ((T)((x) > 0) - (T)((x) < 0))
 #define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x)*(x))
@@ -146,11 +150,20 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
 
     for (int y = y1; y <= y2; ++y) {
         for (int x = x1; x <= x2; ++x) {
-            int dx = x - cx;
-            int dy = y - cy;
-            if (dx*dx + dy*dy <= r*r) {
-                olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
+            int count = 0;
+            for (int sox = 0; sox < OLIVEC_AA_RES; ++sox) {
+                for (int soy = 0; soy < OLIVEC_AA_RES; ++soy) {
+                    // TODO: switch to 64 bits to make the overflow less likely
+                    // Also research the probability of overflow
+                    int res1 = (OLIVEC_AA_RES + 1);
+                    int dx = (x*res1*2 + 2 + sox*2 - res1*cx*2 - res1);
+                    int dy = (y*res1*2 + 2 + soy*2 - res1*cy*2 - res1);
+                    if (dx*dx + dy*dy <= res1*res1*r*r*2*2) count += 1;
+                }
             }
+            uint32_t alpha = ((color&0xFF000000)>>(3*8))*count/OLIVEC_AA_RES/OLIVEC_AA_RES;
+            uint32_t updated_color = (color&0x00FFFFFF)|(alpha<<(3*8));
+            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), updated_color);
         }
     }
 }
@@ -254,3 +267,4 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 // TODO: SIMD implementations
 // TODO: olivec_ring
 // TODO: olivec_ellipse
+// TODO: bezier curves
