@@ -168,6 +168,7 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
     }
 }
 
+// TODO: AA for line
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color)
 {
     // TODO: fix the olivec_draw_line stairs
@@ -204,6 +205,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
     }
 }
 
+// TODO: AA for triangle
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {
     if (y1 > y2) {
@@ -261,7 +263,6 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: supersampling
 // TODO: 3D triangles
 // TODO: Benchmarking
 // TODO: SIMD implementations
