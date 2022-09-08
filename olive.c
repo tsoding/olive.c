@@ -34,6 +34,7 @@ OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 // TODO: lines with different thicness
+// Implement olivec_line in terms of olivec_triangle. This may make it easier to implement variable thiccness.
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 
@@ -263,7 +264,12 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: 3D triangles
+// TODO: Built-in simple monospaced font
+// TODO: Copy canvas onto canvas
+// TODO: Rainbow Triangle
+// TODO: 3D triangles with z-buffering
+// TODO: 3D textures
+// TODO: Stencil
 // TODO: Benchmarking
 // TODO: SIMD implementations
 // TODO: olivec_ring
