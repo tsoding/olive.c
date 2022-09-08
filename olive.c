@@ -357,7 +357,6 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: Built-in simple monospaced font
 // TODO: Copy canvas onto canvas
 // TODO: Rainbow Triangle
 // TODO: 3D triangles with z-buffering
