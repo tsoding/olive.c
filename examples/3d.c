@@ -22,6 +22,7 @@ float cosf(float x);
 #define GRID_SIZE ((GRID_COUNT - 1)*GRID_PAD)
 #define CIRCLE_RADIUS 5
 #define Z_START 0.25
+#define ABOBA_PADDING 50
 
 uint32_t circle_colors[] = {
     0xFF2020FF,
@@ -49,7 +50,7 @@ uint32_t *render(float dt)
                 float x = ix*GRID_PAD - GRID_SIZE/2;
                 float y = iy*GRID_PAD - GRID_SIZE/2;
                 float z = Z_START + iz*GRID_PAD;
-                
+
                 float cx = 0.0;
                 float cz = Z_START + GRID_SIZE/2;
 
@@ -76,6 +77,9 @@ uint32_t *render(float dt)
             }
         }
     }
+
+    size_t size = 8;
+    olivec_text(oc, "aboba", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - default_font.height*size, default_font, size, 0xFFFFFFFF);
 
     return pixels;
 }

@@ -18,6 +18,78 @@
 #define OLIVEC_ABS(T, x) (OLIVEC_SIGN(T, x)*(x))
 
 typedef struct {
+    size_t width, height;
+    const char *glyphs;
+} Olivec_Font;
+
+#define DEFAULT_FONT_HEIGHT 5
+#define DEFAULT_FONT_WIDTH 5
+static char default_font_glyphs[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = {
+    ['a'] = {
+        {0, 1, 1, 0, 0},
+        {0, 0, 0, 1, 0},
+        {0, 1, 1, 1, 0},
+        {1, 0, 0, 1, 0},
+        {0, 1, 1, 1, 0},
+    },
+    ['b'] = {
+        {1, 0, 0, 0, 0},
+        {1, 0, 0, 0, 0},
+        {1, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
+        {1, 1, 1, 0, 0},
+    },
+    ['c'] = {
+        {0, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
+        {1, 0, 0, 0, 0},
+        {1, 0, 0, 1, 0},
+        {0, 1, 1, 0, 0},
+    },
+    ['d'] = {
+        {0, 0, 0, 1, 0},
+        {0, 0, 0, 1, 0},
+        {0, 1, 1, 1, 0},
+        {1, 0, 0, 1, 0},
+        {0, 1, 1, 1, 0},
+    },
+    ['e'] = {
+        {0, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
+        {1, 1, 1, 1, 0},
+        {1, 0, 0, 0, 0},
+        {0, 1, 1, 1, 0},
+    },
+    ['f'] = {
+        {0, 0, 1, 1, 0},
+        {0, 1, 0, 0, 0},
+        {1, 1, 1, 1, 0},
+        {0, 1, 0, 0, 0},
+        {0, 1, 0, 0, 0},
+    },
+    ['p'] = {
+        {1, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
+        {1, 1, 1, 0, 0},
+        {1, 0, 0, 0, 0},
+        {1, 0, 0, 0, 0},
+    },
+    ['o'] = {
+        {0, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
+        {1, 0, 0, 1, 0},
+        {1, 0, 0, 1, 0},
+        {0, 1, 1, 0, 0},
+    },
+};
+
+static Olivec_Font default_font = {
+    .glyphs = &default_font_glyphs[0][0][0],
+    .width = DEFAULT_FONT_WIDTH,
+    .height = DEFAULT_FONT_HEIGHT,
+};
+
+typedef struct {
     uint32_t *pixels;
     size_t width;
     size_t height;
@@ -37,6 +109,7 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
 // Implement olivec_line in terms of olivec_triangle. This may make it easier to implement variable thiccness.
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
+OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 
 // The point of this function is to produce two ranges x1..x2 and y1..y2 that are guaranteed to be safe to iterate over the canvas of size pixels_width by pixels_height without any boundary checks.
 //
@@ -256,6 +329,26 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
             for (int x = s1; x <= s2; ++x) {
                 if (0 <= x && (size_t) x < oc.width) {
                     olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
+                }
+            }
+        }
+    }
+}
+
+OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, Olivec_Font font, size_t glyph_size, uint32_t color)
+{
+    for (size_t i = 0; *text; ++i, ++text) {
+        int gx = tx + i*font.width*glyph_size;
+        int gy = ty;
+        const char *glyph = &font.glyphs[(*text)*sizeof(char)*font.width*font.height];
+        for (int dy = 0; (size_t) dy < font.height; ++dy) {
+            for (int dx = 0; (size_t) dx < font.width; ++dx) {
+                int px = gx + dx*glyph_size;
+                int py = gy + dy*glyph_size;
+                if (0 <= px && px < (int) oc.width && 0 <= py && py < (int) oc.height) {
+                    if (glyph[dy*font.width + dx]) {
+                        olivec_rect(oc, px, py, glyph_size, glyph_size, color);
+                    }
                 }
             }
         }
