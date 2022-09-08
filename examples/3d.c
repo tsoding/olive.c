@@ -168,7 +168,7 @@ defer:
 #include <time.h>
 #include <unistd.h>
 
-#define SCALE_DOWN_FACTOR 40
+#define SCALE_DOWN_FACTOR 5
 static_assert(WIDTH%SCALE_DOWN_FACTOR == 0, "WIDTH must be divisible by the SCALE_DOWN_FACTOR");
 #define SCALED_DOWN_WIDTH (WIDTH/SCALE_DOWN_FACTOR)
 static_assert(HEIGHT%SCALE_DOWN_FACTOR == 0, "HEIGHT must be divisible by the SCALE_DOWN_FACTOR");
