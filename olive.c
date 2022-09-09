@@ -185,15 +185,15 @@ OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, 
 
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2)
 {
-    uint32_t r1 = OLIVEC_RED(*c1); // ((*c1)>>(0*8))&0xFF;
-    uint32_t g1 = OLIVEC_GREEN(*c1); // ((*c1)>>(1*8))&0xFF;
-    uint32_t b1 = OLIVEC_BLUE(*c1); // ((*c1)>>(2*8))&0xFF;
-    uint32_t a1 = OLIVEC_ALPHA(*c1); // ((*c1)>>(3*8))&0xFF;
+    uint32_t r1 = OLIVEC_RED(*c1);
+    uint32_t g1 = OLIVEC_GREEN(*c1);
+    uint32_t b1 = OLIVEC_BLUE(*c1);
+    uint32_t a1 = OLIVEC_ALPHA(*c1);
 
-    uint32_t r2 = OLIVEC_RED(c2); //(c2>>(0*8))&0xFF;
-    uint32_t g2 = OLIVEC_GREEN(c2); //(c2>>(1*8))&0xFF;
-    uint32_t b2 = OLIVEC_BLUE(c2); //(c2>>(2*8))&0xFF;
-    uint32_t a2 = OLIVEC_ALPHA(c2); //(c2>>(3*8))&0xFF;
+    uint32_t r2 = OLIVEC_RED(c2);
+    uint32_t g2 = OLIVEC_GREEN(c2);
+    uint32_t b2 = OLIVEC_BLUE(c2);
+    uint32_t a2 = OLIVEC_ALPHA(c2);
 
     r1 = (r1*(255 - a2) + r2*a2)/255; if (r1 > 255) r1 = 255;
     g1 = (g1*(255 - a2) + g2*a2)/255; if (g1 > 255) g1 = 255;
