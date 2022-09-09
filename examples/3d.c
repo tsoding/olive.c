@@ -183,6 +183,7 @@ char color_to_char(uint32_t pixel)
     size_t r = (0x000000FF&pixel)>>(8*0);
     size_t g = (0x0000FF00&pixel)>>(8*1);
     size_t b = (0x00FF0000&pixel)>>(8*2);
+    // TODO: brightness should take into account tranparency as well
     size_t bright = r;
     if (bright < g) bright = g;
     if (bright < b) bright = b;
