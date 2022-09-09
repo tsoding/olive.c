@@ -159,7 +159,7 @@ defer:
 #include <time.h>
 #include <unistd.h>
 
-#define SCALE_DOWN_FACTOR 40
+#define SCALE_DOWN_FACTOR 20
 static_assert(WIDTH%SCALE_DOWN_FACTOR == 0, "WIDTH must be divisible by the SCALE_DOWN_FACTOR");
 #define SCALED_DOWN_WIDTH (WIDTH/SCALE_DOWN_FACTOR)
 static_assert(HEIGHT%SCALE_DOWN_FACTOR == 0, "HEIGHT must be divisible by the SCALE_DOWN_FACTOR");
@@ -169,22 +169,18 @@ char char_canvas[SCALED_DOWN_WIDTH*SCALED_DOWN_HEIGHT];
 
 char color_to_char(uint32_t pixel)
 {
-    char table[] = " .:a@#";
-    size_t n = sizeof(table) - 1;
-    size_t r = (0x000000FF&pixel)>>(8*0);
-    size_t g = (0x0000FF00&pixel)>>(8*1);
-    size_t b = (0x00FF0000&pixel)>>(8*2);
+    size_t r = OLIVEC_RED(pixel);
+    size_t g = OLIVEC_GREEN(pixel);
+    size_t b = OLIVEC_BLUE(pixel);
+    // TODO: brightness should take into account tranparency as well
     size_t bright = r;
     if (bright < g) bright = g;
     if (bright < b) bright = b;
+
+    char table[] = " .:a@#";
+    size_t n = sizeof(table) - 1;
     return table[bright*n/256];
 }
-
-#define OLIVEC_RED(color)   (((color)&0x000000FF)>>(8*0))
-#define OLIVEC_GREEN(color) (((color)&0x0000FF00)>>(8*1))
-#define OLIVEC_BLUE(color)  (((color)&0x00FF0000)>>(8*2))
-#define OLIVEC_ALPHA(color) (((color)&0xFF000000)>>(8*3))
-#define OLIVEC_RGBA(r, g, b, a) ((((r)&0xFF)<<(8*0)) | (((g)&0xFF)<<(8*1)) | (((b)&0xFF)<<(8*2)) | (((a)&0xFF)<<(8*3)))
 
 uint32_t compress_pixels_chunk(Olivec_Canvas oc)
 {
