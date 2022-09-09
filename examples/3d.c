@@ -1,4 +1,4 @@
-// This example renders a rotating triangle.
+// This example renders a rotating 3D cube made out of circles.
 // This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
 // native with SDL, WebAssembly with HTML5 canvas, etc.
 #define OLIVEC_IMPLEMENTATION
