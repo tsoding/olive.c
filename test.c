@@ -26,6 +26,7 @@
         exit(1); \
     } while (0)
 
+// TODO: custom size for different tests
 #define WIDTH 128
 #define HEIGHT 128
 
