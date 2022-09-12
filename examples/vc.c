@@ -96,10 +96,11 @@ char color_to_char(uint32_t pixel)
     size_t r = OLIVEC_RED(pixel);
     size_t g = OLIVEC_GREEN(pixel);
     size_t b = OLIVEC_BLUE(pixel);
-    // TODO: brightness should take into account tranparency as well
+    size_t a = OLIVEC_ALPHA(pixel);
     size_t bright = r;
     if (bright < g) bright = g;
     if (bright < b) bright = b;
+    bright = bright*a/255;
 
     char table[] = " .:a@#";
     size_t n = sizeof(table) - 1;
