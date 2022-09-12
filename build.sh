@@ -2,15 +2,25 @@
 
 set -xe
 
-mkdir -p ./bin/
+build_vc_example() {
+    NAME=$1
 
-clang -Wall -Wextra -ggdb -o ./bin/test -Ithirdparty test.c -lm
-clang -Wall -Wextra -ggdb -o ./bin/gallery -Ithirdparty -I. examples/gallery.c
+    clang -Os -fno-builtin -Wall -Wextra -Wswitch-enum --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--export=init -Wl,--allow-undefined -I. -I./build/ -I./thirdparty/ -o ./build/$NAME.wasm -DPLATFORM=WASM_PLATFORM ./examples/$NAME.c
+    clang -Wall -Wextra -ggdb -I. -I./build/ -I./thirdparty/ -o ./build/$NAME.sdl -DPLATFORM=SDL_PLATFORM ./examples/$NAME.c -lm -lSDL2
+    clang -Wall -Wextra -ggdb -I. -I./build/ -I./thirdparty/ -o ./build/$NAME.term -DPLATFORM=TERM_PLATFORM ./examples/$NAME.c -lm
+}
 
-clang -Os -fno-builtin -Wall -Wextra -Wswitch-enum --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined  -o ./bin/triangle.wasm -I. -DPLATFORM=WASM_PLATFORM ./examples/triangle.c
-clang -O2 -Wall -Wextra -ggdb -I. -o ./bin/triangle.sdl -DPLATFORM=SDL_PLATFORM ./examples/triangle.c -lm -lSDL2
-clang -O2 -Wall -Wextra -ggdb -I. -o ./bin/triangle.term -DPLATFORM=TERM_PLATFORM ./examples/triangle.c -lm
+mkdir -p ./build/
 
-clang -Os -fno-builtin -Wall -Wextra -Wswitch-enum --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined  -o ./bin/3d.wasm -I. -DPLATFORM=WASM_PLATFORM ./examples/3d.c
-clang -O2 -Wall -Wextra -ggdb -I. -o ./bin/3d.sdl -DPLATFORM=SDL_PLATFORM ./examples/3d.c -lm -lSDL2
-clang -O2 -Wall -Wextra -ggdb -I. -o ./bin/3d.term -DPLATFORM=TERM_PLATFORM ./examples/3d.c -lm
+clang -Wall -Wextra -ggdb -o ./build/test -Ithirdparty test.c -lm &
+clang -Wall -Wextra -ggdb -o ./build/gallery -Ithirdparty -I. examples/gallery.c &
+clang -Wall -Wextra -ggdb -o ./build/png2c -Ithirdparty png2c.c -lm &
+wait
+
+mkdir -p ./build/assets/
+./build/png2c ./assets/tsodinPog.png > ./build/assets/tsodinPog.c
+
+build_vc_example triangle &
+build_vc_example 3d &
+build_vc_example squish &
+wait # TODO: the whole script must fail if one of the jobs fails

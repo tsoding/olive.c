@@ -14,7 +14,7 @@ Simple 2D Graphics Library for C.
 
 > The truly reusable code is the one that you can simply copy-paste.
 
-The library itself does not require any special building. You can simple copy-paste [./olive.c](./olive.c) to your project and `#include` it. But you may want to build the binary tools for this project that are located in `./bin/`:
+The library itself does not require any special building. You can simple copy-paste [./olive.c](./olive.c) to your project and `#include` it. But you may want to build the binary tools for this project that are located in `./build/`:
 
 ```console
 $ ./build.sh
@@ -56,7 +56,7 @@ int main(void)
 ## Test the Library
 
 ```console
-$ ./bin/test
+$ ./build/test
 ```
 
 ### Update the test cases
@@ -64,13 +64,13 @@ $ ./bin/test
 If the expected behaviour of the library has changed in the way that breaks current test cases, you probably want to update them:
 
 ```console
-$ ./bin/test record
+$ ./build/test record
 ```
 
 ## Regenerate the Gallery Above
 
 ```console
-$ ./bin/gallery
+$ ./build/gallery
 ```
 
 ## WebAssembly Triangle Example

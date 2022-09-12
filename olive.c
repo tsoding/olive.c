@@ -34,8 +34,8 @@ static char default_font_glyphs[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = 
     },
     ['b'] = {
         {1, 0, 0, 0, 0},
-        {1, 0, 0, 0, 0},
         {1, 1, 1, 0, 0},
+        {1, 0, 0, 1, 0},
         {1, 0, 0, 1, 0},
         {1, 1, 1, 0, 0},
     },
@@ -99,7 +99,7 @@ typedef struct {
 #define OLIVEC_CANVAS_NULL ((Olivec_Canvas) {0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y)*(oc).stride + (x)]
 
-OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height);
+OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
 OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
@@ -128,13 +128,13 @@ OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t pixels_w
 
 #ifdef OLIVEC_IMPLEMENTATION
 
-OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height)
+OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride)
 {
     Olivec_Canvas oc = {
         .pixels = pixels,
         .width  = width,
         .height = height,
-        .stride = width,
+        .stride = stride,
     };
     return oc;
 }
@@ -361,9 +361,20 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
     }
 }
 
+// TODO: olivec_copy does not work correctly with dst out of bounds
+void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst)
+{
+    for (size_t y = 0; y < dst.height; ++y) {
+        for (size_t x = 0; x < dst.width; ++x) {
+            size_t nx = x*src.width/dst.width;
+            size_t ny = y*src.height/dst.height;
+            OLIVEC_PIXEL(dst, x, y) = OLIVEC_PIXEL(src, nx, ny);
+        }
+    }
+}
+
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: Copy canvas onto canvas
 // TODO: Rainbow Triangle
 // TODO: 3D triangles with z-buffering
 // TODO: 3D textures
