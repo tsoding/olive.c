@@ -17,6 +17,7 @@ function make_environment(...envs) {
     });
 }
 
+// TODO: deploy the WASM examples to GitHub pages
 // TODO: display all the VC examples on a single page
 WebAssembly.instantiateStreaming(fetch('./build/squish.wasm'), {
     "env": make_environment({
