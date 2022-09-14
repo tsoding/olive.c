@@ -285,6 +285,107 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
     }
 }
 
+uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3,
+                     int t1, int t2, int t3, int den)
+{
+    int64_t r1 = OLIVEC_RED(c1);
+    int64_t g1 = OLIVEC_GREEN(c1);
+    int64_t b1 = OLIVEC_BLUE(c1);
+    int64_t a1 = OLIVEC_ALPHA(c1);
+
+    int64_t r2 = OLIVEC_RED(c2);
+    int64_t g2 = OLIVEC_GREEN(c2);
+    int64_t b2 = OLIVEC_BLUE(c2);
+    int64_t a2 = OLIVEC_ALPHA(c2);
+
+    int64_t r3 = OLIVEC_RED(c3);
+    int64_t g3 = OLIVEC_GREEN(c3);
+    int64_t b3 = OLIVEC_BLUE(c3);
+    int64_t a3 = OLIVEC_ALPHA(c3);
+
+    int64_t r4 = (r1*t1 + r2*t2 + r3*t3)/den;
+    int64_t g4 = (g1*t1 + g2*t2 + g3*t3)/den;
+    int64_t b4 = (b1*t1 + b2*t2 + b3*t3)/den;
+    int64_t a4 = (a1*t1 + a2*t2 + a3*t3)/den;
+
+    return OLIVEC_RGBA(r4, g4, b4, a4);
+}
+
+void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
+                 int xp, int yp,
+                 int *u1, int *u2, int *det)
+{
+    *det = ((x1 - x3)*(y2 - y3) - (x2 - x3)*(y1 - y3));
+    *u1  = ((y2 - y3)*(xp - x3) + (x3 - x2)*(yp - y3));
+    *u2  = ((y3 - y1)*(xp - x3) + (x1 - x3)*(yp - y3));
+    // u3 = det - u1 - u2
+}
+
+OLIVECDEF void olivec_triangle3(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3,
+                                uint32_t c1, uint32_t c2, uint32_t c3)
+{
+    if (y1 > y2) {
+        OLIVEC_SWAP(int, x1, x2);
+        OLIVEC_SWAP(int, y1, y2);
+        OLIVEC_SWAP(int, c1, c2);
+    }
+
+    if (y2 > y3) {
+        OLIVEC_SWAP(int, x2, x3);
+        OLIVEC_SWAP(int, y2, y3);
+        OLIVEC_SWAP(int, c2, c3);
+    }
+
+    if (y1 > y2) {
+        OLIVEC_SWAP(int, x1, x2);
+        OLIVEC_SWAP(int, y1, y2);
+        OLIVEC_SWAP(int, c1, c2);
+    }
+
+    int dx12 = x2 - x1;
+    int dy12 = y2 - y1;
+    int dx13 = x3 - x1;
+    int dy13 = y3 - y1;
+
+    for (int y = y1; y <= y2; ++y) {
+        // TODO: move boundary checks outside of loops in olivec_fill_triangle
+        if (0 <= y && (size_t) y < oc.height) {
+            int s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
+            int s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
+            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
+            for (int x = s1; x <= s2; ++x) {
+                if (0 <= x && (size_t) x < oc.width) {
+                    int u1, u2, det;
+                    barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                    uint32_t color = mix_colors3(c1, c2, c3, u1, u2, det - u1 - u2, det);
+                    olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
+                }
+            }
+        }
+    }
+
+    int dx32 = x2 - x3;
+    int dy32 = y2 - y3;
+    int dx31 = x1 - x3;
+    int dy31 = y1 - y3;
+
+    for (int y = y2; y <= y3; ++y) {
+        if (0 <= y && (size_t) y < oc.height) {
+            int s1 = dy32 != 0 ? (y - y3)*dx32/dy32 + x3 : x3;
+            int s2 = dy31 != 0 ? (y - y3)*dx31/dy31 + x3 : x3;
+            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
+            for (int x = s1; x <= s2; ++x) {
+                if (0 <= x && (size_t) x < oc.width) {
+                    int u1, u2, det;
+                    barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                    uint32_t color = mix_colors3(c1, c2, c3, u1, u2, det - u1 - u2, det);
+                    olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
+                }
+            }
+        }
+    }
+}
+
 // TODO: AA for triangle
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {

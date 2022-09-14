@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{tikz}
+\begin{document}
+\section{Barycentric Coordinates}
+
+\def\xa{0} \def\ya{0}
+\def\xb{1} \def\yb{2}
+\def\xc{3} \def\yc{-1}
+\def\xp{1} \def\yp{0.25}
+\begin{center}
+\begin{tikzpicture}
+  \draw[gray, thick] (\xa,\ya) -- (\xb,\yb);
+  \draw[gray, thick] (\xb,\yb) -- (\xc,\yc);
+  \draw[gray, thick] (\xc,\yc) -- (\xa,\ya);
+  \draw[gray, thick, dotted] (\xa,\ya) -- (\xp,\yp);
+  \draw[gray, thick, dotted] (\xb,\yb) -- (\xp,\yp);
+  \draw[gray, thick, dotted] (\xc,\yc) -- (\xp,\yp);
+  \filldraw[black] (\xa,\ya) circle (2pt) node[anchor=west]{$v_1$};
+  \filldraw[black] (\xb,\yb) circle (2pt) node[anchor=west]{$v_2$};
+  \filldraw[black] (\xc,\yc) circle (2pt) node[anchor=west]{$v_3$};
+  \filldraw[black] (\xp,\yp) circle (2pt) node[anchor=west]{$p$};
+\end{tikzpicture}
+\end{center}
+
+\begin{align}
+  U &= (u_1, u_2, u_3) \\
+  v_1 &= (x_1, y_1) \\
+  v_2 &= (x_2, y_2) \\
+  v_3 &= (x_3, y_3) \\
+  p   &= (x_p, y_p)
+\end{align}
+
+The Barycentric coordinates can be defined in terms of the following relationships:
+
+\begin{align}
+  \begin{cases}
+  & u_1 + u_2 + u_3 = 1 \\
+  & u_1x_1 + u_2x_2 + u_3x_3 = x_p \\
+  & u_1y_1 + u_2y_2 + u_3y_3 = y_p
+  \end{cases}
+\end{align}
+
+
+Let's reduce the amount of varibles in these equations:
+
+\begin{align}
+  & u_3 = 1 - u_1 - u_2 \\
+  & \begin{cases}
+    u_1(x_1 - x_3) + u_2(x_2 - x_3) &= x_p - x_3 \\
+    u_1(y_1 - y_3) + u_2(y_2 - y_3) &= y_p - y_3 \\
+  \end{cases}
+\end{align}
+
+Now we can turn the system of equations into matrix form:
+
+\begin{align}
+  & T =
+  \begin{bmatrix}
+    x_1 - x_3 & x_2 - x_3 \\
+    y_1 - y_3 & y_2 - y_3 \\
+  \end{bmatrix} \\
+  & U = \begin{bmatrix}
+    u1 \\ u2 \\
+  \end{bmatrix}\\
+  & R = \begin{bmatrix}
+    x_p - x_3 \\
+    y_p - y_3 \\
+  \end{bmatrix} \\
+  & D = 1 \\
+  & T \cdot U = R \cdot D
+\end{align}
+
+So the solution is
+
+\begin{align}
+  U = T^{-1} \cdot R
+\end{align}
+
+So the main effort goes towards finding $T^{-1}$
+
+\begin{align}
+  & T^{-1} = \frac{adj(T)}{det(T)} \\
+  & det(T) = (x_1 - x_3)(y_2 - y_3) - (x_2 - x_3)(y_1 - y_3) \\
+  & adj(T) = \begin{bmatrix}
+    y_2 - y_3 & x_3 - x_2 \\
+    y_3 - y_1 & x_1 - x_3 \\
+  \end{bmatrix} \\
+  & T^{-1} = \frac{D}{det(T)} \cdot \begin{bmatrix}
+    y_2 - y_3 & x_3 - x_2 \\
+    y_3 - y_1 & x_1 - x_3 \\
+  \end{bmatrix} \\
+  & T^{-1}\cdot R = \frac{D}{det(T)} \cdot \begin{bmatrix}
+    (y_2 - y_3)(x_p - x_3) + (x_3 - x_2)(y_p - y_3) \\
+    (y_3 - y_1)(x_p - x_3) + (x_1 - x_3)(y_p - y_3) \\
+  \end{bmatrix}
+\end{align}
+
+So, the final formula you need to find $(u_1, u_2, u_3)$ given points $v_1, v_2, v_3, p$ is
+
+\begin{align}
+  u_1 &= \frac{(y_2 - y_3)(x_p - x_3) + (x_3 - x_2)(y_p - y_3)}{(x_1 - x_3)(y_2 - y_3) - (x_2 - x_3)(y_1 - y_3)} \\
+  u_2 &= \frac{(y_3 - y_1)(x_p - x_3) + (x_1 - x_3)(y_p - y_3)}{(x_1 - x_3)(y_2 - y_3) - (x_2 - x_3)(y_1 - y_3)} \\
+  u_3 &= 1 - u_2 - u_1
+\end{align}
+
+\end{document}
+
