@@ -13,10 +13,8 @@ build_vc_example() {
 
 mkdir -p ./build/
 
-clang -Wall -Wextra -ggdb -o ./build/test -Ithirdparty test.c -lm &
-clang -Wall -Wextra -ggdb -o ./build/gallery -Ithirdparty -I. examples/gallery.c &
-clang -Wall -Wextra -ggdb -o ./build/png2c -Ithirdparty png2c.c -lm &
-wait
+clang -Wall -Wextra -ggdb -o ./build/test -Ithirdparty test.c -lm
+clang -Wall -Wextra -ggdb -o ./build/png2c -Ithirdparty png2c.c -lm
 
 mkdir -p ./build/assets/
 ./build/png2c ./assets/tsodinPog.png > ./build/assets/tsodinPog.c

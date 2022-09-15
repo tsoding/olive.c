@@ -51,6 +51,7 @@ static void *context_realloc(void *oldp, size_t oldsz, size_t newsz)
 #include "olive.c"
 
 #define BACKGROUND_COLOR 0xFF202020
+#define FOREGROUND_COLOR 0xFF2020FF
 #define RED_COLOR 0xFF2020AA
 #define GREEN_COLOR 0xFF20AA20
 #define BLUE_COLOR 0xFFAA2020
@@ -262,12 +263,92 @@ Olivec_Canvas test_alpha_blending(void)
     return oc;
 }
 
+Olivec_Canvas test_checker_example(void)
+{
+    int width = 800;
+    int height = 600;
+    int cols = (8*2);
+    int rows = (6*2);
+    int cell_width = (width/cols);
+    int cell_height = (height/rows);
+    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
+    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+
+    olivec_fill(oc, BACKGROUND_COLOR);
+
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < cols; ++x) {
+            uint32_t color = BACKGROUND_COLOR;
+            if ((x + y)%2 == 0) {
+                color = 0xFF2020FF;
+            }
+            olivec_rect(oc, x*cell_width, y*cell_height, cell_width, cell_height, color);
+        }
+    }
+
+    return oc;
+}
+
+Olivec_Canvas test_circle_example(void)
+{
+    int width = 800;
+    int height = 600;
+    int cols = (8*2);
+    int rows = (6*2);
+    int cell_width = (width/cols);
+    int cell_height = (height/rows);
+    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
+    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    olivec_fill(oc, BACKGROUND_COLOR);
+
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < cols; ++x) {
+            float u = (float)x/cols;
+            float v = (float)y/rows;
+            float t = (u + v)/2;
+
+            int radius = cell_width;
+            if (cell_height < radius) radius = cell_height;
+
+            olivec_circle(oc,
+                          x*cell_width + cell_width/2, y*cell_height + cell_height/2,
+                          (size_t) (radius/8*(1 - t) + radius/2*t),
+                          FOREGROUND_COLOR);
+        }
+    }
+
+    return oc;
+}
+
+Olivec_Canvas test_lines_example(void)
+{
+    int width = 800;
+    int height = 600;
+    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
+    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_line(oc, 0, 0, width, height, FOREGROUND_COLOR);
+    olivec_line(oc, width, 0, 0, height, FOREGROUND_COLOR);
+    olivec_line(oc, 0, 0, width/4, height, 0xFF20FF20);
+    olivec_line(oc, width/4, 0, 0, height, 0xFF20FF20);
+    olivec_line(oc, width, 0, width/4*3, height, 0xFF20FF20);
+    olivec_line(oc, width/4*3, 0, width, height, 0xFF20FF20);
+    olivec_line(oc, 0, height/2, width, height/2, 0xFFFF3030);
+    olivec_line(oc, width/2, 0, width/2, height, 0xFFFF3030);
+
+    return oc;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_fill_rect),
     DEFINE_TEST_CASE(test_fill_circle),
     DEFINE_TEST_CASE(test_draw_line),
     DEFINE_TEST_CASE(test_fill_triangle),
     DEFINE_TEST_CASE(test_alpha_blending),
+    DEFINE_TEST_CASE(test_checker_example),
+    DEFINE_TEST_CASE(test_circle_example),
+    DEFINE_TEST_CASE(test_lines_example),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
