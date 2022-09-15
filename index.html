@@ -1,21 +1,32 @@
 <html>
   <head>
     <title>Olive.c</title>
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
     <h1>Olive.c Demos</h1>
+    <p>Olive.c is a simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel.</p>
+    <p>Below is a bunch of demos written in C using this library compiled to WebAssembly. Every frame of the animations is generated pixel by pixel on CPU without using any special GPU APIs like OpenGL, Metal, etc. </p>
+    <p>The source code of the library and the demos is available on GitHub: <a href="https://github.com/tsoding/olive.c">https://github.com/tsoding/olive.c</a></p>
+
     <h2 id="demo-triangle"><a href="#demo-triangle">Triangle</a></h2>
+    <p>Rainbow triangle together with a transparent circle. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/examples/triangle.c">examples/triangle.c</a></p>
     <canvas id="app-triangle"></canvas>
+
     <h2 id="demo-3d"><a href="#demo-3d">3D</a></h2>
+    <p>A bunch of 3D points projected onto your 2D screen plus a text with a builtin monospaced font. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/examples/3d.c">examples/3d.c</a></p>
     <canvas id="app-3d"></canvas>
+
     <h2 id="demo-squish"><a href="#demo-squish">Squish</a></h2>
+    <p>Resizing images on the fly. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/examples/squish.c">examples/squish.c</a></p>
     <canvas id="app-squish"></canvas>
-    <script src="vc.js"></script>
+
+    <script src="js/vc.js"></script>
     <script>
-      startExample("app-triangle", "./build/triangle.wasm");
-      startExample("app-3d", "./build/3d.wasm");
-      startExample("app-squish", "./build/squish.wasm");
+      startExample("app-triangle", "./wasm/triangle.wasm");
+      startExample("app-3d", "./wasm/3d.wasm");
+      startExample("app-squish", "./wasm/squish.wasm");
     </script>
   </body>
 </html>
-<!-- TODO: deploy the WASM examples to GitHub pages -->

@@ -1,0 +1,68 @@
+@font-face {
+    font-family: 'LibreBaskerville';
+    src: url('../fonts/LibreBaskerville-Regular.ttf') format('truetype');
+}
+body {
+    background: #181818;
+    color: #F0F0F0;
+    font-family: LibreBaskerville;
+    margin: auto;
+    max-width: 960px;
+    font-size: 16px;
+}
+p {
+    padding-bottom: 20px;
+    line-height: 1.5;
+}
+h1 {
+    font-size: 40px;
+    text-align: center;
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+h2 {
+    font-size: 28px;
+    text-align: left;
+    padding-top: 20px;
+    padding-bottom: 40px;
+}
+h2 a {
+    color: #F0F0F0;
+}
+kbd {
+    display: inline-block;
+    font-family: monospace;
+    padding: 3px 5px;
+    background: #303030;
+    line-height: 10px;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 5px;
+}
+code {
+    display: inline-block;
+    font-family: monospace;
+}
+ul {
+    padding-bottom: 20px;
+    list-style: inside square;
+}
+ul li {
+    padding-bottom: 10px;
+}
+.plot {
+    width: 100%;
+    padding-bottom: 20px;
+}
+a {
+    color: #9090EE;
+    text-decoration: none;
+}
+.author {
+    text-align: center;
+    padding-bottom: 40px;
+    font-style: italic;
+}
+.author a {
+    color: #F0F0F0;
+}
