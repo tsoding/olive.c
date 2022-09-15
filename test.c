@@ -369,6 +369,7 @@ int main(int argc, char **argv)
         } else {
             if (replay_test_case(program_path, actual_canvas, test_cases[i].expected_file_path, test_cases[i].actual_file_path, test_cases[i].diff_file_path) == REPLAY_ERRORED) return_defer(1);
         }
+        arena_reset(&default_arena);
     }
 defer:
     arena_free(&default_arena);
