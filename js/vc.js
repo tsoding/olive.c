@@ -18,10 +18,10 @@ const libm = {
     "sqrtf": Math.sqrt,
 };
 
-async function startExample(elementId, wasmPath) {
+async function startDemo(elementId, wasmPath) {
     const app = document.getElementById(elementId);
     if (app === null) {
-        console.error(`Could not find element ${elementId}. Skipping example ${wasmPath}...`);
+        console.error(`Could not find element ${elementId}. Skipping demo ${wasmPath}...`);
         return;
     }
 
