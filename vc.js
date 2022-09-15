@@ -1,5 +1,3 @@
-// TODO: deploy the WASM examples to GitHub pages
-
 function make_environment(...envs) {
     return new Proxy(envs, {
         get(target, prop, receiver) {
@@ -54,7 +52,3 @@ async function startExample(elementId, wasmPath) {
     }
     window.requestAnimationFrame(first);
 }
-
-startExample("app-triangle", "./build/triangle.wasm");
-startExample("app-3d", "./build/3d.wasm");
-startExample("app-squish", "./build/squish.wasm");
