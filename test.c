@@ -59,30 +59,6 @@ static void *context_realloc(void *oldp, size_t oldsz, size_t newsz)
 
 #define TEST_DIR_PATH "./test"
 
-char hexchar(uint8_t x)
-{
-    if (x < 10) return x + '0';
-    if (x < 16) return x - 10 + 'A';
-    UNREACHABLE("hexchar");
-}
-
-// TODO: make display_hexcolor allocate memory in the arena
-const char *display_hexcolor(uint32_t c)
-{
-    static char buffer[1 + 8 + 1];
-    buffer[0] = '#';
-    buffer[1] = hexchar((c>>(1*4))&0xF);
-    buffer[2] = hexchar((c>>(0*4))&0xF);
-    buffer[3] = hexchar((c>>(3*4))&0xF);
-    buffer[4] = hexchar((c>>(2*4))&0xF);
-    buffer[5] = hexchar((c>>(5*4))&0xF);
-    buffer[6] = hexchar((c>>(4*4))&0xF);
-    buffer[7] = hexchar((c>>(7*4))&0xF);
-    buffer[8] = hexchar((c>>(6*4))&0xF);
-    buffer[9] = '\0';
-    return buffer;
-}
-
 bool record_test_case(Olivec_Canvas actual_canvas, const char *expected_file_path)
 {
     if (!stbi_write_png(expected_file_path, actual_canvas.width, actual_canvas.height, 4, actual_canvas.pixels, sizeof(uint32_t)*actual_canvas.stride)) {
