@@ -58,16 +58,3 @@ If the expected behaviour of the library has changed in the way that breaks curr
 ```console
 $ ./build/test record
 ```
-
-## Regenerate the Gallery Above
-
-```console
-$ ./build/gallery
-```
-
-## WebAssembly Triangle Example
-
-```console
-$ python3 -m http.server 6969
-$ iexplore.exe http://localhost:6969/
-```
