@@ -316,6 +316,23 @@ Olivec_Canvas test_lines_example(void)
     return oc;
 }
 
+Olivec_Canvas canvas_alloc(size_t width, size_t height)
+{
+    uint32_t *pixels = context_alloc(sizeof(uint32_t)*width*height);
+    return olivec_canvas(pixels, width, height, width);
+}
+
+Olivec_Canvas test_hello_world_text_rendering(void)
+{
+    size_t size = 5;
+    const char *text = "hello, world";
+    size_t text_len = strlen(text);
+    Olivec_Canvas oc = canvas_alloc(400, 150);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    olivec_text(oc, text, oc.width/2 - DEFAULT_FONT_WIDTH*size*text_len/2, oc.height/2 - DEFAULT_FONT_HEIGHT*size/2, default_font, size, FOREGROUND_COLOR);
+    return oc;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_fill_rect),
     DEFINE_TEST_CASE(test_fill_circle),
@@ -325,6 +342,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_checker_example),
     DEFINE_TEST_CASE(test_circle_example),
     DEFINE_TEST_CASE(test_lines_example),
+    DEFINE_TEST_CASE(test_hello_world_text_rendering),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
