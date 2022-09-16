@@ -4,6 +4,8 @@
 \begin{document}
 \section{Barycentric Coordinates}
 
+Barycentric coordinates enable you to evenly interpolate between three values among the verticies of a triangle.
+
 \def\xa{0} \def\ya{0}
 \def\xb{1} \def\yb{2}
 \def\xc{3} \def\yc{-1}
@@ -67,8 +69,7 @@ Now we can turn the system of equations into matrix form:
     x_p - x_3 \\
     y_p - y_3 \\
   \end{bmatrix} \\
-  & D = 1 \\
-  & T \cdot U = R \cdot D
+  & T \cdot U = R
 \end{align}
 
 So the solution is
@@ -77,7 +78,7 @@ So the solution is
   U = T^{-1} \cdot R
 \end{align}
 
-So the main effort goes towards finding $T^{-1}$
+The main effort goes towards finding $T^{-1}$
 
 \begin{align}
   & T^{-1} = \frac{adj(T)}{det(T)} \\
@@ -86,17 +87,17 @@ So the main effort goes towards finding $T^{-1}$
     y_2 - y_3 & x_3 - x_2 \\
     y_3 - y_1 & x_1 - x_3 \\
   \end{bmatrix} \\
-  & T^{-1} = \frac{D}{det(T)} \cdot \begin{bmatrix}
+  & T^{-1} = \frac{1}{det(T)} \cdot \begin{bmatrix}
     y_2 - y_3 & x_3 - x_2 \\
     y_3 - y_1 & x_1 - x_3 \\
   \end{bmatrix} \\
-  & T^{-1}\cdot R = \frac{D}{det(T)} \cdot \begin{bmatrix}
+  & T^{-1}\cdot R = \frac{1}{det(T)} \cdot \begin{bmatrix}
     (y_2 - y_3)(x_p - x_3) + (x_3 - x_2)(y_p - y_3) \\
     (y_3 - y_1)(x_p - x_3) + (x_1 - x_3)(y_p - y_3) \\
   \end{bmatrix}
 \end{align}
 
-So, the final formula you need to find $(u_1, u_2, u_3)$ given points $v_1, v_2, v_3, p$ is
+And the final formula you need to find $(u_1, u_2, u_3)$ given points $v_1, v_2, v_3, p$~is
 
 \begin{align}
   u_1 &= \frac{(y_2 - y_3)(x_p - x_3) + (x_3 - x_2)(y_p - y_3)}{(x_1 - x_3)(y_2 - y_3) - (x_2 - x_3)(y_1 - y_3)} \\
