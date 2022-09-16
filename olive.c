@@ -286,9 +286,9 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
     }
 }
 
-uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3,
-                     int t1, int t2, int t3, int den)
+uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int t1, int t2, int t3, int den)
 {
+    // TODO: estimate how much overflows are an issue in integer only environment
     int64_t r1 = OLIVEC_RED(c1);
     int64_t g1 = OLIVEC_GREEN(c1);
     int64_t b1 = OLIVEC_BLUE(c1);
