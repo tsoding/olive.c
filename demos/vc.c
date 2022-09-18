@@ -1,3 +1,34 @@
+// C implementation of the Virtual Console (VC) for demos.
+//
+// # Usage
+// ```c
+// // demo.c
+// // NOTE: Must be always 800x600
+// #define WIDTH 800
+// #define HEIGHT 600
+// static uint32_t pixels[WIDTH*HEIGHT];
+//
+// uint32_t *render(float dt)
+// {
+//     // ...
+//     // ... render into pixels ...
+//     // ...
+//     return pixels;
+// }
+//
+// // vc.c expectes render() to be defined an also supplies it's own entry point
+// // if needed (some platforms like WASM_PLATFORM do not have the main()
+// // entry point)
+// #include "vc.c"
+// ```
+//
+// # Build
+// ```console
+// $ clang -o demo.sdl -DPLATFORM=SDL_PLATFORM demo.c -lSDL2
+// $ clang -o demo.term -DPLATFORM=TERM_PLATFORM demo.c
+// $ clang -fno-builtin --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined -o demo.wasm -DPLATFORM=WASM_PLATFORM demo.c
+// ```
+
 #define WASM_PLATFORM 0
 #define SDL_PLATFORM 1
 #define TERM_PLATFORM 2
