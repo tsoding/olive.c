@@ -4,6 +4,7 @@
 // ```c
 // // demo.c
 // // NOTE: Must be always 800x600
+// // TODO: unhardcode the demos resolution
 // #define WIDTH 800
 // #define HEIGHT 600
 // static uint32_t pixels[WIDTH*HEIGHT];
