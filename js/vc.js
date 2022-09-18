@@ -32,8 +32,6 @@ async function startDemo(elementId, wasmPath) {
         "env": make_environment(libm)
     });
 
-    w.instance.exports.init();
-
     let prev = null;
     function first(timestamp) {
         prev = timestamp;

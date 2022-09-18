@@ -12,10 +12,6 @@ float sinf(float);
 uint32_t dst[WIDTH*HEIGHT];
 float global_time = 0;
 
-void init(void)
-{
-}
-
 #define SRC_SCALE 3
 
 uint32_t *render(float dt)

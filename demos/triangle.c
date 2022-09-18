@@ -35,8 +35,6 @@ static inline void rotate_point(float *x, float *y)
     *y = sinf(dir)*mag + HEIGHT/2;
 }
 
-void init(void) {}
-
 uint32_t *render(float dt)
 {
     Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);

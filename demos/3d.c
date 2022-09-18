@@ -38,8 +38,6 @@ uint32_t circle_colors[] = {
 static uint32_t pixels[WIDTH*HEIGHT];
 static float angle = 0;
 
-void init(void) {}
-
 uint32_t *render(float dt)
 {
     angle += 0.25*PI*dt;

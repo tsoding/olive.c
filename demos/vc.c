@@ -17,8 +17,6 @@ int main(void)
     SDL_Texture *texture = NULL;
 
     {
-        init();
-
         if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
 
         window = SDL_CreateWindow("Olivec", 0, 0, WIDTH, HEIGHT, 0);
@@ -145,8 +143,6 @@ SCALE_DOWN_FACTOR);
 
 int main(void)
 {
-    init();
-
     for (;;) {
         compress_pixels(render(1.f/60.f));
         for (size_t y = 0; y < SCALED_DOWN_HEIGHT; ++y) {
