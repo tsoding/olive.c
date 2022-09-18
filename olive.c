@@ -560,7 +560,6 @@ void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst)
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: Rainbow Triangle
 // TODO: 3D triangles with z-buffering
 // TODO: 3D textures
 // TODO: Stencil
