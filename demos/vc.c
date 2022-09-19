@@ -39,13 +39,26 @@
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
 
+SDL_Texture *texture = NULL;
+size_t actual_width = 0;
+size_t actual_height = 0;
+
+bool resize_texture(SDL_Renderer *renderer, size_t new_width, size_t new_height)
+{
+    if (texture != NULL) SDL_DestroyTexture(texture);
+    actual_width = new_width;
+    actual_height = new_height;
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, actual_width, actual_height);
+    if (texture == NULL) return false;
+    return true;
+}
+
 int main(void)
 {
     int result = 0;
 
     SDL_Window *window = NULL;
     SDL_Renderer *renderer = NULL;
-    SDL_Texture *texture = NULL;
 
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
@@ -55,9 +68,6 @@ int main(void)
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
         if (renderer == NULL) return_defer(1);
-
-        texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
-        if (texture == NULL) return_defer(1);
 
         Uint32 prev = SDL_GetTicks();
         for (;;) {
@@ -72,12 +82,17 @@ int main(void)
 
             // Render the texture
             SDL_Rect window_rect = {0, 0, WIDTH, HEIGHT};
-            uint32_t *pixels_src = render(dt);
+            Olivec_Canvas oc_src = render(dt);
+            if (oc_src.width != actual_width || oc_src.height != actual_height) {
+                if (!resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
+            }
             void *pixels_dst;
             int pitch;
             if (SDL_LockTexture(texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
             for (size_t y = 0; y < HEIGHT; ++y) {
-                memcpy(pixels_dst + y*pitch, pixels_src + y*WIDTH, WIDTH*sizeof(uint32_t));
+                // TODO: it would be call if Olivec_Canvas support pitch in bytes instead of pixels
+                // It would be more flexible
+                memcpy(pixels_dst + y*pitch, oc_src.pixels + y*WIDTH, WIDTH*sizeof(uint32_t));
             }
             SDL_UnlockTexture(texture);
 
@@ -171,6 +186,7 @@ void resize_char_canvas(size_t new_width, size_t new_height)
     scaled_down_height = actual_height/SCALE_DOWN_FACTOR;
     free(char_canvas);
     char_canvas = malloc(sizeof(*char_canvas)*scaled_down_width*scaled_down_height);
+    assert(char_canvas != NULL && "Just buy more RAM");
 }
 
 void compress_pixels(Olivec_Canvas oc)
