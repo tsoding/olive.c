@@ -3,8 +3,8 @@
 
 #include "./assets/tsodinPog.c"
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 960
+#define HEIGHT 720
 #define SCALE_DOWN_FACTOR 10
 
 float sinf(float);

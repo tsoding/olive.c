@@ -1,3 +1,4 @@
+// Browser runtime for the Demo Virtual Console
 function make_environment(...envs) {
     return new Proxy(envs, {
         get(target, prop, receiver) {
@@ -18,6 +19,26 @@ const libm = {
     "sqrtf": Math.sqrt,
 };
 
+let iota = 0;
+// TODO: nothing in this Canvas "declaration" states that iota's measure units are Uint32
+// Which is not useful for all kinds of structures. A more general approach would be to use Uint8 as the measure units.
+const CANVAS_PIXELS = iota++;
+const CANVAS_WIDTH  = iota++;
+const CANVAS_HEIGHT = iota++;
+const CANVAS_STRIDE = iota++;
+const CANVAS_SIZE   = iota++;
+
+function readCanvasFromMemory(memory_buffer, canvas_ptr)
+{
+    const canvas_memory = new Uint32Array(memory_buffer, canvas_ptr, CANVAS_SIZE);
+    return {
+        pixels: canvas_memory[CANVAS_PIXELS],
+        width: canvas_memory[CANVAS_WIDTH],
+        height: canvas_memory[CANVAS_HEIGHT],
+        stride: canvas_memory[CANVAS_STRIDE],
+    };
+}
+
 async function startDemo(elementId, wasmPath) {
     const app = document.getElementById(elementId);
     if (app === null) {
@@ -25,12 +46,12 @@ async function startDemo(elementId, wasmPath) {
         return;
     }
 
-    app.width = 800;
-    app.height = 600;
     const ctx = app.getContext("2d");
     const w = await WebAssembly.instantiateStreaming(fetch(wasmPath), {
         "env": make_environment(libm)
     });
+
+    const heap_base = w.instance.exports.__heap_base.value;
 
     let prev = null;
     function first(timestamp) {
@@ -41,9 +62,17 @@ async function startDemo(elementId, wasmPath) {
         const dt = timestamp - prev;
         prev = timestamp;
 
-        const pixels = w.instance.exports.render(dt*0.001);
         const buffer = w.instance.exports.memory.buffer;
-        const image = new ImageData(new Uint8ClampedArray(buffer, pixels, app.width*app.height*4), app.width);
+        w.instance.exports.render(heap_base, dt*0.001);
+        const canvas = readCanvasFromMemory(buffer, heap_base);
+        if (canvas.width != canvas.stride) {
+            // TODO: maybe we can preallocate a Uint8ClampedArray on JavaScript side and just copy the canvas data there to bring width and stride to the same value?
+            console.error(`Canvas width (${canvas.width}) is not equal to its stride (${canvas.stride}). Unfortunately we can't easily support that in a browser because ImageData simply does not accept stride. Welcome to 2022.`);
+            return;
+        }
+        const image = new ImageData(new Uint8ClampedArray(buffer, canvas.pixels, canvas.width*canvas.height*4), canvas.width);
+        app.width = canvas.width;
+        app.height = canvas.height;
         ctx.putImageData(image, 0, 0);
         window.requestAnimationFrame(loop);
     }

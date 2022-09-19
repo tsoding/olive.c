@@ -11,11 +11,8 @@ float cosf(float x);
 
 #define PI 3.14159265359
 
-// #define FACTOR 100
-// #define WIDTH (16*FACTOR)
-// #define HEIGHT (9*FACTOR)
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 960
+#define HEIGHT 720
 #define SCALE_DOWN_FACTOR 10
 #define BACKGROUND_COLOR 0xFF181818
 #define GRID_COUNT 10

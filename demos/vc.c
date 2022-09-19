@@ -63,7 +63,7 @@ int main(void)
     {
         if (SDL_Init(SDL_INIT_VIDEO) < 0) return_defer(1);
 
-        window = SDL_CreateWindow("Olivec", 0, 0, WIDTH, HEIGHT, 0);
+        window = SDL_CreateWindow("Olivec", 0, 0, 0, 0, 0);
         if (window == NULL) return_defer(1);
 
         renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
@@ -81,18 +81,19 @@ int main(void)
             while (SDL_PollEvent(&event)) if (event.type == SDL_QUIT) return_defer(0);
 
             // Render the texture
-            SDL_Rect window_rect = {0, 0, WIDTH, HEIGHT};
             Olivec_Canvas oc_src = render(dt);
             if (oc_src.width != actual_width || oc_src.height != actual_height) {
                 if (!resize_texture(renderer, oc_src.width, oc_src.height)) return_defer(1);
+                SDL_SetWindowSize(window, actual_width, actual_height);
             }
             void *pixels_dst;
             int pitch;
+            SDL_Rect window_rect = {0, 0, actual_width, actual_height};
             if (SDL_LockTexture(texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
-            for (size_t y = 0; y < HEIGHT; ++y) {
+            for (size_t y = 0; y < actual_height; ++y) {
                 // TODO: it would be call if Olivec_Canvas support pitch in bytes instead of pixels
                 // It would be more flexible
-                memcpy(pixels_dst + y*pitch, oc_src.pixels + y*WIDTH, WIDTH*sizeof(uint32_t));
+                memcpy(pixels_dst + y*pitch, oc_src.pixels + y*actual_width, actual_width*sizeof(uint32_t));
             }
             SDL_UnlockTexture(texture);
 
