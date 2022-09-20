@@ -547,6 +547,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 }
 
 // TODO: olivec_copy does not work correctly with dst out of bounds
+// TODO: bilinear interpolation for olivec_copy
 void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst)
 {
     for (size_t y = 0; y < dst.height; ++y) {

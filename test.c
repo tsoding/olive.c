@@ -346,8 +346,6 @@ Test_Case test_cases[] = {
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
-// TODO: add tests for text rendering
-
 int main(int argc, char **argv)
 {
     int result = 0;

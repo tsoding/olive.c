@@ -29,6 +29,10 @@
 // $ clang -fno-builtin --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined -o demo.wasm -DPLATFORM=WASM_PLATFORM demo.c
 // ```
 
+
+// TODO: prefix VC api elements with vc_*
+// Like vc_render, VC_WASM_PLATFORM, VC_SCALE_DOWN_FACTOR, etc.
+
 #define WASM_PLATFORM 0
 #define SDL_PLATFORM 1
 #define TERM_PLATFORM 2
