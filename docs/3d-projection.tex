@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{amsmath}
+\begin{document}
+\section{3D Projection}
+\def\minY{-2} \def\maxY{2}
+\def\minZ{-2} \def\maxZ{6}
+\def\screenZ{2}
+\def\eyeZ{0} \def\eyeY{0}
+\def\pZ{4} \def\pY{1}
+\begin{tikzpicture}
+  \draw[-stealth] (\minZ,0) -- (\maxZ,0) node[above]{$z$};
+  \draw[-stealth] (0,\minY) -- (0,\maxY) node[above]{$x$};
+  \draw[fill] (\eyeZ, \eyeY) circle (.5ex) node[above]{eye $E$};
+  \draw[dotted,thick] (\screenZ, \minY) -- (\screenZ, \maxY) node[above]{screen};
+  \draw[dotted] (\eyeZ, \eyeY) -- (\pZ, \pY);
+  \draw[dotted] (\eyeZ, \eyeY) -- (\pZ, -\pY);
+  \draw[fill] (\pZ, \pY) circle (.5ex) node[above]{$p_1$};
+  \draw[fill] (\pZ, -\pY) circle (.5ex) node[above]{$p_2$};
+  \draw[fill] (\screenZ, {(\pY - \eyeY)/(\pZ - \eyeZ)*(\screenZ - \eyeZ) + \eyeY}) circle (.5ex) node[above]{$p_1'$};
+  \draw[fill] (\screenZ, {-(\pY - \eyeY)/(\pZ - \eyeZ)*(\screenZ - \eyeZ) + \eyeY}) circle (.5ex) node[above]{$p_2'$};
+\end{tikzpicture}
+
+When we refer to $p$ we mean either $p_1$ or $p_2$. When we refer to $p'$ we mean either $p'_1$ or $p'_2$.
+
+\begin{align}
+  & p = (p_x, p_y, p_z) \\
+  & p'= (p'_x, p'_y, S_z) \\
+  & E = (E_x, E_y, E_z) \\
+\end{align}
+
+The formula to find $p'$
+
+\begin{align}
+  & p_y' = \frac{(p_y - E_y)(S_z - E_z)}{(p_z - E_z)} + E_y \\
+  & p_x' = \frac{(p_x - E_x)(S_z - E_z)}{(p_z - E_z)} + E_x \\
+\end{align}
+
+If we assume that $E = (0, 0, 0)$ and $S_z = 1$
+
+\begin{align}
+  & p_y' = \frac{p_y}{p_z} \\
+  & p_x' = \frac{p_x}{p_z} \\
+\end{align}
+
+\end{document}
