@@ -1,12 +1,11 @@
 // This example renders a rotating triangle.
 // This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
 // native with SDL, WebAssembly with HTML5 canvas, etc.
-#define OLIVEC_IMPLEMENTATION
-#include "olive.c"
+#define SCALE_DOWN_FACTOR 20
+#include "vc.c"
 
 #define WIDTH 960
 #define HEIGHT 720
-#define SCALE_DOWN_FACTOR 20
 #define BACKGROUND_COLOR 0xFF181818
 #define CIRCLE_RADIUS 100
 #define CIRCLE_COLOR 0x99AA2020
@@ -76,4 +75,3 @@ Olivec_Canvas render(float dt)
     return oc;
 }
 
-#include "vc.c"

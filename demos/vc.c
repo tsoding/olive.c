@@ -3,6 +3,11 @@
 // # Usage
 // ```c
 // // demo.c
+// // vc.c expectes render() to be defined and also supplies it's own entry point
+// // if needed (some platforms like WASM_PLATFORM do not have the main()
+// // entry point)
+// #include "vc.c"
+//
 // #define WIDTH 800
 // #define HEIGHT 600
 // static uint32_t pixels[WIDTH*HEIGHT];
@@ -15,11 +20,6 @@
 //     // ...
 //     return oc;
 // }
-//
-// // vc.c expectes render() to be defined an also supplies it's own entry point
-// // if needed (some platforms like WASM_PLATFORM do not have the main()
-// // entry point)
-// #include "vc.c"
 // ```
 //
 // # Build
@@ -29,13 +29,21 @@
 // $ clang -fno-builtin --target=wasm32 --no-standard-libraries -Wl,--no-entry -Wl,--export=render -Wl,--allow-undefined -o demo.wasm -DPLATFORM=WASM_PLATFORM demo.c
 // ```
 
+#define OLIVEC_IMPLEMENTATION
+#include <olive.c>
 
 // TODO: prefix VC api elements with vc_*
 // Like vc_render, VC_WASM_PLATFORM, VC_SCALE_DOWN_FACTOR, etc.
 
+Olivec_Canvas render(float dt);
+
 #define WASM_PLATFORM 0
 #define SDL_PLATFORM 1
 #define TERM_PLATFORM 2
+
+#ifndef PLATFORM
+#error "Please define PLATFORM macro"
+#endif
 
 #if PLATFORM == SDL_PLATFORM
 #include <stdio.h>
