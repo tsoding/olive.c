@@ -65,7 +65,7 @@ bool resize_texture(SDL_Renderer *renderer, size_t new_width, size_t new_height)
     return true;
 }
 
-int main(void)
+int main(int argc, char **args)
 {
     int result = 0;
 
