@@ -51,6 +51,7 @@ async function startDemo(elementId, wasmPath) {
         "env": make_environment(libm)
     });
 
+    // TODO: if __heap_base not found tell the user to compile their wasm module with -Wl,--export=__heap_base
     const heap_base = w.instance.exports.__heap_base.value;
 
     let prev = null;
