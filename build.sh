@@ -27,4 +27,5 @@ mkdir -p ./build/assets/
 build_vc_demo triangle &
 build_vc_demo 3d &
 build_vc_demo squish &
+build_vc_demo triangle3d &
 wait # TODO: the whole script must fail if one of the jobs fails
