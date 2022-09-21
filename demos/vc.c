@@ -147,6 +147,7 @@ static size_t scaled_down_width = 0;
 static size_t scaled_down_height = 0;
 static char *char_canvas = 0;
 
+// TODO: use ANSI terminal colors for color_to_char
 char color_to_char(uint32_t pixel)
 {
     size_t r = OLIVEC_RED(pixel);

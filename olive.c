@@ -387,12 +387,16 @@ uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int t1, int t2, int 
     int64_t b3 = OLIVEC_BLUE(c3);
     int64_t a3 = OLIVEC_ALPHA(c3);
 
-    int64_t r4 = (r1*t1 + r2*t2 + r3*t3)/den;
-    int64_t g4 = (g1*t1 + g2*t2 + g3*t3)/den;
-    int64_t b4 = (b1*t1 + b2*t2 + b3*t3)/den;
-    int64_t a4 = (a1*t1 + a2*t2 + a3*t3)/den;
+    if (den != 0) {
+        int64_t r4 = (r1*t1 + r2*t2 + r3*t3)/den;
+        int64_t g4 = (g1*t1 + g2*t2 + g3*t3)/den;
+        int64_t b4 = (b1*t1 + b2*t2 + b3*t3)/den;
+        int64_t a4 = (a1*t1 + a2*t2 + a3*t3)/den;
 
-    return OLIVEC_RGBA(r4, g4, b4, a4);
+        return OLIVEC_RGBA(r4, g4, b4, a4);
+    }
+
+    return 0;
 }
 
 void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
