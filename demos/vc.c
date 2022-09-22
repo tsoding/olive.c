@@ -228,6 +228,7 @@ int main(void)
                 // We can do stuff like putc('<', stdout); putc('>', stdout);
                 putc(char_canvas[y*scaled_down_width + x], stdout);
                 putc(char_canvas[y*scaled_down_width + x], stdout);
+                // TODO: explore the idea of figuring out aspect ratio of the character using escape ANSI codes of the terminal and rendering the image accordingly
             }
             putc('\n', stdout);
         }
