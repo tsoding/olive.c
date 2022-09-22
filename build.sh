@@ -24,6 +24,22 @@ mkdir -p ./build/assets/
 ./build/png2c ./assets/tsodinPog.png > ./build/assets/tsodinPog.c
 
 # Build VC demos
+# Check if SDL2 has been installed
+if ! [ -x "$(which sdl2-config)" ];then
+	set +x
+	echo "You have not installed SDL2"
+	echo "Checking 'https://wiki.libsdl.org/Installation' to install SDL2"
+	echo "Or quick look the installation guide from libsdl:"
+	echo "$ git clone https://github.com/libsdl-org/SDL"
+	echo "$ cd SDL"
+	echo "$ mkdir build"
+	echo "$ cd build"
+	echo "$ ../configure"
+	echo "$ make"
+	echo "$ sudo make install"
+	exit 1
+fi
+
 build_vc_demo triangle &
 build_vc_demo 3d &
 build_vc_demo squish &
