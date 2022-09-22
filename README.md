@@ -4,6 +4,8 @@
 
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel. Visit [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) to see some demos.
 
+The name is pronounced as "olivets" which is a Ukrainian word for "pencil" ("олівець").
+
 ## Quick Start
 
 > The truly reusable code is the one that you can simply copy-paste.
