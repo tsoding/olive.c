@@ -1,5 +1,7 @@
 # Olive.c
 
+**IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
+
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel. Visit [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) to see some demos.
 
 ## Quick Start
