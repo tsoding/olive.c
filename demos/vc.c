@@ -103,7 +103,7 @@ int main(void)
             SDL_Rect window_rect = {0, 0, actual_width, actual_height};
             if (SDL_LockTexture(texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
             for (size_t y = 0; y < actual_height; ++y) {
-                // TODO: it would be call if Olivec_Canvas support pitch in bytes instead of pixels
+                // TODO: it would be cool if Olivec_Canvas supported pitch in bytes instead of pixels
                 // It would be more flexible
                 memcpy(pixels_dst + y*pitch, oc_src.pixels + y*actual_width, actual_width*sizeof(uint32_t));
             }
