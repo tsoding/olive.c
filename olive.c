@@ -261,6 +261,8 @@ OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, 
     return oc;
 }
 
+// TODO: custom pixel formats
+// Maybe we can store pixel format info in Olivec_Canvas
 #define OLIVEC_RED(color)   (((color)&0x000000FF)>>(8*0))
 #define OLIVEC_GREEN(color) (((color)&0x0000FF00)>>(8*1))
 #define OLIVEC_BLUE(color)  (((color)&0x00FF0000)>>(8*2))
