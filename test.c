@@ -296,6 +296,28 @@ Olivec_Canvas test_circle_example(void)
     return oc;
 }
 
+Olivec_Canvas test_lines_circle(void)
+{
+    int width = 800;
+    int height = 600;
+    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
+    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    olivec_fill(oc, BACKGROUND_COLOR);
+
+    size_t n = 20;
+    float angle = 2*M_PI/n;
+    float length = 200;
+    float x1 = width/2;
+    float y1 = height/2;
+    for (size_t i = 0; i < n; ++i) {
+        float x2 = x1 + cosf(angle*i)*length;
+        float y2 = y1 + sinf(angle*i)*length;
+        olivec_line(oc, x1, y1, x2, y2, 0xFF1818FF);
+    }
+
+    return oc;
+}
+
 Olivec_Canvas test_lines_example(void)
 {
     int width = 800;
@@ -343,6 +365,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_circle_example),
     DEFINE_TEST_CASE(test_lines_example),
     DEFINE_TEST_CASE(test_hello_world_text_rendering),
+    DEFINE_TEST_CASE(test_lines_circle),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

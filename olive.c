@@ -337,35 +337,35 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
 // TODO: AA for line
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color)
 {
-    // TODO: fix the olivec_draw_line stairs
     int dx = x2 - x1;
     int dy = y2 - y1;
 
-    if (dx != 0) {
-        int c = y1 - dy*x1/dx;
+    if (dx == 0 && dy == 0) {
+        olivec_blend_color(&OLIVEC_PIXEL(oc, x1, y1), color);
+        return;
+    }
 
-        if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
+    if (OLIVEC_ABS(int, dx) > OLIVEC_ABS(int, dy)) {
+        if (x1 > x2) {
+            OLIVEC_SWAP(int, x1, x2);
+            OLIVEC_SWAP(int, y1, y2);
+        }
         for (int x = x1; x <= x2; ++x) {
+            int y = dy*(x - x1)/dx + y1;
             // TODO: move boundary checks out side of the loops in olivec_draw_line
-            if (0 <= x && x < (int) oc.width) {
-                int sy1 = dy*x/dx + c;
-                int sy2 = dy*(x + 1)/dx + c;
-                if (sy1 > sy2) OLIVEC_SWAP(int, sy1, sy2);
-                for (int y = sy1; y <= sy2; ++y) {
-                    if (0 <= y && y < (int) oc.height) {
-                        olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
-                    }
-                }
+            if (0 <= x && x < (int) oc.width && 0 <= y && y < (int) oc.height) {
+                olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
             }
         }
     } else {
-        int x = x1;
-        if (0 <= x && x < (int) oc.width) {
-            if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
-            for (int y = y1; y <= y2; ++y) {
-                if (0 <= y && y < (int) oc.height) {
-                    olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
-                }
+        if (y1 > y2) {
+            OLIVEC_SWAP(int, x1, x2);
+            OLIVEC_SWAP(int, y1, y2);
+        }
+        for (int y = y1; y <= y2; ++y) {
+            int x = dx*(y - y1)/dy + x1;
+            if (0 <= x && x < (int) oc.width && 0 <= y && y < (int) oc.height) {
+                olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
             }
         }
     }
