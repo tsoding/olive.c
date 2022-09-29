@@ -361,6 +361,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_draw_line),
     DEFINE_TEST_CASE(test_fill_triangle),
     DEFINE_TEST_CASE(test_alpha_blending),
+    // TODO: make the output images of the example tests smaller
     DEFINE_TEST_CASE(test_checker_example),
     DEFINE_TEST_CASE(test_circle_example),
     DEFINE_TEST_CASE(test_lines_example),
