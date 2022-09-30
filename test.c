@@ -69,6 +69,12 @@ bool record_test_case(Olivec_Canvas actual_canvas, const char *expected_file_pat
     return(true);
 }
 
+Olivec_Canvas canvas_alloc(size_t width, size_t height)
+{
+    uint32_t *pixels = context_alloc(sizeof(uint32_t)*width*height);
+    return olivec_canvas(pixels, width, height, width);
+}
+
 typedef enum {
     REPLAY_PASSED,
     REPLAY_FAILED,
@@ -97,8 +103,7 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
         return(REPLAY_FAILED);
     }
 
-    uint32_t *diff_pixels = context_alloc(sizeof(uint32_t)*actual_canvas.width*actual_canvas.height);
-    Olivec_Canvas diff_canvas = olivec_canvas(diff_pixels, actual_canvas.width, actual_canvas.height, actual_canvas.width);
+    Olivec_Canvas diff_canvas = canvas_alloc(actual_canvas.width, actual_canvas.height);
 
     bool failed = false;
     for (size_t y = 0; y < actual_canvas.height; ++y) {
@@ -157,8 +162,7 @@ Olivec_Canvas test_fill_rect(void)
 {
     size_t width = 128;
     size_t height = 128;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
     olivec_rect(oc, width/2 - width/8, height/2 - height/8, width/4, height/4, RED_COLOR);
     olivec_rect(oc, width - 1, height - 1, -width/2, -height/2, GREEN_COLOR);
@@ -170,8 +174,7 @@ Olivec_Canvas test_fill_circle(void)
 {
     size_t width = 128;
     size_t height = 128;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
     olivec_circle(oc, 0, 0, width/2, RED_COLOR);
     olivec_circle(oc, width/2, height/2, width/4, BLUE_COLOR);
@@ -183,8 +186,7 @@ Olivec_Canvas test_draw_line(void)
 {
     size_t width = 128;
     size_t height = 128;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
     olivec_line(oc, 0, 0, width, height, RED_COLOR);
     olivec_line(oc, width, 0, 0, height, BLUE_COLOR);
@@ -196,8 +198,7 @@ Olivec_Canvas test_fill_triangle(void)
 {
     size_t width = 128;
     size_t height = 128;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
 
     olivec_fill(oc, BACKGROUND_COLOR);
 
@@ -229,8 +230,7 @@ Olivec_Canvas test_alpha_blending(void)
 {
     size_t width = 128;
     size_t height = 128;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
     olivec_rect(oc, 0, 0, width*3/4, height*3/4, RED_COLOR);
     olivec_rect(oc, width-1, height-1, -width*3/4, -height*3/4, 0x5520AA20);
@@ -247,8 +247,7 @@ Olivec_Canvas test_checker_example(void)
     int rows = (6*2);
     int cell_width = (width/cols);
     int cell_height = (height/rows);
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
 
     olivec_fill(oc, BACKGROUND_COLOR);
 
@@ -273,8 +272,7 @@ Olivec_Canvas test_circle_example(void)
     int rows = (6*2);
     int cell_width = (width/cols);
     int cell_height = (height/rows);
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
 
     for (int y = 0; y < rows; ++y) {
@@ -300,8 +298,7 @@ Olivec_Canvas test_lines_circle(void)
 {
     int width = 800;
     int height = 600;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
 
     size_t n = 20;
@@ -322,8 +319,7 @@ Olivec_Canvas test_lines_example(void)
 {
     int width = 800;
     int height = 600;
-    uint32_t *pixels = context_alloc(width*height*sizeof(uint32_t));
-    Olivec_Canvas oc = olivec_canvas(pixels, width, height, width);
+    Olivec_Canvas oc = canvas_alloc(width, height);
 
     olivec_fill(oc, BACKGROUND_COLOR);
     olivec_line(oc, 0, 0, width, height, FOREGROUND_COLOR);
@@ -336,12 +332,6 @@ Olivec_Canvas test_lines_example(void)
     olivec_line(oc, width/2, 0, width/2, height, 0xFFFF3030);
 
     return oc;
-}
-
-Olivec_Canvas canvas_alloc(size_t width, size_t height)
-{
-    uint32_t *pixels = context_alloc(sizeof(uint32_t)*width*height);
-    return olivec_canvas(pixels, width, height, width);
 }
 
 Olivec_Canvas test_hello_world_text_rendering(void)
