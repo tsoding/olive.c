@@ -344,8 +344,8 @@ Olivec_Canvas test_lines_circle(void)
 
 Olivec_Canvas test_lines_example(void)
 {
-    int width = 800;
-    int height = 600;
+    int width = 800/2;
+    int height = 600/2;
     Olivec_Canvas oc = canvas_alloc(width, height);
 
     olivec_fill(oc, BACKGROUND_COLOR);
@@ -378,7 +378,6 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(test_draw_line),
     DEFINE_TEST_CASE(test_fill_triangle),
     DEFINE_TEST_CASE(test_alpha_blending),
-    // TODO: make the output images of the example tests smaller
     DEFINE_TEST_CASE(test_checker_example),
     DEFINE_TEST_CASE(test_circle_example),
     DEFINE_TEST_CASE(test_lines_example),
