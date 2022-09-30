@@ -266,8 +266,8 @@ Olivec_Canvas test_alpha_blending(void)
 
 Olivec_Canvas test_checker_example(void)
 {
-    int width = 800;
-    int height = 600;
+    int width = 800/2;
+    int height = 600/2;
     int cols = (8*2);
     int rows = (6*2);
     int cell_width = (width/cols);
