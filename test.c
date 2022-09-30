@@ -321,14 +321,16 @@ Olivec_Canvas test_circle_example(void)
 
 Olivec_Canvas test_lines_circle(void)
 {
-    int width = 800;
-    int height = 600;
+    int width = 800/2;
+    int height = 600/2;
     Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
 
     size_t n = 20;
     float angle = 2*M_PI/n;
-    float length = 200;
+    float length = width;
+    if (length > height) length = height;
+    length /= 3;
     float x1 = width/2;
     float y1 = height/2;
     for (size_t i = 0; i < n; ++i) {
