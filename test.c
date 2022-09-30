@@ -95,6 +95,18 @@ typedef enum {
     REPLAY_ERRORED,
 } Replay_Result;
 
+static inline size_t min_size(size_t a, size_t b)
+{
+    if (a < b) return a;
+    return b;
+}
+
+static inline size_t max_size(size_t a, size_t b)
+{
+    if (a > b) return a;
+    return b;
+}
+
 Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_canvas, const char *expected_file_path, const char *actual_file_path, const char *diff_file_path)
 {
     Olivec_Canvas expected_canvas;
@@ -106,21 +118,20 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
         return(REPLAY_ERRORED);
     }
 
-    // TODO: it would be cool if "unexpected image size" error would generate the image diff as well
-    // The size of the image diff should be max(expected_width, actual_width) by max(expected_height, actual_height) with the paddings on the right and bottom edges filled with ERROR_COLOR
+    bool failed = false;
+
     if (expected_canvas.width != actual_canvas.width || expected_canvas.height != actual_canvas.height) {
-        fprintf(stderr, "%s: TEST FAILURE: unexpected image size. Expected %zux%zu, but got %zux%zu\n",
-                expected_file_path,
-                expected_canvas.width, expected_canvas.height,
-                actual_canvas.width, actual_canvas.height);
-        return(REPLAY_FAILED);
+        failed = true;
     }
 
-    Olivec_Canvas diff_canvas = canvas_alloc(actual_canvas.width, actual_canvas.height);
+    Olivec_Canvas diff_canvas =
+        canvas_alloc(
+            max_size(expected_canvas.width, actual_canvas.width),
+            max_size(expected_canvas.height, actual_canvas.height));
+    olivec_fill(diff_canvas, ERROR_COLOR);
 
-    bool failed = false;
-    for (size_t y = 0; y < actual_canvas.height; ++y) {
-        for (size_t x = 0; x < actual_canvas.width; ++x) {
+    for (size_t y = 0; y < min_size(expected_canvas.height, actual_canvas.height); ++y) {
+        for (size_t x = 0; x < min_size(expected_canvas.width, actual_canvas.width); ++x) {
             uint32_t expected_pixel = OLIVEC_PIXEL(expected_canvas, x, y);
             uint32_t actual_pixel = OLIVEC_PIXEL(actual_canvas, x, y);
             if (expected_pixel != actual_pixel) {
@@ -133,7 +144,6 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
     }
 
     if (failed) {
-        fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
 
         if (!canvas_save(actual_canvas, actual_file_path)) {
             fprintf(stderr, "ERROR: could not write image file with actual pixels %s: %s\n", actual_file_path, strerror(errno));
@@ -145,8 +155,10 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
             return(REPLAY_ERRORED);
         }
 
-        fprintf(stderr, "%s: HINT: See actual image %s\n", expected_file_path, actual_file_path);
-        fprintf(stderr, "%s: HINT: See diff image %s\n", expected_file_path, diff_file_path);
+        fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
+        fprintf(stderr, "%s:   Expected: %s\n", expected_file_path, expected_file_path);
+        fprintf(stderr, "%s:   Actual:   %s\n", expected_file_path, actual_file_path);
+        fprintf(stderr, "%s:   Diff:     %s\n", expected_file_path, diff_file_path);
         fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", expected_file_path, program_path);
         return(REPLAY_FAILED);
     }
