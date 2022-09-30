@@ -163,7 +163,7 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
         return(REPLAY_FAILED);
     }
 
-    printf("%s OK\n", expected_file_path);
+    printf("%s: OK\n", expected_file_path);
 
     return(REPLAY_PASSED);
 }
