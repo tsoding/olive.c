@@ -59,9 +59,23 @@ static void *context_realloc(void *oldp, size_t oldsz, size_t newsz)
 
 #define TEST_DIR_PATH "./test"
 
+bool canvas_load(const char *file_path, Olivec_Canvas *oc)
+{
+    int width, height;
+    uint32_t *pixels = (uint32_t*) stbi_load(file_path, &width, &height, NULL, 4);
+    if (pixels == NULL) return false;
+    *oc = olivec_canvas(pixels, width, height, width);
+    return true;
+}
+
+bool canvas_save(Olivec_Canvas oc, const char *file_path)
+{
+    return stbi_write_png(file_path, oc.width, oc.height, 4, oc.pixels, sizeof(uint32_t)*oc.stride);
+}
+
 bool record_test_case(Olivec_Canvas actual_canvas, const char *expected_file_path)
 {
-    if (!stbi_write_png(expected_file_path, actual_canvas.width, actual_canvas.height, 4, actual_canvas.pixels, sizeof(uint32_t)*actual_canvas.stride)) {
+    if (!canvas_save(actual_canvas, expected_file_path)) {
         fprintf(stderr, "ERROR: could not write file %s: %s\n", expected_file_path, strerror(errno));
         return(false);
     }
@@ -83,9 +97,8 @@ typedef enum {
 
 Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_canvas, const char *expected_file_path, const char *actual_file_path, const char *diff_file_path)
 {
-    int expected_width, expected_height;
-    uint32_t * expected_pixels = (uint32_t*) stbi_load(expected_file_path, &expected_width, &expected_height, NULL, 4);
-    if (expected_pixels == NULL) {
+    Olivec_Canvas expected_canvas;
+    if (!canvas_load(expected_file_path, &expected_canvas)) {
         fprintf(stderr, "%s: ERROR: could not read the file: %s\n", expected_file_path, strerror(errno));
         if (errno == ENOENT) {
             fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", expected_file_path, program_path);
@@ -93,13 +106,13 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
         return(REPLAY_ERRORED);
     }
 
-    Olivec_Canvas expected_canvas = olivec_canvas(expected_pixels, expected_width, expected_height, expected_width);
-
     // TODO: it would be cool if "unexpected image size" error would generate the image diff as well
     // The size of the image diff should be max(expected_width, actual_width) by max(expected_height, actual_height) with the paddings on the right and bottom edges filled with ERROR_COLOR
     if (expected_canvas.width != actual_canvas.width || expected_canvas.height != actual_canvas.height) {
-        fprintf(stderr, "%s: TEST FAILURE: unexpected image size. Expected %dx%d, but got %zux%zu\n",
-                expected_file_path, expected_width, expected_height, actual_canvas.width, actual_canvas.height);
+        fprintf(stderr, "%s: TEST FAILURE: unexpected image size. Expected %zux%zu, but got %zux%zu\n",
+                expected_file_path,
+                expected_canvas.width, expected_canvas.height,
+                actual_canvas.width, actual_canvas.height);
         return(REPLAY_FAILED);
     }
 
@@ -122,12 +135,12 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
     if (failed) {
         fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
 
-        if (!stbi_write_png(actual_file_path, actual_canvas.width, actual_canvas.height, 4, actual_canvas.pixels, sizeof(uint32_t)*actual_canvas.stride)) {
+        if (!canvas_save(actual_canvas, actual_file_path)) {
             fprintf(stderr, "ERROR: could not write image file with actual pixels %s: %s\n", actual_file_path, strerror(errno));
             return(REPLAY_ERRORED);
         }
 
-        if (!stbi_write_png(diff_file_path, diff_canvas.width, diff_canvas.height, 4, diff_canvas.pixels, sizeof(uint32_t)*diff_canvas.stride)) {
+        if (!canvas_save(diff_canvas, diff_file_path)) {
             fprintf(stderr, "ERROR: could not wrilte diff image file %s: %s\n", diff_file_path, strerror(errno));
             return(REPLAY_ERRORED);
         }
