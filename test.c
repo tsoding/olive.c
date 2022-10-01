@@ -139,7 +139,7 @@ Replay_Result run_test_case(const char *program_path, const Test_Case *tc)
     if (!canvas_stbi_load(expected_file_path, &expected_canvas)) {
         fprintf(stderr, "%s: ERROR: could not read %s: %s\n", tc->id, expected_file_path, stbi_failure_reason());
         if (errno == ENOENT) {
-            fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", tc->id, program_path);
+            fprintf(stderr, "%s: HINT: Consider running `$ %s update` to create it\n", tc->id, program_path);
         }
         return(REPLAY_ERRORED);
     }
@@ -185,7 +185,7 @@ Replay_Result run_test_case(const char *program_path, const Test_Case *tc)
         fprintf(stderr, "%s:   Expected: %s\n", tc->id, expected_file_path);
         fprintf(stderr, "%s:   Actual:   %s\n", tc->id, actual_file_path);
         fprintf(stderr, "%s:   Diff:     %s\n", tc->id, diff_file_path);
-        fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", tc->id, program_path);
+        fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s update`\n", tc->id, program_path);
         return(REPLAY_FAILED);
     }
 
