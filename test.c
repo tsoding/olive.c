@@ -59,7 +59,7 @@ static void *context_realloc(void *oldp, size_t oldsz, size_t newsz)
 
 #define TEST_DIR_PATH "./test"
 
-bool canvas_load(const char *file_path, Olivec_Canvas *oc)
+bool canvas_stbi_load(const char *file_path, Olivec_Canvas *oc)
 {
     int width, height;
     uint32_t *pixels = (uint32_t*) stbi_load(file_path, &width, &height, NULL, 4);
@@ -68,18 +68,38 @@ bool canvas_load(const char *file_path, Olivec_Canvas *oc)
     return true;
 }
 
-bool canvas_save(Olivec_Canvas oc, const char *file_path)
+bool canvas_stbi_save(Olivec_Canvas oc, const char *file_path)
 {
     return stbi_write_png(file_path, oc.width, oc.height, 4, oc.pixels, sizeof(uint32_t)*oc.stride);
 }
 
-bool record_test_case(Olivec_Canvas actual_canvas, const char *expected_file_path)
+typedef struct {
+    Olivec_Canvas (*generate_actual_canvas)(void);
+    const char *id;
+    const char *expected_file_path;
+    const char *actual_file_path;
+    const char *diff_file_path;
+} Test_Case;
+
+#define DEFINE_TEST_CASE(name) \
+    { \
+        .generate_actual_canvas = name, \
+        .id = #name, \
+        .expected_file_path = TEST_DIR_PATH "/" #name "_expected.png", \
+        .actual_file_path = TEST_DIR_PATH "/" #name "_actual.png", \
+        .diff_file_path = TEST_DIR_PATH "/" #name "_diff.png", \
+    }
+
+bool update_test_case(const Test_Case *tc)
 {
-    if (!canvas_save(actual_canvas, expected_file_path)) {
+    Olivec_Canvas actual_canvas = tc->generate_actual_canvas();
+    const char *expected_file_path = tc->expected_file_path;
+
+    if (!canvas_stbi_save(actual_canvas, expected_file_path)) {
         fprintf(stderr, "ERROR: could not write file %s: %s\n", expected_file_path, strerror(errno));
         return(false);
     }
-    printf("Generated %s\n", expected_file_path);
+    printf("%s: Generated %s\n", tc->id, expected_file_path);
     return(true);
 }
 
@@ -107,13 +127,19 @@ static inline size_t max_size(size_t a, size_t b)
     return b;
 }
 
-Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_canvas, const char *expected_file_path, const char *actual_file_path, const char *diff_file_path)
+Replay_Result run_test_case(const char *program_path, const Test_Case *tc)
 {
+    const char *expected_file_path = tc->expected_file_path;
+    const char *actual_file_path = tc->actual_file_path;
+    const char *diff_file_path = tc->diff_file_path;
+
+    Olivec_Canvas actual_canvas = tc->generate_actual_canvas();
+
     Olivec_Canvas expected_canvas;
-    if (!canvas_load(expected_file_path, &expected_canvas)) {
-        fprintf(stderr, "%s: ERROR: could not read the file: %s\n", expected_file_path, strerror(errno));
+    if (!canvas_stbi_load(expected_file_path, &expected_canvas)) {
+        fprintf(stderr, "%s: ERROR: could not read %s: %s\n", tc->id, expected_file_path, stbi_failure_reason());
         if (errno == ENOENT) {
-            fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", expected_file_path, program_path);
+            fprintf(stderr, "%s: HINT: Consider running `$ %s record` to create it\n", tc->id, program_path);
         }
         return(REPLAY_ERRORED);
     }
@@ -145,43 +171,28 @@ Replay_Result replay_test_case(const char *program_path, Olivec_Canvas actual_ca
 
     if (failed) {
 
-        if (!canvas_save(actual_canvas, actual_file_path)) {
+        if (!canvas_stbi_save(actual_canvas, actual_file_path)) {
             fprintf(stderr, "ERROR: could not write image file with actual pixels %s: %s\n", actual_file_path, strerror(errno));
             return(REPLAY_ERRORED);
         }
 
-        if (!canvas_save(diff_canvas, diff_file_path)) {
+        if (!canvas_stbi_save(diff_canvas, diff_file_path)) {
             fprintf(stderr, "ERROR: could not wrilte diff image file %s: %s\n", diff_file_path, strerror(errno));
             return(REPLAY_ERRORED);
         }
 
-        fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", expected_file_path);
-        fprintf(stderr, "%s:   Expected: %s\n", expected_file_path, expected_file_path);
-        fprintf(stderr, "%s:   Actual:   %s\n", expected_file_path, actual_file_path);
-        fprintf(stderr, "%s:   Diff:     %s\n", expected_file_path, diff_file_path);
-        fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", expected_file_path, program_path);
+        fprintf(stderr, "%s: TEST FAILURE: unexpected pixels in generated image\n", tc->id);
+        fprintf(stderr, "%s:   Expected: %s\n", tc->id, expected_file_path);
+        fprintf(stderr, "%s:   Actual:   %s\n", tc->id, actual_file_path);
+        fprintf(stderr, "%s:   Diff:     %s\n", tc->id, diff_file_path);
+        fprintf(stderr, "%s: HINT: If this behaviour is intentional confirm that by updating the image with `$ %s record`\n", tc->id, program_path);
         return(REPLAY_FAILED);
     }
 
-    printf("%s: OK\n", expected_file_path);
+    printf("%s: OK\n", tc->id);
 
     return(REPLAY_PASSED);
 }
-
-typedef struct {
-    Olivec_Canvas (*generate_actual_canvas)(void);
-    const char *expected_file_path;
-    const char *actual_file_path;
-    const char *diff_file_path;
-} Test_Case;
-
-#define DEFINE_TEST_CASE(name) \
-    { \
-        .generate_actual_canvas = name, \
-        .expected_file_path = TEST_DIR_PATH "/" #name "_expected.png", \
-        .actual_file_path = TEST_DIR_PATH "/" #name "_actual.png", \
-        .diff_file_path = TEST_DIR_PATH "/" #name "_diff.png", \
-    }
 
 Olivec_Canvas test_fill_rect(void)
 {
@@ -386,23 +397,168 @@ Test_Case test_cases[] = {
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
+const char *shift(int *argc, char ***argv)
+{
+    assert(*argc > 0);
+    const char *result = *argv[0];
+    *argc -= 1;
+    *argv += 1;
+    return result;
+}
+
+void list_available_tests(void)
+{
+    fprintf(stderr, "Available tests:\n");
+    for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
+        fprintf(stderr, "    %s\n", test_cases[i].id);
+    }
+}
+
+Test_Case *find_test_case_by_id(const char *id)
+{
+    for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
+        if (strcmp(test_cases[i].id, id) == 0) {
+            return &test_cases[i];
+        }
+    }
+    return NULL;
+}
+typedef struct {
+    int (*run)(const char *program_path, int argc, char **argv);
+    const char *id;
+    const char *description;
+} Subcmd;
+
+void usage(const char *program_path);
+
+int subcmd_run(const char *program_path, int argc, char **argv)
+{
+    if (argc <= 0) {
+        for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
+            if (run_test_case(program_path, &test_cases[i]) == REPLAY_ERRORED) return(1);
+            arena_reset(&default_arena);
+        }
+    } else {
+        const char *test_case_id = shift(&argc, &argv);
+        Test_Case *tc = find_test_case_by_id(test_case_id);
+        if (tc == NULL) {
+            list_available_tests();
+            fprintf(stderr, "ERROR: could not find test case `%s`\n", test_case_id);
+            return(1);
+        }
+
+        if (run_test_case(program_path, tc) == REPLAY_ERRORED) return(1);
+    }
+
+    return 0;
+}
+
+int subcmd_update(const char *program_path, int argc, char **argv)
+{
+    UNUSED(program_path);
+
+    if (argc <= 0) {
+        for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
+            if (!update_test_case(&test_cases[i])) return(1);
+            arena_reset(&default_arena);
+        }
+    } else {
+        const char *test_case_id = shift(&argc, &argv);
+        Test_Case *tc = find_test_case_by_id(test_case_id);
+        if (tc == NULL) {
+            list_available_tests();
+            fprintf(stderr, "ERROR: could not find test case `%s`\n", test_case_id);
+            return(1);
+        }
+
+        if (!update_test_case(tc)) return(1);
+    }
+
+    return 0;
+}
+
+int subcmd_list(const char *program_path, int argc, char **argv)
+{
+    UNUSED(program_path);
+    UNUSED(argc);
+    UNUSED(argv);
+    list_available_tests();
+    return 0;
+}
+
+int subcmd_help(const char *program_path, int argc, char **argv)
+{
+    UNUSED(argc);
+    UNUSED(argv);
+    usage(program_path);
+    return 0;
+}
+
+#define DEFINE_SUBCMD(name, desc) \
+    { \
+        .run = subcmd_##name, \
+        .id = #name, \
+        .description = desc, \
+    }
+
+Subcmd subcmds[] = {
+    DEFINE_SUBCMD(run, "Run the tests"),
+    DEFINE_SUBCMD(update, "Update the tests"),
+    DEFINE_SUBCMD(list, "List all available tests"),
+    DEFINE_SUBCMD(help, "Print this help message"),
+};
+#define SUBCMDS_COUNT (sizeof(subcmds)/sizeof(subcmds[0]))
+
+Subcmd *find_subcmd_by_id(const char *id)
+{
+    for (size_t i = 0; i < SUBCMDS_COUNT; ++i) {
+        if (strcmp(subcmds[i].id, id) == 0) {
+            return &subcmds[i];
+        }
+    }
+    return NULL;
+}
+
+void usage(const char *program_path)
+{
+    fprintf(stderr, "Usage: %s [Subcommand]\n", program_path);
+    fprintf(stderr, "Subcommands:\n");
+
+    int width = 0;
+    for (size_t i = 0; i < SUBCMDS_COUNT; ++i) {
+        int len = strlen(subcmds[i].id);
+        if (width < len) width = len;
+    }
+
+    for (size_t i = 0; i < SUBCMDS_COUNT; ++i) {
+        fprintf(stderr, "    %-*s - %s\n", width, subcmds[i].id, subcmds[i].description);
+    }
+}
+
 int main(int argc, char **argv)
 {
     int result = 0;
 
-    assert(argc >= 1);
-    const char *program_path = argv[0];
-    bool record = argc >= 2 && strcmp(argv[1], "record") == 0;
+    {
+        const char *program_path = shift(&argc,  &argv);
 
-    for (size_t i = 0; i < TEST_CASES_COUNT; ++i) {
-        Olivec_Canvas actual_canvas = test_cases[i].generate_actual_canvas();
-        if (record) {
-            if (!record_test_case(actual_canvas, test_cases[i].expected_file_path)) return_defer(1);
-        } else {
-            if (replay_test_case(program_path, actual_canvas, test_cases[i].expected_file_path, test_cases[i].actual_file_path, test_cases[i].diff_file_path) == REPLAY_ERRORED) return_defer(1);
+        if (argc <= 0) {
+            usage(program_path);
+            fprintf(stderr, "ERROR: no subcommand is provided\n");
+            return_defer(1);
         }
-        arena_reset(&default_arena);
+
+        const char *subcmd_id = shift(&argc, &argv);
+        Subcmd *subcmd = find_subcmd_by_id(subcmd_id);
+        if (subcmd != NULL) {
+            return_defer(subcmd->run(program_path, argc, argv));
+        } else {
+            usage(program_path);
+            fprintf(stderr, "ERROR: unknown subcommand `%s`\n", subcmd_id);
+            return_defer(1);
+        }
     }
+
 defer:
     arena_free(&default_arena);
     return result;
