@@ -83,7 +83,7 @@ typedef struct {
 
 #define DEFINE_TEST_CASE(name) \
     { \
-        .generate_actual_canvas = name, \
+        .generate_actual_canvas = test_##name, \
         .id = #name, \
         .expected_file_path = TEST_DIR_PATH "/" #name "_expected.png", \
         .actual_file_path = TEST_DIR_PATH "/" #name "_actual.png", \
@@ -384,16 +384,16 @@ Olivec_Canvas test_hello_world_text_rendering(void)
 }
 
 Test_Case test_cases[] = {
-    DEFINE_TEST_CASE(test_fill_rect),
-    DEFINE_TEST_CASE(test_fill_circle),
-    DEFINE_TEST_CASE(test_draw_line),
-    DEFINE_TEST_CASE(test_fill_triangle),
-    DEFINE_TEST_CASE(test_alpha_blending),
-    DEFINE_TEST_CASE(test_checker_example),
-    DEFINE_TEST_CASE(test_circle_example),
-    DEFINE_TEST_CASE(test_lines_example),
-    DEFINE_TEST_CASE(test_hello_world_text_rendering),
-    DEFINE_TEST_CASE(test_lines_circle),
+    DEFINE_TEST_CASE(fill_rect),
+    DEFINE_TEST_CASE(fill_circle),
+    DEFINE_TEST_CASE(draw_line),
+    DEFINE_TEST_CASE(fill_triangle),
+    DEFINE_TEST_CASE(alpha_blending),
+    DEFINE_TEST_CASE(checker_example),
+    DEFINE_TEST_CASE(circle_example),
+    DEFINE_TEST_CASE(lines_example),
+    DEFINE_TEST_CASE(hello_world_text_rendering),
+    DEFINE_TEST_CASE(lines_circle),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
