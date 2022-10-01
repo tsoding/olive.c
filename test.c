@@ -383,6 +383,21 @@ Olivec_Canvas test_hello_world_text_rendering(void)
     return oc;
 }
 
+Olivec_Canvas test_line_edge_cases(void)
+{
+    size_t width = 10;
+    size_t height = 10;
+    Olivec_Canvas oc = canvas_alloc(width, height);
+    olivec_fill(oc, BACKGROUND_COLOR);
+    // One pixel line
+    olivec_line(oc, width/2, height/2, width/2, height/2, FOREGROUND_COLOR);
+    // Out-of-bounds horizontally
+    olivec_line(oc, width + 10, height/2, width + 20, height/2, FOREGROUND_COLOR);
+    // Out-of-bounds vertically
+    olivec_line(oc, width/2, height + 10, width/2, height + 20, FOREGROUND_COLOR);
+    return oc;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(fill_rect),
     DEFINE_TEST_CASE(fill_circle),
@@ -394,6 +409,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(lines_example),
     DEFINE_TEST_CASE(hello_world_text_rendering),
     DEFINE_TEST_CASE(lines_circle),
+    DEFINE_TEST_CASE(line_edge_cases),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
