@@ -57,18 +57,22 @@ Even though the library does not require any special building, the tests and dem
 $ ./build.sh
 ```
 
-## Test the Library
+Run the tests:
 
 ```console
-$ ./build/test
+$ ./build/test run
 ```
-
-### Update the test cases
 
 If the expected behavior of the library has changed in the way that breaks current test cases, you probably want to update them:
 
 ```console
 $ ./build/test record
+```
+
+For more info see the help:
+
+```console
+$ ./build/test help
 ```
 
 ## Demos
