@@ -186,6 +186,7 @@ OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t hei
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
 OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
+// TODO: olivec_frame()
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 // TODO: lines with different thiccness
