@@ -401,14 +401,14 @@ Olivec_Canvas test_line_edge_cases(void)
 
 Olivec_Canvas test_frame(void)
 {
-    size_t width = 128;
+    size_t width = 256;
     size_t height = 128;
     Olivec_Canvas oc = canvas_alloc(width, height);
     olivec_fill(oc, BACKGROUND_COLOR);
 
     {
         size_t w = width/2;
-        size_t h = width/2;
+        size_t h = height/2;
         olivec_frame(oc, 0, 0, w, h, 1, RED_COLOR);
     }
 
@@ -419,7 +419,7 @@ Olivec_Canvas test_frame(void)
     // Odd thiccness
     {
         size_t w = width/2;
-        size_t h = width/2;
+        size_t h = height/2;
         size_t t = 5;
         olivec_frame(oc, width/2 - w/2, height/2 - h/2, w, h, t, WHITE_COLOR);
         olivec_frame(oc, width/2 - w/2, height/2 - h/2, w, h, 1, RED_COLOR);
@@ -427,8 +427,8 @@ Olivec_Canvas test_frame(void)
 
     // Even thiccness
     {
-        size_t w = width/4;
-        size_t h = width/4;
+        size_t w = width/4 + 1;
+        size_t h = height/4;
         size_t t = 6;
         olivec_frame(oc, width/2 - w/2, height/2 - h/2, w, h, t, WHITE_COLOR);
         olivec_frame(oc, width/2 - w/2, height/2 - h/2, w, h, 1, RED_COLOR);
@@ -437,7 +437,7 @@ Olivec_Canvas test_frame(void)
     // Zero thiccness
     {
         size_t w = width/8;
-        size_t h = width/8;
+        size_t h = height/8;
         size_t t = 0;
         olivec_frame(oc, width/2 - w/2, height/2 - h/2, w, h, t, WHITE_COLOR);
     }
