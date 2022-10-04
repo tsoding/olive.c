@@ -186,8 +186,8 @@ OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t hei
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
 OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
-// TODO: olivec_frame()
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
+OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t thiccness, uint32_t color);
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 // TODO: lines with different thiccness
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
@@ -306,6 +306,24 @@ OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_
             olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
         }
     }
+}
+
+OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t t, uint32_t color)
+{
+    if (t == 0) return; // Nothing to render
+
+    // Convert the rectangle to 2-points representation
+    int x1 = x;
+    int y1 = y;
+    int x2 = x1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
+    if (x1 > x2) OLIVEC_SWAP(int, x1, x2);
+    int y2 = y1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
+    if (y1 > y2) OLIVEC_SWAP(int, y1, y2);
+
+    olivec_rect(oc, x1 - t/2, y1 - t/2, (x2 - x1 + 1) + t/2*2, t, color);  // Top
+    olivec_rect(oc, x1 - t/2, y1 - t/2, t, (y2 - y1 + 1) + t/2*2, color);  // Left
+    olivec_rect(oc, x1 - t/2, y2 + t/2, (x2 - x1 + 1) + t/2*2, -t, color); // Bottom
+    olivec_rect(oc, x2 + t/2, y1 - t/2, -t, (y2 - y1 + 1) + t/2*2, color);  // Right
 }
 
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color)
