@@ -16,7 +16,7 @@ build_vc_demo() {
 mkdir -p ./build/
 
 # Build tests
-clang $COMMON_CFLAGS -o ./build/test -Ithirdparty test.c -lm
+clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty test.c -lm
 
 # Build asserts
 clang $COMMON_CFLAGS -o ./build/png2c -Ithirdparty png2c.c -lm
