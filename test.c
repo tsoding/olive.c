@@ -445,6 +445,29 @@ Olivec_Canvas test_frame(void)
     return oc;
 }
 
+Olivec_Canvas test_blending_of_copy(void)
+{
+    size_t width = 128;
+    size_t height = 128;
+    Olivec_Canvas dst = canvas_alloc(width, height);
+    olivec_fill(dst, RED_COLOR);
+    Olivec_Canvas src = canvas_alloc(width, height);
+
+    for (size_t y = 0; y < src.height; ++y) {
+        for (size_t x = 0; x < src.width; ++x) {
+            if ((x + y)%2 == 0) {
+                OLIVEC_PIXEL(src, x, y) = 0;
+            } else {
+                OLIVEC_PIXEL(src, x, y) = GREEN_COLOR;
+            }
+        }
+    }
+
+    olivec_copy(src, dst);
+
+    return dst;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(fill_rect),
     DEFINE_TEST_CASE(fill_circle),
@@ -458,6 +481,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(lines_circle),
     DEFINE_TEST_CASE(line_edge_cases),
     DEFINE_TEST_CASE(frame),
+    DEFINE_TEST_CASE(blending_of_copy),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

@@ -707,7 +707,7 @@ void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst)
         for (size_t x = 0; x < dst.width; ++x) {
             size_t nx = x*src.width/dst.width;
             size_t ny = y*src.height/dst.height;
-            OLIVEC_PIXEL(dst, x, y) = OLIVEC_PIXEL(src, nx, ny);
+            olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
         }
     }
 }
