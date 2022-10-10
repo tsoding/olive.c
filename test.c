@@ -1,8 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
 #include <errno.h>
+
+#include "./assets/tsodinPog.c"
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
 #define UNUSED(x) (void)(x)
@@ -140,7 +143,7 @@ Replay_Result run_test_case(const char *program_path, const Test_Case *tc)
     if (!canvas_stbi_load(expected_file_path, &expected_canvas)) {
         fprintf(stderr, "%s: ERROR: could not read %s: %s\n", tc->id, expected_file_path, stbi_failure_reason());
         if (errno == ENOENT) {
-            fprintf(stderr, "%s: HINT: Consider running `$ %s update` to create it\n", tc->id, program_path);
+            fprintf(stderr, "%s: HINT: Consider running `$ %s update %s` to create it\n", tc->id, program_path, tc->id);
         }
         return(REPLAY_ERRORED);
     }
@@ -463,7 +466,21 @@ Olivec_Canvas test_blending_of_copy(void)
         }
     }
 
-    olivec_copy(src, dst);
+    olivec_copy(src, dst, 0, 0, width, height);
+
+    return dst;
+}
+
+Olivec_Canvas test_copy_out_of_bounds_cut(void)
+{
+    size_t width = 128;
+    size_t height = 128;
+    Olivec_Canvas dst = canvas_alloc(width, height);
+    olivec_fill(dst, 0xFF1818FF);
+    olivec_copy(
+        olivec_canvas(png, png_width, png_height, png_width),
+        dst,
+        width/2, height/2, width, height);
 
     return dst;
 }
@@ -482,6 +499,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(line_edge_cases),
     DEFINE_TEST_CASE(frame),
     DEFINE_TEST_CASE(blending_of_copy),
+    DEFINE_TEST_CASE(copy_out_of_bounds_cut),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

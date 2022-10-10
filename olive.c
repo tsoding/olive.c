@@ -699,15 +699,17 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
     }
 }
 
-// TODO: olivec_copy does not work correctly with dst out of bounds
 // TODO: bilinear interpolation for olivec_copy
-void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst)
+void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
 {
-    for (size_t y = 0; y < dst.height; ++y) {
-        for (size_t x = 0; x < dst.width; ++x) {
-            size_t nx = x*src.width/dst.width;
-            size_t ny = y*src.height/dst.height;
-            olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
+    int x1, x2, y1, y2;
+    if (olivec_normalize_rect(x, y, w, h, dst.width, dst.height, &x1, &x2, &y1, &y2)) {
+        for (int y = y1; y <= y2; ++y) {
+            for (int x = x1; x <= x2; ++x) {
+                size_t nx = (x - x1)*src.width/w;
+                size_t ny = (y - y1)*src.height/h;
+                olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
+            }
         }
     }
 }
