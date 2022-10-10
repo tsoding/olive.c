@@ -518,7 +518,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
     }
 }
 
-uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int t1, int t2, int t3, int den)
+OLIVECDEF uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int t1, int t2, int t3, int den)
 {
     // TODO: estimate how much overflows are an issue in integer only environment
     int64_t r1 = OLIVEC_RED(c1);
@@ -548,9 +548,9 @@ uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int t1, int t2, int 
     return 0;
 }
 
-void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
-                 int xp, int yp,
-                 int *u1, int *u2, int *det)
+OLIVECDEF void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
+                           int xp, int yp,
+                           int *u1, int *u2, int *det)
 {
     *det = ((x1 - x3)*(y2 - y3) - (x2 - x3)*(y1 - y3));
     *u1  = ((y2 - y3)*(xp - x3) + (x3 - x2)*(yp - y3));
@@ -701,7 +701,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 
 // TODO: bilinear interpolation for olivec_copy
 // TODO: olivec_copy() should flip the image horizontally on negative w and verticallly on negative h
-void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
+OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
 {
     int x1, x2, y1, y2;
     if (olivec_normalize_rect(x, y, w, h, dst.width, dst.height, &x1, &x2, &y1, &y2)) {
