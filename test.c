@@ -476,12 +476,26 @@ Olivec_Canvas test_copy_out_of_bounds_cut(void)
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
-    olivec_fill(dst, 0xFF1818FF);
+    olivec_fill(dst, RED_COLOR);
     olivec_copy(
         olivec_canvas(png, png_width, png_height, png_width),
         dst,
         width/2, height/2, width, height);
 
+    return dst;
+}
+
+Olivec_Canvas test_copy_flip(void)
+{
+    size_t width = 128;
+    size_t height = 128;
+    Olivec_Canvas dst = canvas_alloc(width, height);
+    Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
+    olivec_fill(dst, RED_COLOR);
+    olivec_copy(src, dst, 0, 0, width/2, height/2);
+    olivec_copy(src, dst, width - 1, 0, -width/2, height/2);
+    olivec_copy(src, dst, 0, height - 1, width/2, -height/2);
+    olivec_copy(src, dst, width - 1, height - 1, -width/2, -height/2);
     return dst;
 }
 
@@ -500,6 +514,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(frame),
     DEFINE_TEST_CASE(blending_of_copy),
     DEFINE_TEST_CASE(copy_out_of_bounds_cut),
+    DEFINE_TEST_CASE(copy_flip),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

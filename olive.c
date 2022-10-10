@@ -700,15 +700,16 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 }
 
 // TODO: bilinear interpolation for olivec_copy
-// TODO: olivec_copy() should flip the image horizontally on negative w and verticallly on negative h
 OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
 {
     int x1, x2, y1, y2;
     if (olivec_normalize_rect(x, y, w, h, dst.width, dst.height, &x1, &x2, &y1, &y2)) {
+        int xa = x1; if (w < 0) xa = x2;
+        int ya = y1; if (h < 0) ya = y2;
         for (int y = y1; y <= y2; ++y) {
             for (int x = x1; x <= x2; ++x) {
-                size_t nx = (x - x1)*src.width/w;
-                size_t ny = (y - y1)*src.height/h;
+                size_t nx = (x - xa)*((int) src.width)/w;
+                size_t ny = (y - ya)*((int) src.height)/h;
                 olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
             }
         }
