@@ -702,16 +702,35 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 // TODO: bilinear interpolation for olivec_copy
 OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
 {
-    int x1, x2, y1, y2;
-    if (olivec_normalize_rect(x, y, w, h, dst.width, dst.height, &x1, &x2, &y1, &y2)) {
-        int xa = x1; if (w < 0) xa = x2;
-        int ya = y1; if (h < 0) ya = y2;
-        for (int y = y1; y <= y2; ++y) {
-            for (int x = x1; x <= x2; ++x) {
-                size_t nx = (x - xa)*((int) src.width)/w;
-                size_t ny = (y - ya)*((int) src.height)/h;
-                olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
-            }
+    int ox1 = x;
+    int oy1 = y;
+
+    // Convert the rectangle to 2-points representation
+    int ox2 = ox1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
+    if (ox1 > ox2) OLIVEC_SWAP(int, ox1, ox2);
+    int oy2 = oy1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
+    if (oy1 > oy2) OLIVEC_SWAP(int, oy1, oy2);
+
+    // Cull out invisible rectangle
+    if (ox1 >= (int) dst.width) return;
+    if (ox2 < 0) return;
+    if (oy1 >= (int) dst.height) return;
+    if (oy2 < 0) return;
+
+    // Clamp the rectangle to the boundaries
+    int x1 = ox1, x2 = ox2, y1 = oy1, y2 = oy2;
+    if (x1 < 0) x1 = 0;
+    if (x2 >= (int) dst.width) x2 = (int) dst.width - 1;
+    if (y1 < 0) y1 = 0;
+    if (y2 >= (int) dst.height) y2 = (int) dst.height - 1;
+
+    int xa = ox1; if (w < 0) xa = ox2;
+    int ya = oy1; if (h < 0) ya = oy2;
+    for (int y = y1; y <= y2; ++y) {
+        for (int x = x1; x <= x2; ++x) {
+            size_t nx = (x - xa)*((int) src.width)/w;
+            size_t ny = (y - ya)*((int) src.height)/h;
+            olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
         }
     }
 }
