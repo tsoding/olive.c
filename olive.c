@@ -704,8 +704,16 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 }
 
 // TODO: bilinear interpolation for olivec_copy
+// TODO: dst must come before src, 'cause otherwise it's inconsistent with the rest of the functions
 OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
 {
+    if (src.width == 0) return;
+    if (src.height == 0) return;
+
+    // No need to render empty rectangle
+    if (w == 0) return;
+    if (h == 0) return;
+
     int ox1 = x;
     int oy1 = y;
 
