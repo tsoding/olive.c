@@ -757,3 +757,4 @@ OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, i
 // TODO: olivec_ring
 // TODO: olivec_ellipse
 // TODO: bezier curves
+// TODO: fuzzer
