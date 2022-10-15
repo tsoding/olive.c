@@ -22,6 +22,7 @@ mkdir -p ./build/assets/
 
 # Build tests
 clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty test.c -lm
+exit 0
 
 # Build VC demos
 build_vc_demo triangle &
