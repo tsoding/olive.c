@@ -471,7 +471,7 @@ Olivec_Canvas test_blending_of_copy(void)
         }
     }
 
-    olivec_copy(src, dst, 0, 0, width, height);
+    olivec_copy(dst, 0, 0, width, height, src);
 
     return dst;
 }
@@ -483,10 +483,10 @@ Olivec_Canvas test_copy_out_of_bounds_cut(void)
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(src, dst, -width/2, -height/2, width, height);
-    olivec_copy(src, dst, width/2, -height/2, width, height);
-    olivec_copy(src, dst, -width/2, height/2, width, height);
-    olivec_copy(src, dst, width/2, height/2, width, height);
+    olivec_copy(dst, -width/2, -height/2, width, height, src);
+    olivec_copy(dst, width/2, -height/2, width, height, src);
+    olivec_copy(dst, -width/2, height/2, width, height, src);
+    olivec_copy(dst, width/2, height/2, width, height, src);
     return dst;
 }
 
@@ -497,10 +497,10 @@ Olivec_Canvas test_copy_flip(void)
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(src, dst, 0, 0, width/2, height/2);
-    olivec_copy(src, dst, width - 1, 0, -width/2, height/2);
-    olivec_copy(src, dst, 0, height - 1, width/2, -height/2);
-    olivec_copy(src, dst, width - 1, height - 1, -width/2, -height/2);
+    olivec_copy(dst, 0, 0, width/2, height/2, src);
+    olivec_copy(dst, width - 1, 0, -width/2, height/2, src);
+    olivec_copy(dst, 0, height - 1, width/2, -height/2, src);
+    olivec_copy(dst, width - 1, height - 1, -width/2, -height/2, src);
     return dst;
 }
 
@@ -511,10 +511,10 @@ Olivec_Canvas test_copy_flip_cut(void)
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(src, dst, -width/2, -height/2, width, height);
-    olivec_copy(src, dst, width - 1 + width/2, -height/2, -width, height);
-    olivec_copy(src, dst, -width/2, height - 1 + height/2, width, -height);
-    olivec_copy(src, dst, width - 1 + width/2, height - 1 + height/2, -width, -height);
+    olivec_copy(dst, -width/2, -height/2, width, height, src);
+    olivec_copy(dst, width - 1 + width/2, -height/2, -width, height, src);
+    olivec_copy(dst, -width/2, height - 1 + height/2, width, -height, src);
+    olivec_copy(dst, width - 1 + width/2, height - 1 + height/2, -width, -height, src);
     return dst;
 }
 
@@ -535,7 +535,7 @@ Olivec_Canvas test_copy_empty_rect(void)
     Olivec_Canvas dst = canvas_alloc(w, h);
     Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
     olivec_fill(dst, BACKGROUND_COLOR);
-    olivec_copy(src, dst, 0, 0, 0, 0);
+    olivec_copy(dst, 0, 0, 0, 0, src);
     return dst;
 }
 
@@ -545,7 +545,7 @@ Olivec_Canvas test_copy_null_src(void)
     size_t h = 8;
     Olivec_Canvas dst = canvas_alloc(w, h);
     olivec_fill(dst, BACKGROUND_COLOR);
-    olivec_copy(OLIVEC_CANVAS_NULL, dst, 0, 0, w, h);
+    olivec_copy(dst, 0, 0, w, h, OLIVEC_CANVAS_NULL);
     return dst;
 }
 

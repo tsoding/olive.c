@@ -301,7 +301,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
-OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h);
+OLIVECDEF void olivec_copy(Olivec_Canvas dst, int x, int y, int w, int h, Olivec_Canvas src);
 
 typedef struct {
     // Safe ranges to iterate over.
@@ -723,8 +723,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
 }
 
 // TODO: bilinear interpolation for olivec_copy
-// TODO: dst must come before src, 'cause otherwise it's inconsistent with the rest of the functions
-OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h)
+OLIVECDEF void olivec_copy(Olivec_Canvas dst, int x, int y, int w, int h, Olivec_Canvas src)
 {
     if (src.width == 0) return;
     if (src.height == 0) return;
