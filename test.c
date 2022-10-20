@@ -6,6 +6,7 @@
 #include <errno.h>
 
 #include "./assets/tsodinPog.c"
+#include "./assets/Sadge.c"
 
 #define return_defer(value) do { result = (value); goto defer; } while (0)
 #define UNUSED(x) (void)(x)
@@ -549,6 +550,18 @@ Olivec_Canvas test_sprite_blend_null(void)
     return dst;
 }
 
+Olivec_Canvas test_sprite_blend_vs_copy(void)
+{
+    Olivec_Canvas sadge = olivec_canvas(Sadge_pixels, Sadge_width, Sadge_height, Sadge_width);
+    size_t w = sadge.width;
+    size_t h = sadge.height*2;
+    Olivec_Canvas dst = canvas_alloc(w, h);
+    olivec_fill(dst, RED_COLOR);
+    olivec_sprite_blend(dst, 0, 0, sadge.width, sadge.height, sadge);
+    olivec_sprite_copy(dst, 0, sadge.height, sadge.width, sadge.height, sadge);
+    return dst;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(fill_rect),
     DEFINE_TEST_CASE(fill_circle),
@@ -569,6 +582,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(sprite_blend_empty_rect),
     DEFINE_TEST_CASE(empty_rect),
     DEFINE_TEST_CASE(sprite_blend_null),
+    DEFINE_TEST_CASE(sprite_blend_vs_copy),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

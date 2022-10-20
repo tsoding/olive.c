@@ -302,6 +302,7 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 OLIVECDEF void olivec_triangle3(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
+OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 
 typedef struct {
     // Safe ranges to iterate over.
@@ -738,6 +739,25 @@ OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h,
             size_t nx = (x - xa)*((int) sprite.width)/w;
             size_t ny = (y - ya)*((int) sprite.height)/h;
             olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), OLIVEC_PIXEL(sprite, nx, ny));
+        }
+    }
+}
+
+OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite)
+{
+    if (sprite.width == 0) return;
+    if (sprite.height == 0) return;
+
+    Olivec_Normalized_Rect nr = {0};
+    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr)) return;
+
+    int xa = nr.ox1; if (w < 0) xa = nr.ox2;
+    int ya = nr.oy1; if (h < 0) ya = nr.oy2;
+    for (int y = nr.y1; y <= nr.y2; ++y) {
+        for (int x = nr.x1; x <= nr.x2; ++x) {
+            size_t nx = (x - xa)*((int) sprite.width)/w;
+            size_t ny = (y - ya)*((int) sprite.height)/h;
+            OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(sprite, nx, ny);
         }
     }
 }
