@@ -26,7 +26,7 @@ Olivec_Canvas render(float dt)
     int w = tsodinPog_width*SRC_SCALE - t*factor;
     int h = tsodinPog_height*SRC_SCALE + t*factor;
 
-    olivec_copy(
+    olivec_sprite_blend(
         dst_canvas,
         WIDTH/2 - w/2, HEIGHT - h, w, h,
         olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width));

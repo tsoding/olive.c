@@ -453,7 +453,7 @@ Olivec_Canvas test_frame(void)
     return oc;
 }
 
-Olivec_Canvas test_blending_of_copy(void)
+Olivec_Canvas test_sprite_blend(void)
 {
     size_t width = 128;
     size_t height = 128;
@@ -471,50 +471,50 @@ Olivec_Canvas test_blending_of_copy(void)
         }
     }
 
-    olivec_copy(dst, 0, 0, width, height, src);
+    olivec_sprite_blend(dst, 0, 0, width, height, src);
 
     return dst;
 }
 
-Olivec_Canvas test_copy_out_of_bounds_cut(void)
+Olivec_Canvas test_sprite_blend_out_of_bounds_cut(void)
 {
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(dst, -width/2, -height/2, width, height, src);
-    olivec_copy(dst, width/2, -height/2, width, height, src);
-    olivec_copy(dst, -width/2, height/2, width, height, src);
-    olivec_copy(dst, width/2, height/2, width, height, src);
+    olivec_sprite_blend(dst, -width/2, -height/2, width, height, src);
+    olivec_sprite_blend(dst, width/2, -height/2, width, height, src);
+    olivec_sprite_blend(dst, -width/2, height/2, width, height, src);
+    olivec_sprite_blend(dst, width/2, height/2, width, height, src);
     return dst;
 }
 
-Olivec_Canvas test_copy_flip(void)
+Olivec_Canvas test_sprite_blend_flip(void)
 {
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(dst, 0, 0, width/2, height/2, src);
-    olivec_copy(dst, width - 1, 0, -width/2, height/2, src);
-    olivec_copy(dst, 0, height - 1, width/2, -height/2, src);
-    olivec_copy(dst, width - 1, height - 1, -width/2, -height/2, src);
+    olivec_sprite_blend(dst, 0, 0, width/2, height/2, src);
+    olivec_sprite_blend(dst, width - 1, 0, -width/2, height/2, src);
+    olivec_sprite_blend(dst, 0, height - 1, width/2, -height/2, src);
+    olivec_sprite_blend(dst, width - 1, height - 1, -width/2, -height/2, src);
     return dst;
 }
 
-Olivec_Canvas test_copy_flip_cut(void)
+Olivec_Canvas test_sprite_blend_flip_cut(void)
 {
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
     Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
-    olivec_copy(dst, -width/2, -height/2, width, height, src);
-    olivec_copy(dst, width - 1 + width/2, -height/2, -width, height, src);
-    olivec_copy(dst, -width/2, height - 1 + height/2, width, -height, src);
-    olivec_copy(dst, width - 1 + width/2, height - 1 + height/2, -width, -height, src);
+    olivec_sprite_blend(dst, -width/2, -height/2, width, height, src);
+    olivec_sprite_blend(dst, width - 1 + width/2, -height/2, -width, height, src);
+    olivec_sprite_blend(dst, -width/2, height - 1 + height/2, width, -height, src);
+    olivec_sprite_blend(dst, width - 1 + width/2, height - 1 + height/2, -width, -height, src);
     return dst;
 }
 
@@ -528,24 +528,24 @@ Olivec_Canvas test_empty_rect(void)
     return dst;
 }
 
-Olivec_Canvas test_copy_empty_rect(void)
+Olivec_Canvas test_sprite_blend_empty_rect(void)
 {
     size_t w = 8;
     size_t h = 8;
     Olivec_Canvas dst = canvas_alloc(w, h);
     Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, BACKGROUND_COLOR);
-    olivec_copy(dst, 0, 0, 0, 0, src);
+    olivec_sprite_blend(dst, 0, 0, 0, 0, src);
     return dst;
 }
 
-Olivec_Canvas test_copy_null_src(void)
+Olivec_Canvas test_sprite_blend_null(void)
 {
     size_t w = 8;
     size_t h = 8;
     Olivec_Canvas dst = canvas_alloc(w, h);
     olivec_fill(dst, BACKGROUND_COLOR);
-    olivec_copy(dst, 0, 0, w, h, OLIVEC_CANVAS_NULL);
+    olivec_sprite_blend(dst, 0, 0, w, h, OLIVEC_CANVAS_NULL);
     return dst;
 }
 
@@ -562,13 +562,13 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(lines_circle),
     DEFINE_TEST_CASE(line_edge_cases),
     DEFINE_TEST_CASE(frame),
-    DEFINE_TEST_CASE(blending_of_copy),
-    DEFINE_TEST_CASE(copy_out_of_bounds_cut),
-    DEFINE_TEST_CASE(copy_flip),
-    DEFINE_TEST_CASE(copy_flip_cut),
-    DEFINE_TEST_CASE(copy_empty_rect),
+    DEFINE_TEST_CASE(sprite_blend),
+    DEFINE_TEST_CASE(sprite_blend_out_of_bounds_cut),
+    DEFINE_TEST_CASE(sprite_blend_flip),
+    DEFINE_TEST_CASE(sprite_blend_flip_cut),
+    DEFINE_TEST_CASE(sprite_blend_empty_rect),
     DEFINE_TEST_CASE(empty_rect),
-    DEFINE_TEST_CASE(copy_null_src),
+    DEFINE_TEST_CASE(sprite_blend_null),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
