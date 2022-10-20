@@ -23,13 +23,13 @@ Olivec_Canvas render(float dt)
     olivec_fill(dst_canvas, 0xFF181818);
 
     int factor = 100;
-    int w = png_width*SRC_SCALE - t*factor;
-    int h = png_height*SRC_SCALE + t*factor;
+    int w = tsodinPog_width*SRC_SCALE - t*factor;
+    int h = tsodinPog_height*SRC_SCALE + t*factor;
 
     olivec_copy(
         dst_canvas,
         WIDTH/2 - w/2, HEIGHT - h, w, h,
-        olivec_canvas(png, png_width, png_height, png_width));
+        olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width));
 
     return dst_canvas;
 }

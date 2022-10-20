@@ -18,7 +18,7 @@ mkdir -p ./build/
 # Build asserts
 clang $COMMON_CFLAGS -o ./build/png2c -Ithirdparty png2c.c -lm
 mkdir -p ./build/assets/
-./build/png2c ./assets/tsodinPog.png > ./build/assets/tsodinPog.c
+./build/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png
 
 # Build tests
 clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty test.c -lm

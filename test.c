@@ -481,7 +481,7 @@ Olivec_Canvas test_copy_out_of_bounds_cut(void)
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
-    Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
+    Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
     olivec_copy(dst, -width/2, -height/2, width, height, src);
     olivec_copy(dst, width/2, -height/2, width, height, src);
@@ -495,7 +495,7 @@ Olivec_Canvas test_copy_flip(void)
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
-    Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
+    Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
     olivec_copy(dst, 0, 0, width/2, height/2, src);
     olivec_copy(dst, width - 1, 0, -width/2, height/2, src);
@@ -509,7 +509,7 @@ Olivec_Canvas test_copy_flip_cut(void)
     size_t width = 128;
     size_t height = 128;
     Olivec_Canvas dst = canvas_alloc(width, height);
-    Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
+    Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, RED_COLOR);
     olivec_copy(dst, -width/2, -height/2, width, height, src);
     olivec_copy(dst, width - 1 + width/2, -height/2, -width, height, src);
@@ -533,7 +533,7 @@ Olivec_Canvas test_copy_empty_rect(void)
     size_t w = 8;
     size_t h = 8;
     Olivec_Canvas dst = canvas_alloc(w, h);
-    Olivec_Canvas src = olivec_canvas(png, png_width, png_height, png_width);
+    Olivec_Canvas src = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
     olivec_fill(dst, BACKGROUND_COLOR);
     olivec_copy(dst, 0, 0, 0, 0, src);
     return dst;
