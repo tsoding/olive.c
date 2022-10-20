@@ -303,18 +303,31 @@ OLIVECDEF void olivec_triangle3(Olivec_Canvas oc, int x1, int y1, int x2, int y2
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, int w, int h);
 
+typedef struct {
+    // Safe ranges to iterate over.
+    int x1, x2;
+    int y1, y2;
+
+    // Original uncut ranges some parts of which may be outside of the canvas boundaries.
+    int ox1, ox2;
+    int oy1, oy2;
+} Olivec_Normalized_Rect;
+
 // The point of this function is to produce two ranges x1..x2 and y1..y2 that are guaranteed to be safe to iterate over the canvas of size pixels_width by pixels_height without any boundary checks.
 //
-// if (olivec_normalize_rect(x, y, w, h, WIDTH, HEIGHT, &x1, &y1, &x2, &y2)) {
-//     for (int x = x1; x <= x2; ++x) {
-//         for (int y = y1; y <= y2; ++y) {
+// Olivec_Normalized_Rect nr = {0};
+// if (olivec_normalize_rect(x, y, w, h, WIDTH, HEIGHT, &nr)) {
+//     for (int x = nr.x1; x <= nr.x2; ++x) {
+//         for (int y = nr.y1; y <= nr.y2; ++y) {
 //             OLIVEC_PIXEL(oc, x, y) = 0x69696969;
 //         }
 //     }
 // } else {
 //     // Rectangle is invisible cause it's completely out-of-bounds
 // }
-OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h, size_t pixels_width, size_t pixels_height, int *x1, int *x2, int *y1, int *y2);
+OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h,
+                                     size_t canvas_width, size_t canvas_height,
+                                     Olivec_Normalized_Rect *nr);
 
 #endif // OLIVE_C_
 
@@ -332,44 +345,49 @@ OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t hei
 }
 
 OLIVECDEF bool olivec_normalize_rect(int x, int y, int w, int h,
-                                     size_t pixels_width, size_t pixels_height,
-                                     int *x1, int *x2, int *y1, int *y2)
+                                     size_t canvas_width, size_t canvas_height,
+                                     Olivec_Normalized_Rect *nr)
 {
     // No need to render empty rectangle
     if (w == 0) return false;
     if (h == 0) return false;
 
-    *x1 = x;
-    *y1 = y;
+    nr->ox1 = x;
+    nr->oy1 = y;
 
     // Convert the rectangle to 2-points representation
-    *x2 = *x1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
-    if (*x1 > *x2) OLIVEC_SWAP(int, *x1, *x2);
-    *y2 = *y1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
-    if (*y1 > *y2) OLIVEC_SWAP(int, *y1, *y2);
+    nr->ox2 = nr->ox1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
+    if (nr->ox1 > nr->ox2) OLIVEC_SWAP(int, nr->ox1, nr->ox2);
+    nr->oy2 = nr->oy1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
+    if (nr->oy1 > nr->oy2) OLIVEC_SWAP(int, nr->oy1, nr->oy2);
 
     // Cull out invisible rectangle
-    if (*x1 >= (int) pixels_width) return false;
-    if (*x2 < 0) return false;
-    if (*y1 >= (int) pixels_height) return false;
-    if (*y2 < 0) return false;
+    if (nr->ox1 >= (int) canvas_width) return false;
+    if (nr->ox2 < 0) return false;
+    if (nr->oy1 >= (int) canvas_height) return false;
+    if (nr->oy2 < 0) return false;
+
+    nr->x1 = nr->ox1;
+    nr->y1 = nr->oy1;
+    nr->x2 = nr->ox2;
+    nr->y2 = nr->oy2;
 
     // Clamp the rectangle to the boundaries
-    if (*x1 < 0) *x1 = 0;
-    if (*x2 >= (int) pixels_width) *x2 = (int) pixels_width - 1;
-    if (*y1 < 0) *y1 = 0;
-    if (*y2 >= (int) pixels_height) *y2 = (int) pixels_height - 1;
+    if (nr->x1 < 0) nr->x1 = 0;
+    if (nr->x2 >= (int) canvas_width) nr->x2 = (int) canvas_width - 1;
+    if (nr->y1 < 0) nr->y1 = 0;
+    if (nr->y2 >= (int) canvas_height) nr->y2 = (int) canvas_height - 1;
 
     return true;
 }
 
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h)
 {
-    int x1, x2, y1, y2;
-    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &x1, &x2, &y1, &y2)) return OLIVEC_CANVAS_NULL;
-    oc.pixels = &OLIVEC_PIXEL(oc, x1, y1);
-    oc.width = x2 - x1 + 1;
-    oc.height = y2 - y1 + 1;
+    Olivec_Normalized_Rect nr = {0};
+    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr)) return OLIVEC_CANVAS_NULL;
+    oc.pixels = &OLIVEC_PIXEL(oc, nr.x1, nr.y1);
+    oc.width = nr.x2 - nr.x1 + 1;
+    oc.height = nr.y2 - nr.y1 + 1;
     return oc;
 }
 
@@ -411,10 +429,10 @@ OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color)
 
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color)
 {
-    int x1, x2, y1, y2;
-    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &x1, &x2, &y1, &y2)) return;
-    for (int x = x1; x <= x2; ++x) {
-        for (int y = y1; y <= y2; ++y) {
+    Olivec_Normalized_Rect nr = {0};
+    if (!olivec_normalize_rect(x, y, w, h, oc.width, oc.height, &nr)) return;
+    for (int x = nr.x1; x <= nr.x2; ++x) {
+        for (int y = nr.y1; y <= nr.y2; ++y) {
             olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
         }
     }
@@ -440,12 +458,12 @@ OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t
 
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color)
 {
-    int x1, y1, x2, y2;
+    Olivec_Normalized_Rect nr = {0};
     int r1 = r + OLIVEC_SIGN(int, r);
-    if (!olivec_normalize_rect(cx - r1, cy - r1, 2*r1, 2*r1, oc.width, oc.height, &x1, &x2, &y1, &y2)) return;
+    if (!olivec_normalize_rect(cx - r1, cy - r1, 2*r1, 2*r1, oc.width, oc.height, &nr)) return;
 
-    for (int y = y1; y <= y2; ++y) {
-        for (int x = x1; x <= x2; ++x) {
+    for (int y = nr.y1; y <= nr.y2; ++y) {
+        for (int x = nr.x1; x <= nr.x2; ++x) {
             int count = 0;
             for (int sox = 0; sox < OLIVEC_AA_RES; ++sox) {
                 for (int soy = 0; soy < OLIVEC_AA_RES; ++soy) {
@@ -711,36 +729,13 @@ OLIVECDEF void olivec_copy(Olivec_Canvas src, Olivec_Canvas dst, int x, int y, i
     if (src.width == 0) return;
     if (src.height == 0) return;
 
-    // No need to render empty rectangle
-    if (w == 0) return;
-    if (h == 0) return;
+    Olivec_Normalized_Rect nr = {0};
+    if (!olivec_normalize_rect(x, y, w, h, dst.width, dst.height, &nr)) return;
 
-    int ox1 = x;
-    int oy1 = y;
-
-    // Convert the rectangle to 2-points representation
-    int ox2 = ox1 + OLIVEC_SIGN(int, w)*(OLIVEC_ABS(int, w) - 1);
-    if (ox1 > ox2) OLIVEC_SWAP(int, ox1, ox2);
-    int oy2 = oy1 + OLIVEC_SIGN(int, h)*(OLIVEC_ABS(int, h) - 1);
-    if (oy1 > oy2) OLIVEC_SWAP(int, oy1, oy2);
-
-    // Cull out invisible rectangle
-    if (ox1 >= (int) dst.width) return;
-    if (ox2 < 0) return;
-    if (oy1 >= (int) dst.height) return;
-    if (oy2 < 0) return;
-
-    // Clamp the rectangle to the boundaries
-    int x1 = ox1, x2 = ox2, y1 = oy1, y2 = oy2;
-    if (x1 < 0) x1 = 0;
-    if (x2 >= (int) dst.width) x2 = (int) dst.width - 1;
-    if (y1 < 0) y1 = 0;
-    if (y2 >= (int) dst.height) y2 = (int) dst.height - 1;
-
-    int xa = ox1; if (w < 0) xa = ox2;
-    int ya = oy1; if (h < 0) ya = oy2;
-    for (int y = y1; y <= y2; ++y) {
-        for (int x = x1; x <= x2; ++x) {
+    int xa = nr.ox1; if (w < 0) xa = nr.ox2;
+    int ya = nr.oy1; if (h < 0) ya = nr.oy2;
+    for (int y = nr.y1; y <= nr.y2; ++y) {
+        for (int x = nr.x1; x <= nr.x2; ++x) {
             size_t nx = (x - xa)*((int) src.width)/w;
             size_t ny = (y - ya)*((int) src.height)/h;
             olivec_blend_color(&OLIVEC_PIXEL(dst, x, y), OLIVEC_PIXEL(src, nx, ny));
