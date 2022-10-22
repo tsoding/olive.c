@@ -39,22 +39,11 @@ function readCanvasFromMemory(memory_buffer, canvas_ptr)
     };
 }
 
-async function startDemo(elementId, wasmPath) {
-    const app = document.getElementById(`app-${elementId}`);
-    if (app === null) {
-        console.error(`Could not find element app-${elementId}. Skipping demo ${wasmPath}...`);
-        return;
-    }
-    const sec = document.getElementById(`sec-${elementId}`);
-    if (sec === null) {
-        console.error(`Could not find element sec-${elementId}. Skipping demo ${wasmPath}...`);
-        return;
-    }
-
-    let paused = true;
-    sec.addEventListener("mouseenter", () => paused = false);
-    sec.addEventListener("mouseleave", () => paused = true);
-
+/**
+ * @param {HTMLCanvasElement} app
+ * @param {string} wasmPath
+ */
+async function startDemo(app, wasmPath) {
     const ctx = app.getContext("2d");
     const w = await WebAssembly.instantiateStreaming(fetch(wasmPath), {
         "env": make_environment(libm)
@@ -67,7 +56,7 @@ async function startDemo(elementId, wasmPath) {
         const buffer = w.instance.exports.memory.buffer;
         w.instance.exports.vc_render(heap_base, dt*0.001);
         const canvas = readCanvasFromMemory(buffer, heap_base);
-        if (canvas.width != canvas.stride) {
+        if (canvas.width !== canvas.stride) {
             // TODO: maybe we can preallocate a Uint8ClampedArray on JavaScript side and just copy the canvas data there to bring width and stride to the same value?
             console.error(`Canvas width (${canvas.width}) is not equal to its stride (${canvas.stride}). Unfortunately we can't easily support that in a browser because ImageData simply does not accept stride. Welcome to 2022.`);
             return;
@@ -87,8 +76,46 @@ async function startDemo(elementId, wasmPath) {
     function loop(timestamp) {
         const dt = timestamp - prev;
         prev = timestamp;
-        if (!paused) render(dt);
+        if (app.dataset['visible'] === 'true') render(dt);
         window.requestAnimationFrame(loop);
     }
     window.requestAnimationFrame(first);
 }
+
+class OliveCanvas extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        const wasmPath = this.getAttribute('src');
+        if (!wasmPath) {
+            console.error(`Should define a src attribute on olive-canvas`)
+            return;
+        }
+
+        const canvas = document.createElement("canvas");
+        this.appendChild(canvas);
+
+        // Create an observer that monitors entering/exiting the viewport
+        this.observer = new IntersectionObserver(
+            ([entry]) => {
+                canvas.dataset['visible'] = String(entry.isIntersecting);
+            },
+            {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0,
+            }
+        );
+
+        this.observer.observe(canvas);
+        startDemo(canvas, wasmPath);
+    }
+
+    disconnectedCallback() {
+        this.observer.disconnect();
+    }
+}
+
+customElements.define("olivec-canvas", OliveCanvas);
