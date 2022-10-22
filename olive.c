@@ -829,7 +829,6 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: 3D triangles with z-buffering
 // TODO: 3D textures
 // TODO: Stencil
 // TODO: Benchmarking
