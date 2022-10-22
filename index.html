@@ -12,26 +12,20 @@
 
     <h2 id="demo-triangle"><a href="#demo-triangle">Triangle</a></h2>
     <p>Rainbow triangle together with a transparent circle. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle.c">demos/triangle.c</a></p>
-    <canvas id="app-triangle"></canvas>
+    <olivec-canvas src="wasm/triangle.wasm"></olivec-canvas>
 
     <h2 id="demo-3d"><a href="#demo-3d">3D</a></h2>
     <p>A bunch of 3D points projected onto your 2D screen plus a text with a builtin monospaced font. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/3d.c">demos/3d.c</a></p>
-    <canvas id="app-3d"></canvas>
+    <olivec-canvas src="wasm/3d.wasm"></olivec-canvas>
 
     <h2 id="demo-squish"><a href="#demo-squish">Squish</a></h2>
     <p>Resizing images on the fly. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/squish.c">demos/squish.c</a></p>
-    <canvas id="app-squish"></canvas>
+    <olivec-canvas src="wasm/squish.wasm"></olivec-canvas>
 
     <h2 id="demo-triangle3d"><a href="#demo-triangle3d">Triangle 3D</a></h2>
     Rotating rainbow triangle in 3D. Unlike <a href="#demo-3d">3D dots above</a> this is a solid shape. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle3d.c">demos/triangle3d.c</a></p>
-    <canvas id="app-triangle3d"></canvas>
+    <olivec-canvas src="wasm/triangle3d.wasm"></olivec-canvas>
 
     <script src="js/vc.js"></script>
-    <script>
-      startDemo("app-triangle", "./wasm/triangle.wasm");
-      startDemo("app-3d", "./wasm/3d.wasm");
-      startDemo("app-squish", "./wasm/squish.wasm");
-      startDemo("app-triangle3d", "./wasm/triangle3d.wasm");
-    </script>
   </body>
 </html>

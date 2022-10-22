@@ -45,7 +45,10 @@ async function startDemo(elementId, wasmPath) {
         console.error(`Could not find element ${elementId}. Skipping demo ${wasmPath}...`);
         return;
     }
+    loadApp(app, wasmPath);
+}
 
+async function loadApp(app, wasmPath) {
     const ctx = app.getContext("2d");
     const w = await WebAssembly.instantiateStreaming(fetch(wasmPath), {
         "env": make_environment(libm)
@@ -79,3 +82,23 @@ async function startDemo(elementId, wasmPath) {
     }
     window.requestAnimationFrame(first);
 }
+
+class OliveCanvas extends HTMLElement {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+        const wasmPath = this.getAttribute('src');
+        if (!wasmPath) {
+            console.error(`Should define a src attribute on olive-canvas`)
+            return;
+        }
+
+        const canvas = document.createElement("canvas");
+        this.appendChild(canvas);
+        loadApp(canvas, wasmPath);
+    }
+}
+
+customElements.define("olivec-canvas", OliveCanvas);
