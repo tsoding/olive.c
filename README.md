@@ -4,7 +4,7 @@
 
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel.
 
-Visit [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) to see some demos.
+Visit [https://tsoding.github.io/olive.c/](https://tsoding.github.io/olive.c/) to see some demos.
 
 The library is not concerned with displaying the image. It only fills up the memory with pixels. It's up to you what to do with those pixels.
 
@@ -97,7 +97,7 @@ To run the Terminal version of a demo do
 $ ./build/<demo>.term
 ```
 
-To run the WASM versions of the demos from [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) locally do
+To run the WASM versions of the demos from [https://tsoding.github.io/olive.c/](https://tsoding.github.io/olive.c/) locally do
 
 ```console
 $ python3 -m http.server 6969
