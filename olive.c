@@ -303,6 +303,11 @@ typedef struct {
 #define OLIVEC_CANVAS_NULL ((Olivec_Canvas) {0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y)*(oc).stride + (x)]
 
+typedef struct {
+    float u;
+    float v;
+} Uv;
+
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
@@ -315,9 +320,11 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
+OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, Uv uv1, Uv uv2, Uv uv3, Olivec_Canvas texture);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
+OLIVECDEF Uv olivec_uv(float u, float v);
 
 typedef struct {
     // Safe ranges to iterate over.
@@ -726,6 +733,82 @@ OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y
     }
 }
 
+OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, Uv uv1, Uv uv2, Uv uv3, Olivec_Canvas texture)
+{
+    if (y1 > y2) {
+        OLIVEC_SWAP(int, x1, x2);
+        OLIVEC_SWAP(int, y1, y2);
+        OLIVEC_SWAP(Uv, uv1, uv2);
+    }
+
+    if (y2 > y3) {
+        OLIVEC_SWAP(int, x2, x3);
+        OLIVEC_SWAP(int, y2, y3);
+        OLIVEC_SWAP(Uv, uv2, uv3);
+    }
+
+    if (y1 > y2) {
+        OLIVEC_SWAP(int, x1, x2);
+        OLIVEC_SWAP(int, y1, y2);
+        OLIVEC_SWAP(Uv, uv1, uv2);
+    }
+
+    int dx12 = x2 - x1;
+    int dy12 = y2 - y1;
+    int dx13 = x3 - x1;
+    int dy13 = y3 - y1;
+
+    for (int y = y1; y <= y2; ++y) {
+        // TODO: move boundary checks outside of loops in olivec_fill_triangle
+        if (0 <= y && (size_t) y < oc.height) {
+            int s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
+            int s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
+            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
+            for (int x = s1; x <= s2; ++x) {
+                if (0 <= x && (size_t) x < oc.width) {
+                    int u1, u2, det;
+                    barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                    int u3 = det - u1 - u2;
+                    Uv uv = olivec_uv(
+                        uv1.u*u1/det + uv2.u*u2/det + uv3.u*u3/det,
+                        uv1.v*u1/det + uv2.v*u2/det + uv3.v*u3/det
+                    );
+                    int texture_x = uv.u*texture.width;
+                    int texture_y = uv.v*texture.height;
+                    OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, texture_x, texture_y);
+                }
+            }
+        }
+    }
+
+    int dx32 = x2 - x3;
+    int dy32 = y2 - y3;
+    int dx31 = x1 - x3;
+    int dy31 = y1 - y3;
+
+    for (int y = y2; y <= y3; ++y) {
+        if (0 <= y && (size_t) y < oc.height) {
+            int s1 = dy32 != 0 ? (y - y3)*dx32/dy32 + x3 : x3;
+            int s2 = dy31 != 0 ? (y - y3)*dx31/dy31 + x3 : x3;
+            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
+            for (int x = s1; x <= s2; ++x) {
+                if (0 <= x && (size_t) x < oc.width) {
+                    int u1, u2, det;
+                    barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                    int u3 = det - u1 - u2;
+                    Uv uv = olivec_uv(
+                        uv1.u*u1/det + uv2.u*u2/det + uv3.u*u3/det,
+                        uv1.v*u1/det + uv2.v*u2/det + uv3.v*u3/det
+                    );
+                    int texture_x = uv.u*texture.width;
+                    int texture_y = uv.v*texture.height;
+                    OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, texture_x, texture_y);
+                }
+            }
+        }
+    }
+}
+
 // TODO: AA for triangle
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {
@@ -839,6 +922,14 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
             OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(sprite, nx, ny);
         }
     }
+}
+
+OLIVECDEF Uv olivec_uv(float u, float v)
+{
+    Uv uv;
+    uv.u = u;
+    uv.v = v;
+    return uv;
 }
 
 #endif // OLIVEC_IMPLEMENTATION
