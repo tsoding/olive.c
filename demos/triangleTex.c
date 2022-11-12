@@ -52,6 +52,7 @@ Olivec_Canvas render(float dt)
                 ps[i2][0], ps[i2][1],
                 ps[i3][0], ps[i3][1],
                 uvs[i1], uvs[i2], uvs[i3],
+                1, 1, 1,
                 tsodinPog
             );
        }

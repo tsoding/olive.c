@@ -32,5 +32,6 @@ build_vc_demo triangle &
 build_vc_demo 3d &
 build_vc_demo squish &
 build_vc_demo triangle3d &
-build_vc_demo triangle_tex &
+build_vc_demo triangleTex &
+build_vc_demo triangle3dTex &
 wait # TODO: the whole script must fail if one of the jobs fails
