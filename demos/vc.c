@@ -104,7 +104,7 @@ int main(void)
             if (SDL_LockTexture(texture, &window_rect, &pixels_dst, &pitch) < 0) return_defer(1);
             for (size_t y = 0; y < actual_height; ++y) {
                 // TODO: it would be cool if Olivec_Canvas supported pitch in bytes instead of pixels
-                // It would be more flexible
+                // It would be more flexible and we could draw on the locked texture memory directly
                 memcpy((char*)pixels_dst + y*pitch, oc_src.pixels + y*actual_width, actual_width*sizeof(uint32_t));
             }
             SDL_UnlockTexture(texture);
