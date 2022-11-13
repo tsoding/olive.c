@@ -1,6 +1,3 @@
-// This example renders a rotating triangle.
-// This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
-// native with SDL, WebAssembly with HTML5 canvas, etc.
 #define SCALE_DOWN_FACTOR 20
 #include "vc.c"
 #include "assets/tsodinPog.c"
@@ -60,4 +57,3 @@ Olivec_Canvas render(float dt)
 
     return oc;
 }
-
