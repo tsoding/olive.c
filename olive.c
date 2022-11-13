@@ -91,6 +91,7 @@ static char default_font_glyphs[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = 
         {0, 0, 1, 0, 0},
         {0, 0, 1, 0, 0},
     },
+    // TODO: this is -Wgnu-empty-initializer, get rid of all extensions with -pedantic
     ['j'] = {},
     ['k'] = {
         {0, 1, 0, 0, 0},

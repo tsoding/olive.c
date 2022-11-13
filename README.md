@@ -16,8 +16,6 @@ Olive.c is a classical [stb-style](https://github.com/nothings/stb) single heade
 
 ## Quick Example (Flag of Japan)
 
-<!-- TODO: get rid of the dependency on stb_image_write.h in here and replace it with PPM format -->
-
 *This example also uses [stb_image_write.h](https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h) to create the PNG image*
 
 ```c
@@ -35,7 +33,7 @@ uint32_t pixels[WIDTH*HEIGHT];
 
 int main(void)
 {
-    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT);
+    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
     // Taken from https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg
     olivec_fill(oc, 0xFFFFFFFF);
     olivec_circle(oc, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
