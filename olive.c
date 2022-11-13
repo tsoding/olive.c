@@ -308,6 +308,12 @@ typedef struct {
     float v;
 } Uv;
 
+typedef struct {
+    int xs[3];
+    int ys[3];
+    int order[3];
+} Olivec_Tri;
+
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
@@ -317,6 +323,10 @@ OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 // TODO: lines with different thiccness
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
+OLIVECDEF Olivec_Tri olivec_tri_new(int x1, int y1, int x2, int y2, int x3, int y3);
+OLIVECDEF bool olivec_tri_vert(Olivec_Tri *tri, size_t height, int *y1, int *y2);
+OLIVECDEF bool olivec_tri_horz(Olivec_Tri *tri, size_t width, int y, int *s1, int *s2);
+OLIVECDEF void olivec_tri_bary(Olivec_Tri *tri, int x, int y, int *u1, int *u2, int *det);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
@@ -943,6 +953,98 @@ OLIVECDEF Uv olivec_uv(float u, float v)
     uv.u = u;
     uv.v = v;
     return uv;
+}
+
+Olivec_Tri olivec_tri_new(int x1, int y1, int x2, int y2, int x3, int y3)
+{
+    Olivec_Tri tri = {
+        .order = {0, 1, 2},
+        .xs = {x1, x2, x3},
+        .ys = {y1, y2, y3},
+    };
+
+    if (tri.ys[0] > tri.ys[1]) {
+        OLIVEC_SWAP(int, tri.xs[0], tri.xs[1]);
+        OLIVEC_SWAP(int, tri.ys[0], tri.ys[1]);
+        OLIVEC_SWAP(int, tri.order[0], tri.order[1]);
+    }
+
+    if (tri.ys[1] > tri.ys[2]) {
+        OLIVEC_SWAP(int, tri.xs[1], tri.xs[2]);
+        OLIVEC_SWAP(int, tri.ys[1], tri.ys[2]);
+        OLIVEC_SWAP(int, tri.order[1], tri.order[2]);
+    }
+
+    if (tri.ys[0] > tri.ys[1]) {
+        OLIVEC_SWAP(int, tri.xs[0], tri.xs[1]);
+        OLIVEC_SWAP(int, tri.ys[0], tri.ys[1]);
+        OLIVEC_SWAP(int, tri.order[0], tri.order[1]);
+    }
+
+    return tri;
+}
+
+bool olivec_tri_vert(Olivec_Tri *tri, size_t height, int *y1, int *y2)
+{
+    *y1 = tri->ys[0];
+    if (*y1 < 0) *y1 = 0;
+    if ((size_t) *y1 >= height) return false;
+
+    *y2 = tri->ys[2];
+    if (*y2 < 0) return false;
+    if ((size_t) *y2 >= height) *y2 = height - 1;
+
+    return true;
+}
+
+bool olivec_tri_horz(Olivec_Tri *tri, size_t width, int y, int *s1, int *s2)
+{
+    int x1 = tri->xs[0];
+    int x2 = tri->xs[1];
+    int x3 = tri->xs[2];
+    int y1 = tri->ys[0];
+    int y2 = tri->ys[1];
+    int y3 = tri->ys[2];
+
+    if (y1 <= y && y < y2) {
+        // upper triangle
+        int dx12 = x2 - x1;
+        int dy12 = y2 - y1;
+        int dx13 = x3 - x1;
+        int dy13 = y3 - y1;
+        *s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
+        *s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
+    } else if (y2 <= y && y <= y3) {
+        // bottom triangle
+        int dx32 = x2 - x3;
+        int dy32 = y2 - y3;
+        int dx31 = x1 - x3;
+        int dy31 = y1 - y3;
+        *s1 = dy32 != 0 ? (y - y3)*dx32/dy32 + x3 : x3;
+        *s2 = dy31 != 0 ? (y - y3)*dx31/dy31 + x3 : x3;
+    } else {
+        // out of bounds
+        return false;
+    }
+
+    if (*s1 > *s2) OLIVEC_SWAP(int, *s1, *s2);
+    if (*s1 < 0) *s1 = 0;
+    if ((size_t) *s1 >= width) return false;
+    if (*s2 < 0) return false;
+    if ((size_t) *s2 >= width) *s2 = width - 1;
+
+    return true;
+}
+
+void olivec_tri_bary(Olivec_Tri *tri, int x, int y, int *u1, int *u2, int *det)
+{
+    int x1 = tri->xs[tri->order[0]];
+    int x2 = tri->xs[tri->order[1]];
+    int x3 = tri->xs[tri->order[2]];
+    int y1 = tri->ys[tri->order[0]];
+    int y2 = tri->ys[tri->order[1]];
+    int y3 = tri->ys[tri->order[2]];
+    barycentric(x1, y1, x2, y2, x3, y3, x, y, u1, u2, det);
 }
 
 #endif // OLIVEC_IMPLEMENTATION
