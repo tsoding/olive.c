@@ -947,7 +947,6 @@ OLIVECDEF Uv olivec_uv(float u, float v)
 
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: 3D textures
 // TODO: Stencil
 // TODO: Benchmarking
 // TODO: SIMD implementations
