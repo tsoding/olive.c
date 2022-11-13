@@ -2,9 +2,6 @@
 
 set -xe
 
-# TODO: enable -Wconversion
-# We can't enable it right now cause it produces to many warnings to fix on the stream.
-# I fix it later, when I have time.
 COMMON_CFLAGS="-Wall -Wextra -ggdb -I. -I./build/ -I./thirdparty/"
 
 build_vc_demo() {
