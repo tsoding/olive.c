@@ -31,12 +31,13 @@ void usage(FILE *out, const char *program_name)
 
 void generate_c_code_from_pixels(FILE *out, uint32_t *data, int x, int y, const char *name)
 {
-    char *capital_name = strdup(name);
+    size_t name_len = strlen(name);
+    char *capital_name = malloc(name_len + 1);
     assert(capital_name != NULL && "Buy more RAM, I guess");
-    size_t name_len = strlen(capital_name);
     for (size_t i = 0; i < name_len; ++i) {
-        capital_name[i] = toupper(capital_name[i]);
+        capital_name[i] = toupper(name[i]);
     }
+    capital_name[name_len] = '\0';
 
     fprintf(out, "#ifndef %s_H_\n", capital_name);
     fprintf(out, "#define %s_H_\n", capital_name);

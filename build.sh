@@ -2,7 +2,7 @@
 
 set -xe
 
-COMMON_CFLAGS="-Wall -Wextra -ggdb -I. -I./build/ -I./thirdparty/"
+COMMON_CFLAGS="-Wall -Wextra -pedantic -std=c99 -ggdb -I. -I./build/ -I./thirdparty/"
 
 build_wasm_demo() {
     NAME=$1
@@ -12,7 +12,7 @@ build_wasm_demo() {
 
 build_term_demo() {
     NAME=$1
-    clang $COMMON_CFLAGS -O2 -o ./build/demos/$NAME.term -DPLATFORM=TERM_PLATFORM ./demos/$NAME.c -lm
+    clang $COMMON_CFLAGS -O2 -o ./build/demos/$NAME.term -DPLATFORM=TERM_PLATFORM -D_XOPEN_SOURCE=600 ./demos/$NAME.c -lm
 }
 
 build_sdl_demo() {
