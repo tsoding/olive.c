@@ -254,7 +254,7 @@ int main(void)
                         float z = 1/v1.z*u1/det + 1/v2.z*u2/det + 1/v3.z*(det - u1 - u2)/det;
                         if (z > zbuffer[y*WIDTH + x]) {
                             zbuffer[y*WIDTH + x] = z;
-                            OLIVEC_PIXEL(oc, x, y) = mix_colors3(0xFF1818FF, 0xFF18FF18, 0xFFFF1818, u1, u2, det - u1 - u2, det);
+                            OLIVEC_PIXEL(oc, x, y) = mix_colors3(0xFF1818FF, 0xFF18FF18, 0xFFFF1818, u1, u2, det);
 
                             z = 1.0f/z;
                             if (z >= 1.0) {
@@ -270,7 +270,7 @@ int main(void)
         }
     }
 
-    const char *file_path = "tri.png";
+    const char *file_path = "teapot.png";
     if (!stbi_write_png(file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
         fprintf(stderr, "ERROR: could not write file %s\n", file_path);
         return_defer(1);
