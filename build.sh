@@ -2,7 +2,7 @@
 
 set -xe
 
-COMMON_CFLAGS="-Wall -Wextra -pedantic -std=c99 -ggdb -I. -I./build/ -I./thirdparty/"
+COMMON_CFLAGS="-Wall -Wextra -pedantic -std=c99 -ggdb -I. -I./build/ -I./dev-deps/"
 
 build_wasm_demo() {
     NAME=$1
