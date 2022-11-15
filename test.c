@@ -564,7 +564,7 @@ Olivec_Canvas test_sprite_blend_vs_copy(void)
     return dst;
 }
 
-Olivec_Canvas test_weird_triangle_bug(void)
+Olivec_Canvas test_barycentric_overflow(void)
 {
     size_t w = 256;
     size_t h = 256;
@@ -613,8 +613,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(sprite_blend_null),
     DEFINE_TEST_CASE(sprite_blend_vs_copy),
     DEFINE_TEST_CASE(triangle_order_flip),
-    // TODO: fix weird_triangle_bug
-    DEFINE_TEST_CASE(weird_triangle_bug)
+    DEFINE_TEST_CASE(barycentric_overflow)
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 

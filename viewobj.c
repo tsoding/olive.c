@@ -154,11 +154,16 @@ Vector3 remap_teapot(Vector3 v, float lx, float hx, float ly, float hy, float lz
     return v;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
     int result = 0;
 
-    const char *obj_file_path = "teapot.obj";
+    if (argc < 2) {
+        fprintf(stderr, "ERROR: no input file is provided\n");
+        return_defer(1);
+    }
+
+    const char *obj_file_path = argv[1];
     char *buffer;
     size_t buffer_size;
     Errno err = read_entire_file(obj_file_path, &buffer, &buffer_size);
