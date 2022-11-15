@@ -605,6 +605,7 @@ OLIVECDEF uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int u1, in
     return 0;
 }
 
+// NOTE: we imply u3 = det - u1 - u2
 OLIVECDEF void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
                            int xp, int yp,
                            int *u1, int *u2, int *det)
