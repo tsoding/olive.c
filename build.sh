@@ -53,3 +53,4 @@ build_tests() {
 build_assets
 build_tests
 build_all_vc_demos
+clang $COMMON_CFLAGS -O2 -o viewobj viewobj.c 
