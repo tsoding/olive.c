@@ -616,40 +616,48 @@ OLIVECDEF void barycentric(int x1, int y1, int x2, int y2, int x3, int y3,
     // u3 = det - u1 - u2
 }
 
+OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, int y1, int x2, int y2, int x3, int y3, int *lx, int *hx, int *ly, int *hy)
+{
+    *lx = x1;
+    *hx = x1;
+    if (*lx > x2) *lx = x2;
+    if (*lx > x3) *lx = x3;
+    if (*hx < x2) *hx = x2;
+    if (*hx < x3) *hx = x3;
+    if (*lx < 0) *lx = 0;
+    if ((size_t) *lx >= width) return false;;
+    if (*hx < 0) return false;;
+    if ((size_t) *hx >= width) *hx = width-1;
+
+    *ly = y1;
+    *hy = y1;
+    if (*ly > y2) *ly = y2;
+    if (*ly > y3) *ly = y3;
+    if (*hy < y2) *hy = y2;
+    if (*hy < y3) *hy = y3;
+    if (*ly < 0) *ly = 0;
+    if ((size_t) *ly >= height) return false;;
+    if (*hy < 0) return false;;
+    if ((size_t) *hy >= height) *hy = height-1;
+
+    return true;
+}
+
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3,
                                  uint32_t c1, uint32_t c2, uint32_t c3)
 {
-    int lx = x1;
-    int hx = x1;
-    if (lx > x2) lx = x2;
-    if (lx > x3) lx = x3;
-    if (hx < x2) hx = x2;
-    if (hx < x3) hx = x3;
-    if (lx < 0) lx = 0;
-    if ((size_t) lx >= oc.width) return;
-    if (hx < 0) return;
-    if ((size_t) hx >= oc.width) hx = oc.width-1;
-
-    int ly = y1;
-    int hy = y1;
-    if (ly > y2) ly = y2;
-    if (ly > y3) ly = y3;
-    if (hy < y2) hy = y2;
-    if (hy < y3) hy = y3;
-    if (ly < 0) ly = 0;
-    if ((size_t) ly >= oc.height) return;
-    if (hy < 0) return;
-    if ((size_t) hy >= oc.height) hy = oc.height-1;
-
-    for (int y = ly; y <= hy; ++y) {
-        for (int x = lx; x <= hx; ++x) {
-            int u1, u2, det;
-            barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
-            int u3 = det - u1 - u2;
-            if ((OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
-                (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
-                (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)) {
-                OLIVEC_PIXEL(oc, x, y) = mix_colors3(c1, c2, c3, u1, u2, det);
+    int lx, hx, ly, hy;
+    if (olivec_normalize_triangle(oc.width, oc.height, x1, y1, x2, y2, x3, y3, &lx, &hx, &ly, &hy)) {
+        for (int y = ly; y <= hy; ++y) {
+            for (int x = lx; x <= hx; ++x) {
+                int u1, u2, det;
+                barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                int u3 = det - u1 - u2;
+                if ((OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
+                    (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
+                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)) {
+                    OLIVEC_PIXEL(oc, x, y) = mix_colors3(c1, c2, c3, u1, u2, det);
+                }
             }
         }
     }
