@@ -89,7 +89,7 @@ Olivec_Canvas render(float dt)
             for (int y = ly; y <= hy; ++y) {
                 for (int x = lx; x <= hx; ++x) {
                     int u1, u2, det;
-                    barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                    olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
                     int u3 = det - u1 - u2;
                     if ((OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) && (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) && (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)) {
                         float z = 1/v1.z*u1/det + 1/v2.z*u2/det + 1/v3.z*u3/det;

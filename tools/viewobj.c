@@ -257,7 +257,7 @@ int main(int argc, char **argv)
             for (int y = ly; y <= hy; ++y) {
                 for (int x = lx; x <= hx; ++x) {
                     int u1, u2, det;
-                    barycentric(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, x, y, &u1, &u2, &det);
+                    olivec_barycentric(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, x, y, &u1, &u2, &det);
                     int u3 = det - u1 - u2;
                     if (
                         (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
