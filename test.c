@@ -283,7 +283,8 @@ Olivec_Canvas test_alpha_blending(void)
     olivec_rect(oc, 0, 0, width*3/4, height*3/4, RED_COLOR);
     olivec_rect(oc, width-1, height-1, -width*3/4, -height*3/4, 0x5520AA20);
     olivec_circle(oc, width/2, height/2, width/4, 0xBBAA2020);
-    olivec_triangle(oc, 0, height, width, height, width/2, 0, 0xBB20AAAA);
+    olivec_triangle(oc, 0, height-1, width-1, height-1, width/2, 0, 0xBB20AAAA);
+    olivec_triangle3c(oc, 0, 0, width-1, 0, width/2, height-1, 0xBB2020AA, 0xBB20AA20, 0xBBAA2020);
     return oc;
 }
 
