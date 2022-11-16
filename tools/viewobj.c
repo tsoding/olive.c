@@ -172,6 +172,7 @@ int main(int argc, char **argv)
         return_defer(1);
     }
 
+    // TODO: share code between viewobj and cup3d
     String_View content = sv_from_parts(buffer, buffer_size);
     Vertices vertices = {0};
     Faces faces = {0};
@@ -187,6 +188,9 @@ int main(int argc, char **argv)
                 char *endptr;
 
                 line = sv_trim_left(line);
+                // TODO: strtof and strtol imply null terminated strings.
+                // But the content is not null terminated. So we rely on the input file having newline at the end.
+                // Let's make read_entire_file to append extra \0 or somethign like that
                 float x = strtof(line.data, &endptr);
                 line.data = endptr;
                 if (lx > x) lx = x;
@@ -247,15 +251,19 @@ int main(int argc, char **argv)
         Vector2 p1 = project_2d_scr(project_3d_2d(v1));
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
-        Olivec_Tri tri = olivec_tri_new(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y);
-        int y1, y2;
-        if (olivec_tri_vert(&tri, HEIGHT, &y1, &y2)) {
-            for (int y = y1; y <= y2; ++y) {
-                int x1, x2;
-                if (olivec_tri_horz(&tri, WIDTH, y, &x1, &x2)) {
-                    for (int x = x1; x <= x2; ++x) {
-                        int u1, u2, det;
-                        olivec_tri_bary(&tri, x, y, &u1, &u2, &det);
+
+        int lx, hx, ly, hy;
+        if (olivec_normalize_triangle(oc.width, oc.height, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, &lx, &hx, &ly, &hy)) {
+            for (int y = ly; y <= hy; ++y) {
+                for (int x = lx; x <= hx; ++x) {
+                    int u1, u2, det;
+                    barycentric(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, x, y, &u1, &u2, &det);
+                    int u3 = det - u1 - u2;
+                    if (
+                        (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
+                        (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
+                        (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)
+                    ) {
                         float z = 1/v1.z*u1/det + 1/v2.z*u2/det + 1/v3.z*(det - u1 - u2)/det;
                         if (z > zbuffer[y*WIDTH + x]) {
                             zbuffer[y*WIDTH + x] = z;
@@ -275,6 +283,7 @@ int main(int argc, char **argv)
         }
     }
 
+    // TODO: unhardcode output file path
     const char *file_path = "teapot.png";
     if (!stbi_write_png(file_path, WIDTH, HEIGHT, 4, pixels, sizeof(uint32_t)*WIDTH)) {
         fprintf(stderr, "ERROR: could not write file %s\n", file_path);

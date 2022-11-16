@@ -1,3 +1,25 @@
+// Copyright 2022 Alexey Kutepov <reximkut@gmail.com>
+//
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to
+// permit persons to whom the Software is furnished to do so, subject to
+// the following conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+// LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+// OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// TODO: some functions in olive.c are not prefixed with `olivec_` properly
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
@@ -308,12 +330,6 @@ typedef struct {
     float v;
 } Uv;
 
-typedef struct {
-    int xs[3];
-    int ys[3];
-    int order[3];
-} Olivec_Tri;
-
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
@@ -323,10 +339,6 @@ OLIVECDEF void olivec_frame(Olivec_Canvas oc, int x, int y, int w, int h, size_t
 OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t color);
 // TODO: lines with different thiccness
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
-OLIVECDEF Olivec_Tri olivec_tri_new(int x1, int y1, int x2, int y2, int x3, int y3);
-OLIVECDEF bool olivec_tri_vert(Olivec_Tri *tri, size_t height, int *y1, int *y2);
-OLIVECDEF bool olivec_tri_horz(Olivec_Tri *tri, size_t width, int y, int *s1, int *s2);
-OLIVECDEF void olivec_tri_bary(Olivec_Tri *tri, int x, int y, int *u1, int *u2, int *det);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
@@ -653,10 +665,12 @@ OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y
                 int u1, u2, det;
                 barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
                 int u3 = det - u1 - u2;
-                if ((OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
+                if (
+                    (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
                     (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
-                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)) {
-                    OLIVEC_PIXEL(oc, x, y) = mix_colors3(c1, c2, c3, u1, u2, det);
+                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)
+                ) {
+                    olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), mix_colors3(c1, c2, c3, u1, u2, det));
                 }
             }
         }
@@ -819,11 +833,18 @@ OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int 
 // TODO: AA for triangle
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color)
 {
-    Olivec_Tri tri = olivec_tri_new(x1, y1, x2, y2, x3, y3);
-    if (olivec_tri_vert(&tri, oc.height, &y1, &y2)) {
-        for (int y = y1; y <= y2; ++y) {
-            if (olivec_tri_horz(&tri, oc.width, y, &x1, &x2)) {
-                for (int x = x1; x <= x2; ++x) {
+    int lx, hx, ly, hy;
+    if (olivec_normalize_triangle(oc.width, oc.height, x1, y1, x2, y2, x3, y3, &lx, &hx, &ly, &hy)) {
+        for (int y = ly; y <= hy; ++y) {
+            for (int x = lx; x <= hx; ++x) {
+                int u1, u2, det;
+                barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+                int u3 = det - u1 - u2;
+                if (
+                    (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
+                    (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
+                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)
+                ) {
                     olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
                 }
             }
@@ -900,103 +921,6 @@ OLIVECDEF Uv olivec_uv(float u, float v)
     uv.u = u;
     uv.v = v;
     return uv;
-}
-
-Olivec_Tri olivec_tri_new(int x1, int y1, int x2, int y2, int x3, int y3)
-{
-    Olivec_Tri tri = {
-        .xs = {x1, x2, x3},
-        .ys = {y1, y2, y3},
-    };
-
-    int order[3] = {0, 1, 2};
-
-    if (tri.ys[0] > tri.ys[1]) {
-        OLIVEC_SWAP(int, tri.xs[0], tri.xs[1]);
-        OLIVEC_SWAP(int, tri.ys[0], tri.ys[1]);
-        OLIVEC_SWAP(int, order[0], order[1]);
-    }
-
-    if (tri.ys[1] > tri.ys[2]) {
-        OLIVEC_SWAP(int, tri.xs[1], tri.xs[2]);
-        OLIVEC_SWAP(int, tri.ys[1], tri.ys[2]);
-        OLIVEC_SWAP(int, order[1], order[2]);
-    }
-
-    if (tri.ys[0] > tri.ys[1]) {
-        OLIVEC_SWAP(int, tri.xs[0], tri.xs[1]);
-        OLIVEC_SWAP(int, tri.ys[0], tri.ys[1]);
-        OLIVEC_SWAP(int, order[0], order[1]);
-    }
-
-    for (int i = 0; i < 3; ++i) {
-        tri.order[order[i]] = i;
-    }
-
-    return tri;
-}
-
-bool olivec_tri_vert(Olivec_Tri *tri, size_t height, int *y1, int *y2)
-{
-    *y1 = tri->ys[0];
-    if (*y1 < 0) *y1 = 0;
-    if ((size_t) *y1 >= height) return false;
-
-    *y2 = tri->ys[2];
-    if (*y2 < 0) return false;
-    if ((size_t) *y2 >= height) *y2 = height - 1;
-
-    return true;
-}
-
-bool olivec_tri_horz(Olivec_Tri *tri, size_t width, int y, int *s1, int *s2)
-{
-    int x1 = tri->xs[0];
-    int x2 = tri->xs[1];
-    int x3 = tri->xs[2];
-    int y1 = tri->ys[0];
-    int y2 = tri->ys[1];
-    int y3 = tri->ys[2];
-
-    if (y1 <= y && y <= y2) {
-        // upper triangle
-        int dx12 = x2 - x1;
-        int dy12 = y2 - y1;
-        int dx13 = x3 - x1;
-        int dy13 = y3 - y1;
-        *s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
-        *s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
-    } else if (y2 < y && y <= y3) {
-        // bottom triangle
-        int dx32 = x2 - x3;
-        int dy32 = y2 - y3;
-        int dx31 = x1 - x3;
-        int dy31 = y1 - y3;
-        *s1 = dy32 != 0 ? (y - y3)*dx32/dy32 + x3 : x3;
-        *s2 = dy31 != 0 ? (y - y3)*dx31/dy31 + x3 : x3;
-    } else {
-        // out of bounds
-        return false;
-    }
-
-    if (*s1 > *s2) OLIVEC_SWAP(int, *s1, *s2);
-    if (*s1 < 0) *s1 = 0;
-    if ((size_t) *s1 >= width) return false;
-    if (*s2 < 0) return false;
-    if ((size_t) *s2 >= width) *s2 = width - 1;
-
-    return true;
-}
-
-void olivec_tri_bary(Olivec_Tri *tri, int x, int y, int *u1, int *u2, int *det)
-{
-    int x1 = tri->xs[tri->order[0]];
-    int x2 = tri->xs[tri->order[1]];
-    int x3 = tri->xs[tri->order[2]];
-    int y1 = tri->ys[tri->order[0]];
-    int y2 = tri->ys[tri->order[1]];
-    int y3 = tri->ys[tri->order[2]];
-    barycentric(x1, y1, x2, y2, x3, y3, x, y, u1, u2, det);
 }
 
 #endif // OLIVEC_IMPLEMENTATION
