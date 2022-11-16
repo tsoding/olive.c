@@ -235,6 +235,8 @@ int main(int argc, char **argv)
             }
         }
     }
+    printf("Input:    %s\n", obj_file_path);
+    printf("Output:   %s\n", out_file_path);
     printf("Vertices: %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
     printf("Faces:    %zu (index: %d..%d)\n", faces.count, lf, hf);
 
