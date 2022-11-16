@@ -39,23 +39,27 @@ build_all_vc_demos() {
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
+build_tools() {
+    mkdir -p ./build/tools/
+    clang $COMMON_CFLAGS -o ./build/tools/png2c -Ithirdparty ./tools/png2c.c -lm &
+    clang $COMMON_CFLAGS -o ./build/tools/obj2c -Ithirdparty ./tools/obj2c.c -lm &
+    clang $COMMON_CFLAGS -O2 -o ./build/tools/viewobj ./tools/viewobj.c &
+    wait # TODO: the whole script must fail if one of the jobs fails
+}
+
 build_assets() {
     mkdir -p ./build/assets/
-
-    clang $COMMON_CFLAGS -o ./build/png2c -Ithirdparty png2c.c -lm
-    ./build/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png
-    ./build/png2c -n Sadge -o ./build/assets/Sadge.c ./assets/Sadge.png
-
-    clang $COMMON_CFLAGS -o ./build/obj2c -Ithirdparty obj2c.c -lm
-    ./build/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c
+    ./build/tools/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png &
+    ./build/tools/png2c -n Sadge -o ./build/assets/Sadge.c ./assets/Sadge.png &
+    ./build/tools/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c &
+    wait # TODO: the whole script must fail if one of the jobs fails
 }
 
 build_tests() {
-    mkdir -p ./build/
-    clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty test.c -lm
+    clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty ./test.c -lm &
 }
 
+build_tools
 build_assets
 build_tests
 build_all_vc_demos
-# clang $COMMON_CFLAGS -O2 -o viewobj viewobj.c 
