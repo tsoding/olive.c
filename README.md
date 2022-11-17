@@ -66,7 +66,7 @@ $ ./build/test run
 If the expected behavior of the library has changed in the way that breaks current test cases, you probably want to update them:
 
 ```console
-$ ./build/test record
+$ ./build/test update
 ```
 
 For more info see the help:
@@ -86,13 +86,13 @@ The source code for demos is located at [demos](./demos/). Each demo is compiled
 To run the SDL version of a demo do
 
 ```console
-$ ./build/<demo>.sdl
+$ ./build/demos/<demo>.sdl
 ```
 
 To run the Terminal version of a demo do
 
 ```console
-$ ./build/<demo>.term
+$ ./build/demos/<demo>.term
 ```
 
 To run the WASM versions of the demos from [https://tsoding.github.io/olive.c/](https://tsoding.github.io/olive.c/) locally do
