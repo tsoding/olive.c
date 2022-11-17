@@ -672,60 +672,12 @@ OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y
 
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3)
 {
-    if (y1 > y2) {
-        OLIVEC_SWAP(int, x1, x2);
-        OLIVEC_SWAP(int, y1, y2);
-        OLIVEC_SWAP(float, z1, z2);
-    }
-
-    if (y2 > y3) {
-        OLIVEC_SWAP(int, x2, x3);
-        OLIVEC_SWAP(int, y2, y3);
-        OLIVEC_SWAP(float, z2, z3);
-    }
-
-    if (y1 > y2) {
-        OLIVEC_SWAP(int, x1, x2);
-        OLIVEC_SWAP(int, y1, y2);
-        OLIVEC_SWAP(float, z1, z2);
-    }
-
-    int dx12 = x2 - x1;
-    int dy12 = y2 - y1;
-    int dx13 = x3 - x1;
-    int dy13 = y3 - y1;
-
-    for (int y = y1; y <= y2; ++y) {
-        // TODO: move boundary checks outside of loops in olivec_fill_triangle
-        if (0 <= y && (size_t) y < oc.height) {
-            int s1 = dy12 != 0 ? (y - y1)*dx12/dy12 + x1 : x1;
-            int s2 = dy13 != 0 ? (y - y1)*dx13/dy13 + x1 : x1;
-            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
-            for (int x = s1; x <= s2; ++x) {
-                if (0 <= x && (size_t) x < oc.width) {
-                    int u1, u2, det;
-                    olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
-                    float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
-                    OLIVEC_PIXEL(oc, x, y) = *(uint32_t*)&z;
-                }
-            }
-        }
-    }
-
-    int dx32 = x2 - x3;
-    int dy32 = y2 - y3;
-    int dx31 = x1 - x3;
-    int dy31 = y1 - y3;
-
-    for (int y = y2; y <= y3; ++y) {
-        if (0 <= y && (size_t) y < oc.height) {
-            int s1 = dy32 != 0 ? (y - y3)*dx32/dy32 + x3 : x3;
-            int s2 = dy31 != 0 ? (y - y3)*dx31/dy31 + x3 : x3;
-            if (s1 > s2) OLIVEC_SWAP(int, s1, s2);
-            for (int x = s1; x <= s2; ++x) {
-                if (0 <= x && (size_t) x < oc.width) {
-                    int u1, u2, det;
-                    olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
+    int lx, hx, ly, hy;
+    if (olivec_normalize_triangle(oc.width, oc.height, x1, y1, x2, y2, x3, y3, &lx, &hx, &ly, &hy)) {
+        for (int y = ly; y <= hy; ++y) {
+            for (int x = lx; x <= hx; ++x) {
+                int u1, u2, det;
+                if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
                     float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
                     OLIVEC_PIXEL(oc, x, y) = *(uint32_t*)&z;
                 }
