@@ -17,7 +17,7 @@ build_term_demo() {
 
 build_sdl_demo() {
     NAME=$1
-    clang $COMMON_CFLAGS -O2 -o ./build/demos/$NAME.sdl -DPLATFORM=SDL_PLATFORM ./demos/$NAME.c -lm -lSDL2
+    clang $COMMON_CFLAGS -O2 -o ./build/demos/$NAME.sdl -I/usr/include/SDL2 -DPLATFORM=SDL_PLATFORM ./demos/$NAME.c -lm -lSDL2
 }
 
 build_vc_demo() {
