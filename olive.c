@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// TODO: some functions in olive.c are not prefixed with `olivec_` properly
+// TODO: some names in olive.c are not prefixed with `olivec_` properly
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
@@ -340,7 +340,7 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
 // TODO: lines with different thiccness
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color);
 OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, int y1, int x2, int y2, int x3, int y3, int *lx, int *hx, int *ly, int *hy);
-OLIVECDEF void olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det);
+OLIVECDEF bool olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det);
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
@@ -620,12 +620,17 @@ OLIVECDEF uint32_t mix_colors3(uint32_t c1, uint32_t c2, uint32_t c3, int u1, in
 }
 
 // NOTE: we imply u3 = det - u1 - u2
-OLIVECDEF void olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det)
+OLIVECDEF bool olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3, int xp, int yp, int *u1, int *u2, int *det)
 {
     *det = ((x1 - x3)*(y2 - y3) - (x2 - x3)*(y1 - y3));
     *u1  = ((y2 - y3)*(xp - x3) + (x3 - x2)*(yp - y3));
     *u2  = ((y3 - y1)*(xp - x3) + (x1 - x3)*(yp - y3));
-
+    int u3 = *det - *u1 - *u2;
+    return (
+        (OLIVEC_SIGN(int, *u1) == OLIVEC_SIGN(int, *det) || *u1 == 0) &&
+        (OLIVEC_SIGN(int, *u2) == OLIVEC_SIGN(int, *det) || *u2 == 0) &&
+        (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, *det) || u3 == 0)
+    );
 }
 
 OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, int y1, int x2, int y2, int x3, int y3, int *lx, int *hx, int *ly, int *hy)
@@ -663,13 +668,7 @@ OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y
         for (int y = ly; y <= hy; ++y) {
             for (int x = lx; x <= hx; ++x) {
                 int u1, u2, det;
-                olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
-                int u3 = det - u1 - u2;
-                if (
-                    (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
-                    (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
-                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)
-                ) {
+                if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
                     olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), mix_colors3(c1, c2, c3, u1, u2, det));
                 }
             }
@@ -838,13 +837,7 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
         for (int y = ly; y <= hy; ++y) {
             for (int x = lx; x <= hx; ++x) {
                 int u1, u2, det;
-                olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
-                int u3 = det - u1 - u2;
-                if (
-                    (OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) &&
-                    (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) &&
-                    (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)
-                ) {
+                if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
                     olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
                 }
             }
