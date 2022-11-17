@@ -73,12 +73,13 @@ Olivec_Canvas render(float dt)
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
 
-        olivec_triangle3uv(oc1, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
-                           olivec_uv(0/v1.z, 1/v1.z),
-                           olivec_uv(0.5/v2.z, 0/v2.z),
-                           olivec_uv(1/v3.z, 0/v3.z),
-                           1/v1.z, 1/v2.z, 1/v3.z,
-                           tsodinPog);
+        olivec_triangle3uv(
+            oc1,
+            p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
+            0/v1.z, 1/v1.z, 0.5/v2.z, 0/v2.z, 1/v3.z, 0/v3.z,
+            1/v1.z, 1/v2.z, 1/v3.z,
+            tsodinPog
+        );
         olivec_triangle3z(zb1, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 1.0f/v1.z, 1.0f/v2.z, 1.0f/v3.z);
     }
 

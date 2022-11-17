@@ -325,11 +325,6 @@ typedef struct {
 #define OLIVEC_CANVAS_NULL ((Olivec_Canvas) {0})
 #define OLIVEC_PIXEL(oc, x, y) (oc).pixels[(y)*(oc).stride + (x)]
 
-typedef struct {
-    float u;
-    float v;
-} Uv;
-
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
@@ -344,11 +339,10 @@ OLIVECDEF bool olivec_barycentric(int x1, int y1, int x2, int y2, int x3, int y3
 OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t color);
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
-OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, Uv uv1, Uv uv2, Uv uv3, float z1, float z2, float z3, Olivec_Canvas texture);
+OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
-OLIVECDEF Uv olivec_uv(float u, float v);
 
 typedef struct {
     // Safe ranges to iterate over.
@@ -740,26 +734,29 @@ OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y
     }
 }
 
-OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, Uv uv1, Uv uv2, Uv uv3, float z1, float z2, float z3, Olivec_Canvas texture)
+OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture)
 {
     if (y1 > y2) {
         OLIVEC_SWAP(int, x1, x2);
         OLIVEC_SWAP(int, y1, y2);
-        OLIVEC_SWAP(Uv, uv1, uv2);
+        OLIVEC_SWAP(float, tx1, tx2);
+        OLIVEC_SWAP(float, ty1, ty2);
         OLIVEC_SWAP(float, z1, z2);
     }
 
     if (y2 > y3) {
         OLIVEC_SWAP(int, x2, x3);
         OLIVEC_SWAP(int, y2, y3);
-        OLIVEC_SWAP(Uv, uv2, uv3);
+        OLIVEC_SWAP(float, tx2, tx3);
+        OLIVEC_SWAP(float, ty2, ty3);
         OLIVEC_SWAP(float, z2, z3);
     }
 
     if (y1 > y2) {
         OLIVEC_SWAP(int, x1, x2);
         OLIVEC_SWAP(int, y1, y2);
-        OLIVEC_SWAP(Uv, uv1, uv2);
+        OLIVEC_SWAP(float, tx1, tx2);
+        OLIVEC_SWAP(float, ty1, ty2);
         OLIVEC_SWAP(float, z1, z2);
     }
 
@@ -780,14 +777,12 @@ OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int 
                     olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
                     int u3 = det - u1 - u2;
                     float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
-                    Uv uv = olivec_uv(
-                                uv1.u*u1/det + uv2.u*u2/det + uv3.u*u3/det,
-                                uv1.v*u1/det + uv2.v*u2/det + uv3.v*u3/det
-                            );
-                    int texture_x = uv.u/z*texture.width;
+                    float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
+                    float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+                    int texture_x = tx/z*texture.width;
                     if (texture_x < 0) texture_x = 0;
                     if ((size_t) texture_x >= texture.width) texture_x = texture.width - 1;
-                    int texture_y = uv.v/z*texture.height;
+                    int texture_y = ty/z*texture.height;
                     if (texture_y < 0) texture_y = 0;
                     if ((size_t) texture_y >= texture.height) texture_y = texture.height - 1;
                     OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, texture_x, texture_y);
@@ -812,14 +807,12 @@ OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int 
                     olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det);
                     int u3 = det - u1 - u2;
                     float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
-                    Uv uv = olivec_uv(
-                                uv1.u*u1/det + uv2.u*u2/det + uv3.u*u3/det,
-                                uv1.v*u1/det + uv2.v*u2/det + uv3.v*u3/det
-                            );
-                    int texture_x = uv.u/z*texture.width;
+                    float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
+                    float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+                    int texture_x = tx/z*texture.width;
                     if (texture_x < 0) texture_x = 0;
                     if ((size_t) texture_x >= texture.width) texture_x = texture.width - 1;
-                    int texture_y = uv.v/z*texture.height;
+                    int texture_y = ty/z*texture.height;
                     if (texture_y < 0) texture_y = 0;
                     if ((size_t) texture_y >= texture.height) texture_y = texture.height - 1;
                     OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, texture_x, texture_y);
@@ -908,20 +901,13 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
     }
 }
 
-OLIVECDEF Uv olivec_uv(float u, float v)
-{
-    Uv uv;
-    uv.u = u;
-    uv.v = v;
-    return uv;
-}
-
 #endif // OLIVEC_IMPLEMENTATION
 
-// TODO: Stencil
 // TODO: Benchmarking
 // TODO: SIMD implementations
-// TODO: olivec_ring
-// TODO: olivec_ellipse
 // TODO: bezier curves
+// TODO: olivec_ring
 // TODO: fuzzer
+
+// TODO: olivec_ellipse
+// TODO: Stencil

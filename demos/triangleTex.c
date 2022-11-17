@@ -28,7 +28,7 @@ Olivec_Canvas render(float dt)
         triangle_angle += 0.5f*PI*dt;
 
         float ps[4][2];
-        Uv uvs[4] = {
+        float uvs[4][2] = {
             {0, 0},
             {1, 0},
             {1, 1},
@@ -48,7 +48,9 @@ Olivec_Canvas render(float dt)
                 ps[i1][0], ps[i1][1],
                 ps[i2][0], ps[i2][1],
                 ps[i3][0], ps[i3][1],
-                uvs[i1], uvs[i2], uvs[i3],
+                uvs[i1][0], uvs[i1][1],
+                uvs[i2][0], uvs[i2][1],
+                uvs[i3][0], uvs[i3][1],
                 1, 1, 1,
                 tsodinPog
             );
