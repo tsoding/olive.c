@@ -1,4 +1,3 @@
-#define SCALE_DOWN_FACTOR 10
 #include "vc.c"
 #include "./assets/tsodinCupLowPoly.c"
 
@@ -21,7 +20,7 @@ typedef struct {
     float x, y;
 } Vector2;
 
-Vector2 make_vector2(float x, float y)
+static Vector2 make_vector2(float x, float y)
 {
     Vector2 v2;
     v2.x = x;
@@ -33,7 +32,7 @@ typedef struct {
     float x, y, z;
 } Vector3;
 
-Vector3 make_vector3(float x, float y, float z)
+static Vector3 make_vector3(float x, float y, float z)
 {
     Vector3 v3;
     v3.x = x;
@@ -42,24 +41,24 @@ Vector3 make_vector3(float x, float y, float z)
     return v3;
 }
 
-Vector2 project_3d_2d(Vector3 v3)
+static Vector2 project_3d_2d(Vector3 v3)
 {
     return make_vector2(v3.x/v3.z, v3.y/v3.z);
 }
 
-Vector2 project_2d_scr(Vector2 v2)
+static Vector2 project_2d_scr(Vector2 v2)
 {
     return make_vector2((v2.x + 1)/2*WIDTH, (1 - (v2.y + 1)/2)*HEIGHT);
 }
 
-Vector3 rotate_y(Vector3 p, float delta_angle)
+static Vector3 rotate_y(Vector3 p, float delta_angle)
 {
     float angle = atan2f(p.z - 1.5, p.x) + delta_angle;
     float mag = sqrtf(p.x*p.x + (p.z - 1.5)*(p.z - 1.5));
     return make_vector3(cosf(angle)*mag, p.y, sinf(angle)*mag + 1.5);
 }
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     angle += 0.25*PI*dt;
 

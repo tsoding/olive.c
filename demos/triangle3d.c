@@ -1,12 +1,12 @@
-#define SCALE_DOWN_FACTOR 20
-#include "../demos/vc.c"
+#include "vc.c"
 
 #define WIDTH 800
 #define HEIGHT 600
-uint32_t pixels1[WIDTH*HEIGHT];
-float zbuffer1[WIDTH*HEIGHT];
-uint32_t pixels2[WIDTH*HEIGHT];
-float zbuffer2[WIDTH*HEIGHT];
+
+static uint32_t pixels1[WIDTH*HEIGHT];
+static float zbuffer1[WIDTH*HEIGHT];
+static uint32_t pixels2[WIDTH*HEIGHT];
+static float zbuffer2[WIDTH*HEIGHT];
 
 typedef struct {
     float x, y;
@@ -24,7 +24,7 @@ typedef struct {
     float x, y, z;
 } Vector3;
 
-Vector3 make_vector3(float x, float y, float z)
+static Vector3 make_vector3(float x, float y, float z)
 {
     Vector3 v3;
     v3.x = x;
@@ -33,24 +33,24 @@ Vector3 make_vector3(float x, float y, float z)
     return v3;
 }
 
-Vector2 project_3d_2d(Vector3 v3)
+static Vector2 project_3d_2d(Vector3 v3)
 {
     return make_vector2(v3.x / v3.z, v3.y / v3.z);
 }
 
-Vector2 project_2d_scr(Vector2 v2)
+static Vector2 project_2d_scr(Vector2 v2)
 {
     return make_vector2((v2.x + 1)/2*WIDTH, (1 - (v2.y + 1)/2)*HEIGHT);
 }
 
-float global_time = 1.0;
+static float global_time = 1.0;
 
 #define PI 3.14159265359
 
 float sinf(float);
 float cosf(float);
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     global_time += dt;
 
@@ -109,6 +109,6 @@ Olivec_Canvas render(float dt)
             }
         }
     }
-    
+
     return oc1;
 }

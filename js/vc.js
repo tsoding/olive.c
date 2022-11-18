@@ -64,7 +64,7 @@ async function startDemo(elementId, wasmPath) {
         prev = timestamp;
 
         const buffer = w.instance.exports.memory.buffer;
-        w.instance.exports.render(heap_base, dt*0.001);
+        w.instance.exports.vc_render(heap_base, dt*0.001);
         const canvas = readCanvasFromMemory(buffer, heap_base);
         if (canvas.width != canvas.stride) {
             // TODO: maybe we can preallocate a Uint8ClampedArray on JavaScript side and just copy the canvas data there to bring width and stride to the same value?

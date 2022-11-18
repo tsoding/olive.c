@@ -1,4 +1,3 @@
-#define SCALE_DOWN_FACTOR 20
 #include "vc.c"
 
 #define WIDTH 960
@@ -31,7 +30,7 @@ static inline void rotate_point(float *x, float *y)
     *y = sinf(dir)*mag + HEIGHT/2;
 }
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
 
