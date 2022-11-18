@@ -19,7 +19,6 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// TODO: some names in olive.c are not prefixed with `olivec_` properly
 #ifndef OLIVE_C_
 #define OLIVE_C_
 
@@ -44,10 +43,10 @@ typedef struct {
     const char *glyphs;
 } Olivec_Font;
 
-#define DEFAULT_FONT_HEIGHT 6
-#define DEFAULT_FONT_WIDTH 6
+#define OLIVEC_DEFAULT_FONT_HEIGHT 6
+#define OLIVEC_DEFAULT_FONT_WIDTH 6
 // TODO: allocate proper descender and acender areas for the default font
-static char default_font_glyphs[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = {
+static char olivec_default_glyphs[128][OLIVEC_DEFAULT_FONT_HEIGHT][OLIVEC_DEFAULT_FONT_WIDTH] = {
     ['a'] = {
         {0, 0, 0, 0, 0},
         {0, 1, 1, 0, 0},
@@ -309,10 +308,10 @@ static char default_font_glyphs[128][DEFAULT_FONT_HEIGHT][DEFAULT_FONT_WIDTH] = 
     },
 };
 
-static Olivec_Font default_font = {
-    .glyphs = &default_font_glyphs[0][0][0],
-    .width = DEFAULT_FONT_WIDTH,
-    .height = DEFAULT_FONT_HEIGHT,
+static Olivec_Font olivec_default_font = {
+    .glyphs = &olivec_default_glyphs[0][0][0],
+    .width = OLIVEC_DEFAULT_FONT_WIDTH,
+    .height = OLIVEC_DEFAULT_FONT_HEIGHT,
 };
 
 typedef struct {
