@@ -29,29 +29,29 @@ build_vc_demo() {
 
 build_all_vc_demos() {
     mkdir -p ./build/demos
-    build_vc_demo triangle
-    build_vc_demo 3d
-    build_vc_demo squish
-    build_vc_demo triangle3d
-    build_vc_demo triangleTex
-    build_vc_demo triangle3dTex
-    build_vc_demo cup3d
+    build_vc_demo triangle &
+    build_vc_demo 3d &
+    build_vc_demo squish &
+    build_vc_demo triangle3d &
+    build_vc_demo triangleTex &
+    build_vc_demo triangle3dTex &
+    build_vc_demo cup3d &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
 build_tools() {
     mkdir -p ./build/tools/
-    clang $COMMON_CFLAGS -o ./build/tools/png2c -Ithirdparty ./tools/png2c.c -lm
-    clang $COMMON_CFLAGS -o ./build/tools/obj2c -Ithirdparty ./tools/obj2c.c -lm
-    clang $COMMON_CFLAGS -O2 -o ./build/tools/viewobj ./tools/viewobj.c
+    clang $COMMON_CFLAGS -o ./build/tools/png2c -Ithirdparty ./tools/png2c.c -lm &
+    clang $COMMON_CFLAGS -o ./build/tools/obj2c -Ithirdparty ./tools/obj2c.c -lm &
+    clang $COMMON_CFLAGS -O2 -o ./build/tools/viewobj ./tools/viewobj.c &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
 build_assets() {
     mkdir -p ./build/assets/
-    ./build/tools/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png
-    ./build/tools/png2c -n Sadge -o ./build/assets/Sadge.c ./assets/Sadge.png
-    ./build/tools/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c
+    ./build/tools/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png &
+    ./build/tools/png2c -n Sadge -o ./build/assets/Sadge.c ./assets/Sadge.png &
+    ./build/tools/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
