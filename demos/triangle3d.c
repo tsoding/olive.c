@@ -1,3 +1,5 @@
+// TODO: we have too many triangle examples.
+// Let's squash most of them into a single one
 #include "vc.c"
 
 #define WIDTH 800
