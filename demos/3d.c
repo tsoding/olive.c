@@ -17,16 +17,6 @@ float cosf(float x);
 #define Z_START 0.25
 #define ABOBA_PADDING 50
 
-uint32_t circle_colors[] = {
-    0xFF2020FF,
-    0xFF20FF20,
-    0xFFFF2020,
-    0xFF20FFFF,
-    0xFFFF20FF,
-    0xFFFFFF20,
-};
-#define circle_colors_count (sizeof(circle_colors)/sizeof(circle_colors[0]))
-
 static uint32_t pixels[WIDTH*HEIGHT];
 static float angle = 0;
 
