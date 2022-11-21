@@ -41,8 +41,8 @@ build_all_vc_demos() {
 
 build_tools() {
     mkdir -p ./build/tools/
-    clang $COMMON_CFLAGS -o ./build/tools/png2c -Ithirdparty ./tools/png2c.c -lm &
-    clang $COMMON_CFLAGS -o ./build/tools/obj2c -Ithirdparty ./tools/obj2c.c -lm &
+    clang $COMMON_CFLAGS -o ./build/tools/png2c ./tools/png2c.c -lm &
+    clang $COMMON_CFLAGS -o ./build/tools/obj2c ./tools/obj2c.c -lm &
     clang $COMMON_CFLAGS -O2 -o ./build/tools/viewobj ./tools/viewobj.c &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
@@ -50,13 +50,13 @@ build_tools() {
 build_assets() {
     mkdir -p ./build/assets/
     ./build/tools/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png &
-    ./build/tools/png2c -n Sadge -o ./build/assets/Sadge.c ./assets/Sadge.png &
+    ./build/tools/png2c -n tsodinCup -o ./build/assets/tsodinCup.c ./assets/tsodinCup.png &
     ./build/tools/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
 build_tests() {
-    clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test -Ithirdparty ./test.c -lm
+    clang $COMMON_CFLAGS -fsanitize=memory -o ./build/test ./test.c -lm
 }
 
 build_tools

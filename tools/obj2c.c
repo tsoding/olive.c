@@ -43,7 +43,8 @@ Errno read_entire_file(const char *file_path, char **buffer, size_t *buffer_size
     if (fseek(f, 0, SEEK_SET) < 0) return_defer(errno);
 
     *buffer_size = m;
-    *buffer = context_alloc(*buffer_size);
+    *buffer = context_alloc(*buffer_size + 1);
+    (*buffer)[*buffer_size] = '\0';
 
     fread(*buffer, *buffer_size, 1, f);
     if (ferror(f)) return_defer(errno);

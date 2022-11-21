@@ -6,7 +6,7 @@
 #include <errno.h>
 
 #include "./assets/tsodinPog.c"
-#include "./assets/Sadge.c"
+#include "./assets/tsodinCup.c"
 
 #define PI 3.14159265359
 
@@ -555,13 +555,13 @@ Olivec_Canvas test_sprite_blend_null(void)
 
 Olivec_Canvas test_sprite_blend_vs_copy(void)
 {
-    Olivec_Canvas sadge = olivec_canvas(Sadge_pixels, Sadge_width, Sadge_height, Sadge_width);
-    size_t w = sadge.width;
-    size_t h = sadge.height*2;
+    Olivec_Canvas tsodinCup = olivec_canvas(tsodinCup_pixels, tsodinCup_width, tsodinCup_height, tsodinCup_width);
+    size_t w = tsodinCup.width;
+    size_t h = tsodinCup.height*2;
     Olivec_Canvas dst = canvas_alloc(w, h);
     olivec_fill(dst, RED_COLOR);
-    olivec_sprite_blend(dst, 0, 0, sadge.width, sadge.height, sadge);
-    olivec_sprite_copy(dst, 0, sadge.height, sadge.width, sadge.height, sadge);
+    olivec_sprite_blend(dst, 0, 0, tsodinCup.width, tsodinCup.height, tsodinCup);
+    olivec_sprite_copy(dst, 0, tsodinCup.height, tsodinCup.width, tsodinCup.height, tsodinCup);
     return dst;
 }
 

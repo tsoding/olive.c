@@ -89,7 +89,7 @@ bool generate_c_file_from_png(const char *input_file_path, const char *output_fi
     }
 
 defer:
-    if (output_file_path) fclose(out);
+    if (out) fclose(out);
     if (data) stbi_image_free(data);
     return result;
 }
