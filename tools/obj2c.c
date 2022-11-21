@@ -146,9 +146,6 @@ void generate_code(FILE *out, Vertices vertices, Faces faces)
     fprintf(out, "#endif // OBJ_H_\n");
 }
 
-// TODO: do not remap any coordinates.
-// The Cup 3D demo should just properly scale and place the object in the scene instead.
-// Otherwise we end up with distorted model.
 Vector3 remap_object(Vector3 v, float lx, float hx, float ly, float hy, float lz, float hz)
 {
     float cx = lx + (hx - lx)/2;
