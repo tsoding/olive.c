@@ -53,9 +53,9 @@ static Vector2 project_2d_scr(Vector2 v2)
 
 static Vector3 rotate_y(Vector3 p, float delta_angle)
 {
-    float angle = atan2f(p.z - 1.5, p.x) + delta_angle;
-    float mag = sqrtf(p.x*p.x + (p.z - 1.5)*(p.z - 1.5));
-    return make_vector3(cosf(angle)*mag, p.y, sinf(angle)*mag + 1.5);
+    float angle = atan2f(p.z, p.x) + delta_angle;
+    float mag = sqrtf(p.x*p.x + p.z*p.z);
+    return make_vector3(cosf(angle)*mag, p.y, sinf(angle)*mag);
 }
 
 Olivec_Canvas vc_render(float dt)
@@ -73,6 +73,8 @@ Olivec_Canvas vc_render(float dt)
         Vector3 v1 = rotate_y(make_vector3(vertices[a][0], vertices[a][1], vertices[a][2]), angle);
         Vector3 v2 = rotate_y(make_vector3(vertices[b][0], vertices[b][1], vertices[b][2]), angle);
         Vector3 v3 = rotate_y(make_vector3(vertices[c][0], vertices[c][1], vertices[c][2]), angle);
+        v1.z += 1.5; v2.z += 1.5; v3.z += 1.5;
+        v1.y -= 0.25; v2.y -= 0.25; v3.y -= 0.25;
         Vector2 p1 = project_2d_scr(project_3d_2d(v1));
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
@@ -92,6 +94,7 @@ Olivec_Canvas vc_render(float dt)
                     int u3 = det - u1 - u2;
                     if ((OLIVEC_SIGN(int, u1) == OLIVEC_SIGN(int, det) || u1 == 0) && (OLIVEC_SIGN(int, u2) == OLIVEC_SIGN(int, det) || u2 == 0) && (OLIVEC_SIGN(int, u3) == OLIVEC_SIGN(int, det) || u3 == 0)) {
                         float z = 1/v1.z*u1/det + 1/v2.z*u2/det + 1/v3.z*u3/det;
+                        // TODO: implement near/far clipping planes
                         if (z > zbuffer[y*WIDTH + x]) {
                             zbuffer[y*WIDTH + x] = z;
                             OLIVEC_PIXEL(oc, x, y) = mix_colors3(0xFF1818FF, 0xFF18FF18, 0xFFFF1818, u1, u2, det);

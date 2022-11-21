@@ -149,12 +149,15 @@ void generate_code(FILE *out, Vertices vertices, Faces faces)
 // TODO: do not remap any coordinates.
 // The Cup 3D demo should just properly scale and place the object in the scene instead.
 // Otherwise we end up with distorted model.
-Vector3 remap_teapot(Vector3 v, float lx, float hx, float ly, float hy, float lz, float hz)
+Vector3 remap_object(Vector3 v, float lx, float hx, float ly, float hy, float lz, float hz)
 {
-    float scale = 1.0;
-    v.z = ((v.z - lz)/(hz - lz)*scale + 1);
-    v.x = ((v.x - lx)/(hx - lx)*2 - 1)*scale;
-    v.y = ((v.y - ly)/(hy - ly)*2 - 1)*scale;
+    float cx = lx + (hx - lx)/2;
+    float cy = ly + (hy - ly)/2;
+    float cz = lz + (hz - lz)/2;
+    float scale = 0.75;
+    v.z = (v.z - cz)*scale;
+    v.x = (v.x - cx)*scale;
+    v.y = (v.y - cy)*scale;
     return v;
 }
 
@@ -245,7 +248,7 @@ int main(int argc, char **argv)
     printf("Faces:    %zu (index: %d..%d)\n", faces.count, lf, hf);
 
     for (size_t i = 0; i < vertices.count; ++i) {
-        vertices.items[i] = remap_teapot(vertices.items[i], lx, hx, ly, hy, lz, hz);
+        vertices.items[i] = remap_object(vertices.items[i], lx, hx, ly, hy, lz, hz);
     }
 
     for (size_t i = 0; i < faces.count; ++i) {
