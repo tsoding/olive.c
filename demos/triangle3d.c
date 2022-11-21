@@ -2,8 +2,8 @@
 // Let's squash most of them into a single one
 #include "vc.c"
 
-#define WIDTH 800
-#define HEIGHT 600
+#define WIDTH 960
+#define HEIGHT 720
 
 static uint32_t pixels1[WIDTH*HEIGHT];
 static float zbuffer1[WIDTH*HEIGHT];
