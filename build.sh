@@ -30,7 +30,7 @@ build_vc_demo() {
 build_all_vc_demos() {
     mkdir -p ./build/demos
     build_vc_demo triangle &
-    build_vc_demo 3d &
+    build_vc_demo dots3d &
     build_vc_demo squish &
     build_vc_demo triangle3d &
     build_vc_demo triangleTex &
