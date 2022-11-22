@@ -44,7 +44,6 @@ build_tools() {
     mkdir -p ./build/tools/
     clang $COMMON_CFLAGS -o ./build/tools/png2c ./tools/png2c.c -lm &
     clang $COMMON_CFLAGS -o ./build/tools/obj2c ./tools/obj2c.c -lm &
-    clang $COMMON_CFLAGS -O2 -o ./build/tools/viewobj ./tools/viewobj.c &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
