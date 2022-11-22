@@ -36,6 +36,7 @@ build_all_vc_demos() {
     build_vc_demo triangleTex &
     build_vc_demo triangle3dTex &
     build_vc_demo cup3d &
+    build_vc_demo teapot3d &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 
@@ -51,7 +52,8 @@ build_assets() {
     mkdir -p ./build/assets/
     ./build/tools/png2c -n tsodinPog -o ./build/assets/tsodinPog.c ./assets/tsodinPog.png &
     ./build/tools/png2c -n tsodinCup -o ./build/assets/tsodinCup.c ./assets/tsodinCup.png &
-    ./build/tools/obj2c ./assets/tsodinCupLowPoly.obj ./build/assets/tsodinCupLowPoly.c &
+    ./build/tools/obj2c -o ./build/assets/tsodinCupLowPoly.c ./assets/tsodinCupLowPoly.obj &
+    ./build/tools/obj2c -s 0.40 -o ./build/assets/utahTeapot.c ./assets/utahTeapot.obj &
     wait # TODO: the whole script must fail if one of the jobs fails
 }
 

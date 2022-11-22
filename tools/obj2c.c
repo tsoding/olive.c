@@ -14,6 +14,15 @@
 typedef int Errno;
 #define UNUSED(x) (void)(x)
 
+const char *shift(int *argc, char ***argv)
+{
+    assert(*argc > 0);
+    const char *result = *argv[0];
+    *argc -= 1;
+    *argv += 1;
+    return result;
+}
+
 static Arena default_arena = {0};
 static Arena *context_arena = &default_arena;
 
@@ -128,53 +137,106 @@ void generate_code(FILE *out, Vertices vertices, Faces faces)
 {
     fprintf(out, "#ifndef OBJ_H_\n");
     fprintf(out, "#define OBJ_H_\n");
-    fprintf(out, "float vertices[%zu][3] = {\n", vertices.count);
+    fprintf(out, "#define vertices_count %zu\n", vertices.count);
+    fprintf(out, "static const float vertices[][3] = {\n");
     for (size_t i = 0; i < vertices.count; ++i) {
         Vector3 v = vertices.items[i];
         fprintf(out, "    {%f, %f, %f},\n", v.x, v.y, v.z);
     }
     fprintf(out, "};\n");
-    fprintf(out, "size_t vertices_count = %zu;\n", vertices.count);
 
-    fprintf(out, "int faces[%zu][3] = {\n", faces.count);
+    fprintf(out, "static const int faces[%zu][3] = {\n", faces.count);
     for (size_t i = 0; i < faces.count; ++i) {
         Face f = faces.items[i];
         fprintf(out, "    {%d, %d, %d},\n", f.a, f.b, f.c);
     }
     fprintf(out, "};\n");
-    fprintf(out, "size_t faces_count = %zu;\n", faces.count);
+    fprintf(out, "#define faces_count %zu\n", faces.count);
     fprintf(out, "#endif // OBJ_H_\n");
 }
 
-Vector3 remap_object(Vector3 v, float lx, float hx, float ly, float hy, float lz, float hz)
+Vector3 remap_object(Vector3 v, float scale, float lx, float hx, float ly, float hy, float lz, float hz)
 {
     float cx = lx + (hx - lx)/2;
     float cy = ly + (hy - ly)/2;
     float cz = lz + (hz - lz)/2;
-    float scale = 0.75;
     v.z = (v.z - cz)*scale;
     v.x = (v.x - cx)*scale;
     v.y = (v.y - cy)*scale;
     return v;
 }
 
+void usage(const char *program_name)
+{
+    fprintf(stderr, "Usage: %s [OPTIONS] <INPUT.obj>\n", program_name);
+    fprintf(stderr, "Options:\n");
+    fprintf(stderr, "    -o    output file path\n");
+    fprintf(stderr, "    -s    scale the model\n");
+}
+
 int main(int argc, char **argv)
 {
     int result = 0;
 
-    if (argc < 3) {
-        fprintf(stderr, "Usage: obj2c <input.obj> <output.c>\n");
-        fprintf(stderr, "ERROR: no input/output is provide\n");
-        return 1;
+    assert(argc > 0);
+    const char *program_name = shift(&argc, &argv);
+    const char *output_file_path = NULL;
+    const char *input_file_path = NULL;
+    float scale = 0.75;
+
+    // TODO: consider using https://github.com/tsoding/flag.h in here
+    while (argc > 0) {
+        const char *flag = shift(&argc, &argv);
+        if (strcmp(flag, "-o") == 0) {
+            if (argc <= 0) {
+                usage(program_name);
+                fprintf(stderr, "ERROR: no value is provided for flag %s\n", flag);
+                return_defer(1);
+            }
+
+            if (output_file_path != NULL) {
+                usage(program_name);
+                fprintf(stderr, "ERROR: %s was already provided\n", flag);
+                return_defer(1);
+            }
+
+            output_file_path = shift(&argc, &argv);
+        } else if (strcmp(flag, "-s") == 0) {
+            if (argc <= 0) {
+                usage(program_name);
+                fprintf(stderr, "ERROR: no value is provided for flag %s\n", flag);
+                return_defer(1);
+            }
+
+            const char *value = shift(&argc, &argv);
+            scale = strtof(value, NULL);
+        } else {
+            if (input_file_path != NULL) {
+                usage(program_name);
+                fprintf(stderr, "ERROR: input file path was already provided\n");
+                return_defer(1);
+            }
+            input_file_path = flag;
+        }
     }
 
-    const char *obj_file_path = argv[1];
-    const char *out_file_path = argv[2];
+    if (input_file_path == NULL) {
+        usage(program_name);
+        fprintf(stderr, "ERROR: no input file path is provided\n");
+        return_defer(1);
+    }
+
+    if (output_file_path == NULL) {
+        usage(program_name);
+        fprintf(stderr, "ERROR: no output file path is provided\n");
+        return_defer(1);
+    }
+
     char *buffer;
     size_t buffer_size;
-    Errno err = read_entire_file(obj_file_path, &buffer, &buffer_size);
+    Errno err = read_entire_file(input_file_path, &buffer, &buffer_size);
     if (err != 0) {
-        fprintf(stderr, "ERROR: could not read file %s: %s\n", obj_file_path, strerror(errno));
+        fprintf(stderr, "ERROR: could not read file %s: %s\n", input_file_path, strerror(errno));
         return_defer(1);
     }
 
@@ -187,7 +249,7 @@ int main(int argc, char **argv)
     int lf = INT_MAX, hf = INT_MIN;
     for (size_t line_number = 0; content.count > 0; ++line_number) {
         String_View line = sv_trim_left(sv_chop_by_delim(&content, '\n'));
-        if (line.count > 0) {
+        if (line.count > 0 && *line.data != '#') {
             String_View kind = sv_chop_by_delim(&line, ' ');
             if (sv_eq(kind, SV("v"))) {
                 char *endptr;
@@ -234,18 +296,18 @@ int main(int argc, char **argv)
 
                 da_append(&faces, make_face(a, b, c));
             } else {
-                fprintf(stderr, "%s:%zu: unknown kind of entry `"SV_Fmt"`\n", obj_file_path, line_number, SV_Arg(kind));
+                fprintf(stderr, "%s:%zu: unknown kind of entry `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(kind));
                 return_defer(1);
             }
         }
     }
-    printf("Input:    %s\n", obj_file_path);
-    printf("Output:   %s\n", out_file_path);
+    printf("Input:    %s\n", input_file_path);
+    printf("Output:   %s\n", output_file_path);
     printf("Vertices: %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
     printf("Faces:    %zu (index: %d..%d)\n", faces.count, lf, hf);
 
     for (size_t i = 0; i < vertices.count; ++i) {
-        vertices.items[i] = remap_object(vertices.items[i], lx, hx, ly, hy, lz, hz);
+        vertices.items[i] = remap_object(vertices.items[i], scale, lx, hx, ly, hy, lz, hz);
     }
 
     for (size_t i = 0; i < faces.count; ++i) {
@@ -254,9 +316,9 @@ int main(int argc, char **argv)
         faces.items[i].c -= 1;
     }
 
-    FILE *out = fopen(out_file_path, "wb");
+    FILE *out = fopen(output_file_path, "wb");
     if (out == NULL) {
-        fprintf(stderr, "ERROR: Could not write file %s: %s\n", out_file_path, strerror(errno));
+        fprintf(stderr, "ERROR: Could not write file %s: %s\n", output_file_path, strerror(errno));
         return_defer(1);
     }
     generate_code(out, vertices, faces);
