@@ -1,7 +1,7 @@
 # Olive.c
 
 <p align="center">
-![logo](./assets/olivec-400.png)
+<img src="./assets/olivec-400.png">
 </p>
 
 **IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
