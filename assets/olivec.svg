@@ -15,7 +15,7 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
-   sodipodi:docname="drawing.svg">
+   sodipodi:docname="olivec.svg">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.24748737"
-     inkscape:cx="-352.74868"
-     inkscape:cy="851.29879"
+     inkscape:zoom="0.69999999"
+     inkscape:cx="-110.06677"
+     inkscape:cy="310.68659"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -52,7 +52,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -101,6 +101,12 @@
        style="fill:#eff650;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4.0262413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 165.72101,207.88523 c 3.14905,-7.23664 11.92187,-9.11684 20.09821,-5.44563 8.17635,3.67127 12.66002,11.50375 8.90872,19.6376 -26.80631,24.14879 -34.01345,19.85806 -29.00693,-14.19197 z"
        id="path867-6"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cscc" />
+    <path
+       style="fill:#ff3232;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:4.0262413;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 163.99568,226.49686 c 1.23452,-2.88013 6.46911,-3.34495 9.67446,-1.88383 3.20536,1.46114 6.85296,6.2793 5.38235,9.51652 -11.26478,8.47712 -15.60208,6.10798 -15.05681,-7.63269 z"
+       id="path867-6-3"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cscc" />
     <circle
