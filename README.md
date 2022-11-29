@@ -1,7 +1,7 @@
 # Olive.c
 
 <p align="center">
-<img src="./assets/olivec-200.png">
+<a href="https://tsoding.github.io/olive.c/"><img src="./assets/olivec-200.png"></a>
 </p>
 
 **IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
