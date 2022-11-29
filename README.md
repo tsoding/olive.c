@@ -1,5 +1,7 @@
 # Olive.c
 
+![logo](./assets/olivec-400.png)
+
 **IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
 
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel.
