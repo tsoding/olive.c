@@ -53,10 +53,11 @@ int main(void)
 
 ## Building the Tests and Demos
 
-Even though the library does not require any special building, the tests and demos do. Just execute `build.sh` script to build everything.
+Even though the library does not require any special building, the tests and demos do. We use [nobuild](https://github.com/tsoding/nobuild) build system:
 
 ```console
-$ ./build.sh
+$ clang -o nobuild nobuild.c
+$ ./nobuild
 ```
 
 ## Tests

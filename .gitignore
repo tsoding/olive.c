@@ -1,3 +1,5 @@
 *.ppm
 build/
 *.swp
+nobuild
+nobuild.old
