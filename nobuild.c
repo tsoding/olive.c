@@ -26,11 +26,46 @@ void build_tests(void)
     CMD("clang", COMMON_CFLAGS, "-fsanitize=memory", "-o", "./build/test", "test.c", "-lm");
 }
 
+// TODO: move copy_file to nobuild.h
+// Maybe even use platform dependent APIs to make it better.
+void copy_file(const char *src_file_path, const char *dst_file_path)
+{
+    INFO("Copying %s -> %s", src_file_path, dst_file_path);
+    size_t buffer_sz = 32*1024;
+    char *buffer = malloc(buffer_sz);
+    if (buffer == NULL) {
+        PANIC("Could not allocate memory to copy file %s -> %s", src_file_path, dst_file_path);
+    }
+
+    FILE *src = fopen(src_file_path, "rb");
+    if (src == NULL) {
+        PANIC("Could not open file %s for reading: %s", src_file_path, strerror(errno));
+    }
+    FILE *dst = fopen(dst_file_path, "wb");
+    if (dst == NULL) {
+        PANIC("Could not open file %s for writing: %s", dst_file_path, strerror(errno));
+    }
+    while (!feof(src)) {
+        size_t n = fread(buffer, 1, buffer_sz, src);
+        if (ferror(src)) {
+            PANIC("Could not read from file %s: %s", src_file_path, strerror(errno));
+        }
+        size_t m = 0;
+        while (m < n) {
+            m += fwrite(buffer + m, 1, n - m, dst);
+            if (ferror(dst)) {
+                PANIC("Could not write to file %s: %s", dst_file_path, strerror(errno));
+            }
+        }
+    }
+    if (fclose(dst) < 0) PANIC("Could not close file %s: %s", dst_file_path, strerror(errno));
+    if (fclose(src) < 0) PANIC("Could not close file %s: %s", src_file_path, strerror(errno));
+}
+
 void build_wasm_demo(const char *name)
 {
     CMD("clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", CONCAT("./build/demos/", name, ".wasm"), "-DVC_PLATFORM=VC_WASM_PLATFORM", CONCAT("./demos/", name, ".c"));
-    // TODO: implement copying wasm blobs into ./wasm/ folder
-    // cp ./build/demos/$NAME.wasm ./wasm/
+    copy_file(CONCAT("./build/demos/", name, ".wasm"), CONCAT("./wasm/", name, ".wasm"));
 }
 
 void build_term_demo(const char *name)
