@@ -3,8 +3,6 @@
 
 #define COMMON_CFLAGS "-Wall", "-Wextra", "-pedantic", "-std=c99", "-ggdb", "-I.", "-I./build/", "-I./dev-deps/"
 
-// TODO: implement parallel building
-
 void build_tools(void)
 {
     MKDIRS("build", "tools");
