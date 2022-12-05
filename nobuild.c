@@ -123,7 +123,7 @@ void pids_wait(Pids pids)
 
 void build_vc_demo(const char *name, Pids *pids)
 {
-    build_wasm_demo(name);
+    da_append(pids, build_wasm_demo(name));
     da_append(pids, build_term_demo(name));
     da_append(pids, build_sdl_demo(name));
 }
