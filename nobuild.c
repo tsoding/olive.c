@@ -62,40 +62,103 @@ void copy_file(const char *src_file_path, const char *dst_file_path)
     if (fclose(src) < 0) PANIC("Could not close file %s: %s", src_file_path, strerror(errno));
 }
 
-void build_wasm_demo(const char *name)
+Pid build_wasm_demo(const char *name)
 {
-    CMD("clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", CONCAT("./build/demos/", name, ".wasm"), "-DVC_PLATFORM=VC_WASM_PLATFORM", CONCAT("./demos/", name, ".c"));
-    copy_file(CONCAT("./build/demos/", name, ".wasm"), CONCAT("./wasm/", name, ".wasm"));
+    Cmd cmd = {
+        .line = cstr_array_make("clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", CONCAT("./build/demos/", name, ".wasm"), "-DVC_PLATFORM=VC_WASM_PLATFORM", CONCAT("./demos/", name, ".c"), NULL)
+    };
+    INFO("CMD: %s", cmd_show(cmd));
+    return cmd_run_async(cmd, NULL, NULL);
 }
 
-void build_term_demo(const char *name)
+Pid build_term_demo(const char *name)
 {
-    CMD("clang", COMMON_CFLAGS, "-O2", "-o", CONCAT("./build/demos/", name, ".term"), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", CONCAT("./demos/", name, ".c"), "-lm");
+    Cmd cmd = {
+        .line = cstr_array_make("clang", COMMON_CFLAGS, "-O2", "-o", CONCAT("./build/demos/", name, ".term"), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", CONCAT("./demos/", name, ".c"), "-lm", NULL)
+    };
+    INFO("CMD: %s", cmd_show(cmd));
+    return cmd_run_async(cmd, NULL, NULL);
 }
 
-void build_sdl_demo(const char *name)
+Pid build_sdl_demo(const char *name)
 {
-    CMD("clang", COMMON_CFLAGS, "-O2", "-o", CONCAT("./build/demos/", name, ".sdl"), "-DVC_PLATFORM=VC_SDL_PLATFORM", CONCAT("./demos/", name, ".c"), "-lm", "-lSDL2");
+    Cmd cmd = {
+        .line = cstr_array_make("clang", COMMON_CFLAGS, "-O2", "-o", CONCAT("./build/demos/", name, ".sdl"), "-DVC_PLATFORM=VC_SDL_PLATFORM", CONCAT("./demos/", name, ".c"), "-lm", "-lSDL2", NULL)
+    };
+    INFO("CMD: %s", cmd_show(cmd));
+    return cmd_run_async(cmd, NULL, NULL);
 }
 
-void build_vc_demo(const char *name)
+// TODO: move struct Pids, pids_wait() and da_append() to nobuild.h
+
+typedef struct {
+    Pid *items;
+    size_t count;
+    size_t capacity;
+} Pids;
+
+void pids_wait(Pids pids)
+{
+    for (size_t i = 0; i < pids.count; ++i) {
+        pid_wait(pids.items[i]);
+    }
+}
+
+#define DA_INIT_CAPACITY 8192
+#define DA_REALLOC(oldptr, oldsz, newsz) realloc(oldptr, newsz)
+#define da_append(da, item)                                                 \
+    do {                                                                    \
+        if ((da)->count >= (da)->capacity) {                                \
+            size_t new_capacity = (da)->capacity*2;                         \
+            if (new_capacity == 0) {                                        \
+                new_capacity = DA_INIT_CAPACITY;                            \
+            }                                                               \
+                                                                            \
+            (da)->items = DA_REALLOC((da)->items,                           \
+                                     (da)->capacity*sizeof((da)->items[0]), \
+                                     new_capacity*sizeof((da)->items[0]));  \
+            (da)->capacity = new_capacity;                                  \
+        }                                                                   \
+                                                                            \
+        (da)->items[(da)->count++] = (item);                                \
+    } while (0)
+
+void build_vc_demo(const char *name, Pids *pids)
 {
     build_wasm_demo(name);
-    build_term_demo(name);
-    build_sdl_demo(name);
+    da_append(pids, build_term_demo(name));
+    da_append(pids, build_sdl_demo(name));
 }
 
 void build_all_vc_demos(void)
 {
     MKDIRS("build", "demos");
-    build_vc_demo("triangle");
-    build_vc_demo("dots3d");
-    build_vc_demo("squish");
-    build_vc_demo("triangle3d");
-    build_vc_demo("triangleTex");
-    build_vc_demo("triangle3dTex");
-    build_vc_demo("cup3d");
-    build_vc_demo("teapot3d");
+    const char *names[] = {
+        "triangle",
+        "dots3d",
+        "squish",
+        "triangle3d",
+        "triangleTex",
+        "triangle3dTex",
+        "cup3d",
+        "teapot3d",
+    };
+    size_t names_sz = sizeof(names)/sizeof(names[0]);
+    size_t thread_count = 6;
+
+    Pids pids = {0};
+    for (size_t i = 0; i < names_sz; ++i) {
+        build_vc_demo(names[i], &pids);
+        if (pids.count >= thread_count) {
+            pids_wait(pids);
+            pids.count = 0;
+        }
+    }
+    pids_wait(pids);
+
+    for (size_t i = 0; i < names_sz; ++i) {
+        copy_file(CONCAT("./build/demos/", names[i], ".wasm"), CONCAT("./wasm/", names[i], ".wasm"));
+    }
 }
 
 int main(int argc, char **argv)
@@ -126,7 +189,7 @@ int main(int argc, char **argv)
         build_assets();
         build_tests();
         build_all_vc_demos();
-    } 
+    }
 
     return 0;
 }
