@@ -170,7 +170,6 @@ int main(int argc, char **argv)
     if (argc > 0) {
         const char *subcmd = shift_args(&argc, &argv);
         if (strcmp(subcmd, "tools") == 0) {
-            // TODO: rebuild specific tool
             build_tools();
         } else if (strcmp(subcmd, "assets") == 0) {
             build_assets();
