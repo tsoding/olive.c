@@ -177,8 +177,30 @@ int main(int argc, char **argv)
             // TODO: pass arguments to the ./build/test command
             build_tests();
         } else if (strcmp(subcmd, "demos") == 0) {
-            // TODO: build specific demos for the specific platforms
-            build_all_vc_demos();
+            if (argc > 0) {
+                const char *name = shift_args(&argc, &argv);
+
+                if (argc > 0) {
+                    const char *platform = shift_args(&argc, &argv);
+                    if (strcmp(platform, "sdl") == 0) {
+                        pid_wait(build_sdl_demo(name));
+                    } else if (strcmp(platform, "term") == 0) {
+                        pid_wait(build_term_demo(name));
+                    } else if (strcmp(platform, "wasm") == 0) {
+                        pid_wait(build_wasm_demo(name));
+                        copy_file(CONCAT("./build/demos/", name, ".wasm"), CONCAT("./wasm/", name, ".wasm"));
+                    } else {
+                        PANIC("unknown demo platform %s", platform);
+                    }
+                } else {
+                    Pids pids = {0};
+                    build_vc_demo(name, &pids);
+                    pids_wait(pids);
+                    copy_file(CONCAT("./build/demos/", name, ".wasm"), CONCAT("./wasm/", name, ".wasm"));
+                }
+            } else {
+                build_all_vc_demos();
+            }
         } else {
             PANIC("Unknown command `%s`", subcmd);
         }
