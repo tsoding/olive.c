@@ -942,6 +942,4 @@ OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w
 // TODO: bezier curves
 // TODO: olivec_ring
 // TODO: fuzzer
-
-// TODO: olivec_ellipse
 // TODO: Stencil
