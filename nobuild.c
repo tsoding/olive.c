@@ -173,7 +173,6 @@ int main(int argc, char **argv)
             // TODO: rebuild specific tool
             build_tools();
         } else if (strcmp(subcmd, "assets") == 0) {
-            // TODO: rebuild specific assets
             build_assets();
         } else if (strcmp(subcmd, "tests") == 0) {
             build_tests();
