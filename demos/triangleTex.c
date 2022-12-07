@@ -42,7 +42,7 @@ Olivec_Canvas vc_render(float dt)
             int i1 = (i*2 + 0)%4;
             int i2 = (i*2 + 1)%4;
             int i3 = (i*2 + 2)%4;
-            olivec_triangle3uv(
+            olivec_triangle3uv_bilinear(
                 oc,
                 ps[i1][0], ps[i1][1],
                 ps[i2][0], ps[i2][1],

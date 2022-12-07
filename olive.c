@@ -339,10 +339,12 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
 OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, uint32_t c1, uint32_t c2, uint32_t c3);
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
 OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
+OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
+OLIVECDEF uint32_t olivec_pixel_bilinear(Olivec_Canvas sprite, int nx, int ny, int w, int h);
 
 typedef struct {
     // Safe ranges to iterate over.
@@ -724,13 +726,47 @@ OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int 
                     float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
                     float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
                     float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+
                     int texture_x = tx/z*texture.width;
                     if (texture_x < 0) texture_x = 0;
                     if ((size_t) texture_x >= texture.width) texture_x = texture.width - 1;
+
                     int texture_y = ty/z*texture.height;
                     if (texture_y < 0) texture_y = 0;
                     if ((size_t) texture_y >= texture.height) texture_y = texture.height - 1;
-                    OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, texture_x, texture_y);
+                    OLIVEC_PIXEL(oc, x, y) = OLIVEC_PIXEL(texture, (int)texture_x, (int)texture_y);
+                }
+            }
+        }
+    }
+}
+
+OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture)
+{
+    int lx, hx, ly, hy;
+    if (olivec_normalize_triangle(oc.width, oc.height, x1, y1, x2, y2, x3, y3, &lx, &hx, &ly, &hy)) {
+        for (int y = ly; y <= hy; ++y) {
+            for (int x = lx; x <= hx; ++x) {
+                int u1, u2, det;
+                if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
+                    int u3 = det - u1 - u2;
+                    float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
+                    float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
+                    float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+
+                    float texture_x = tx/z*texture.width;
+                    if (texture_x < 0) texture_x = 0;
+                    if (texture_x >= (float) texture.width) texture_x = texture.width - 1;
+
+                    float texture_y = ty/z*texture.height;
+                    if (texture_y < 0) texture_y = 0;
+                    if (texture_y >= (float) texture.height) texture_y = texture.height - 1;
+
+                    int precision = 100;
+                    OLIVEC_PIXEL(oc, x, y) = olivec_pixel_bilinear(
+                                                 texture,
+                                                 texture_x*precision, texture_y*precision,
+                                                 precision, precision);
                 }
             }
         }
@@ -818,6 +854,48 @@ OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, 
     }
 }
 
+// TODO: olivec_pixel_bilinear does not check for out-of-bounds
+// But maybe it shouldn't. Maybe it's a responsibility of the caller of the function.
+OLIVECDEF uint32_t olivec_pixel_bilinear(Olivec_Canvas sprite, int nx, int ny, int w, int h)
+{
+    int px = nx%w;
+    int py = ny%h;
+
+    int x1 = nx/w, x2 = nx/w;
+    int y1 = ny/h, y2 = ny/h;
+    if (px < w/2) {
+        // left
+        px += w/2;
+        x1 -= 1;
+        if (x1 < 0) x1 = 0;
+    } else {
+        // right
+        px -= w/2;
+        x2 += 1;
+        if ((size_t) x2 >= sprite.width) x2 = sprite.width - 1;
+    }
+
+    if (py < h/2) {
+        // top
+        py += h/2;
+        y1 -= 1;
+        if (y1 < 0) y1 = 0;
+    } else {
+        // bottom
+        py -= h/2;
+        y2 += 1;
+        if ((size_t) y2 >= sprite.height) y2 = sprite.height - 1;
+    }
+
+    return mix_colors2(mix_colors2(OLIVEC_PIXEL(sprite, x1, y1),
+                                   OLIVEC_PIXEL(sprite, x2, y1),
+                                   px, w),
+                       mix_colors2(OLIVEC_PIXEL(sprite, x1, y2),
+                                   OLIVEC_PIXEL(sprite, x2, y2),
+                                   px, w),
+                       py, h);
+}
+
 OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite)
 {
     // TODO: support negative size in olivec_sprite_copy_bilinear()
@@ -831,44 +909,7 @@ OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w
         for (int x = nr.x1; x <= nr.x2; ++x) {
             size_t nx = (x - nr.ox1)*sprite.width;
             size_t ny = (y - nr.oy1)*sprite.height;
-
-            int px = nx%w;
-            int py = ny%h;
-
-            int x1 = nx/w, x2 = nx/w;
-            int y1 = ny/h, y2 = ny/h;
-            if (px < w/2) {
-                // left
-                px += w/2;
-                x1 -= 1;
-                if (x1 < 0) x1 = 0;
-            } else {
-                // right
-                px -= w/2;
-                x2 += 1;
-                if ((size_t) x2 >= sprite.width) x2 = sprite.width - 1;
-            }
-
-            if (py < h/2) {
-                // top
-                py += h/2;
-                y1 -= 1;
-                if (y1 < 0) y1 = 0;
-            } else {
-                // bottom
-                py -= h/2;
-                y2 += 1;
-                if ((size_t) y2 >= sprite.height) y2 = sprite.height - 1;
-            }
-
-            OLIVEC_PIXEL(oc, x, y) =
-                mix_colors2(mix_colors2(OLIVEC_PIXEL(sprite, x1, y1),
-                                        OLIVEC_PIXEL(sprite, x2, y1),
-                                        px, w),
-                            mix_colors2(OLIVEC_PIXEL(sprite, x1, y2),
-                                        OLIVEC_PIXEL(sprite, x2, y2),
-                                        px, w),
-                            py, h);
+            OLIVEC_PIXEL(oc, x, y) = olivec_pixel_bilinear(sprite, nx, ny, w, h);
         }
     }
 }
