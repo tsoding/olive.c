@@ -59,7 +59,7 @@ Olivec_Canvas vc_render(float dt)
     global_time += dt;
 
     Olivec_Canvas oc1 = olivec_canvas(pixels1, WIDTH, HEIGHT, WIDTH);
-    olivec_fill(oc1, 0xFF202020);
+    olivec_fill(oc1, 0xFF181818);
     Olivec_Canvas zb1 = olivec_canvas((uint32_t*)zbuffer1, WIDTH, HEIGHT, WIDTH);
     olivec_fill(zb1, 0);
 
