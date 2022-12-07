@@ -540,9 +540,6 @@ static void vc_term_compress_pixels(Olivec_Canvas oc)
             vc_term_char_canvas_debug[y*vc_term_scaled_down_width + x] = cp;
         }
     }
-
-    // stbi_write_png("debug.png", vc_term_scaled_down_width, vc_term_scaled_down_height, 4, vc_term_char_canvas_debug, sizeof(uint32_t)*vc_term_scaled_down_width);
-    // exit(1);
 }
 
 int main(void)
@@ -551,15 +548,10 @@ int main(void)
         vc_term_compress_pixels(vc_render(1.f/60.f));
         for (size_t y = 0; y < vc_term_scaled_down_height; ++y) {
             for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
-                // TODO: different halfs of the double pixels
-                // We can do stuff like putc('<', stdout); putc('>', stdout);
-                // putc(vc_term_char_canvas[y*vc_term_scaled_down_width + x], stdout);
-                // putc(vc_term_char_canvas[y*vc_term_scaled_down_width + x], stdout);
-                printf("\033[48;5;%dm  ", vc_term_char_canvas[y*vc_term_scaled_down_width + x]);
                 // TODO: explore the idea of figuring out aspect ratio of the character using escape ANSI codes of the terminal and rendering the image accordingly
+                printf("\033[48;5;%dm  ", vc_term_char_canvas[y*vc_term_scaled_down_width + x]);
             }
             printf("\033[0m\n");
-            // putc('\n', stdout);
         }
 
         usleep(1000*1000/60);
