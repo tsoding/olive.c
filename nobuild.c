@@ -176,8 +176,16 @@ int main(int argc, char **argv)
             // TODO: rebuild specific assets
             build_assets();
         } else if (strcmp(subcmd, "tests") == 0) {
-            // TODO: pass arguments to the ./build/test command
             build_tests();
+            if (argc > 0) {
+                Cmd cmd = {0};
+                cmd.line = cstr_array_append(cmd.line, "./build/test");
+                for (int i = 0; i < argc; ++i) {
+                    cmd.line = cstr_array_append(cmd.line, argv[i]);
+                }
+                cmd.line = cstr_array_append(cmd.line, NULL);
+                cmd_run_sync(cmd);
+            }
         } else if (strcmp(subcmd, "demos") == 0) {
             if (argc > 0) {
                 const char *name = shift_args(&argc, &argv);
