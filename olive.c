@@ -830,7 +830,6 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
     }
 }
 
-// TODO: bilinear interpolation for olivec_sprite_*
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite)
 {
     if (sprite.width == 0) return;
