@@ -161,7 +161,6 @@ static size_t vc_term_actual_height = 0;
 static size_t vc_term_scaled_down_width = 0;
 static size_t vc_term_scaled_down_height = 0;
 static int *vc_term_char_canvas = 0;
-static uint32_t *vc_term_char_canvas_debug = 0;
 
 int hsl256[][3] = {
     {0, 0, 0},
@@ -483,8 +482,6 @@ static void vc_term_resize_char_canvas(size_t new_width, size_t new_height)
     free(vc_term_char_canvas);
     vc_term_char_canvas = malloc(sizeof(*vc_term_char_canvas)*vc_term_scaled_down_width*vc_term_scaled_down_height);
     assert(vc_term_char_canvas != NULL && "Just buy more RAM");
-    vc_term_char_canvas_debug = malloc(sizeof(*vc_term_char_canvas_debug)*vc_term_scaled_down_width*vc_term_scaled_down_height);
-    assert(vc_term_char_canvas_debug != NULL && "Just buy more RAM");
 }
 
 void rgb_to_hsl(int r, int g, int b, int *h, int *s, int *l)
@@ -538,7 +535,6 @@ static void vc_term_compress_pixels(Olivec_Canvas oc)
             int h, s, l;
             rgb_to_hsl(r, g, b, &h, &s, &l);
             vc_term_char_canvas[y*vc_term_scaled_down_width + x] = find_ansi_index_by_hsl(h, s, l);
-            vc_term_char_canvas_debug[y*vc_term_scaled_down_width + x] = cp;
         }
     }
 }
