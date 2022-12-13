@@ -429,6 +429,7 @@ int distance_hsl256(int i, int h, int s, int l)
     return dh*dh + ds*ds + dl*dl;
 }
 
+// TODO: bring find_ansi_index_by_rgb from image2term
 int find_ansi_index_by_hsl(int h, int s, int l)
 {
     int index = 0;
@@ -470,6 +471,7 @@ static uint32_t vc_term_compress_pixels_chunk(Olivec_Canvas oc)
 
 static void vc_term_resize_char_canvas(size_t new_width, size_t new_height)
 {
+    // TODO: warn the user if vc_term_actual_width does not fit into the screen
     // TODO: can we just do something so the divisibility is not important?
     // Like round the stuff or something?
     // Or we can resize the frame on the fly similarly to how we resize sprites in olivec_sprite_*() functions.
