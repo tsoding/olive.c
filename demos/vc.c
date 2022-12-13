@@ -473,6 +473,7 @@ static void vc_term_resize_char_canvas(size_t new_width, size_t new_height)
 {
     // TODO: can we just do something so the divisibility is not important?
     // Like round the stuff or something?
+    // Or we can resize the frame on the fly similarly to how we resize sprites in olivec_sprite_*() functions.
     assert(new_width%VC_TERM_SCALE_DOWN_FACTOR == 0 && "Width must be divisible by VC_TERM_SCALE_DOWN_FACTOR");
     assert(new_height%VC_TERM_SCALE_DOWN_FACTOR == 0 && "Height must be divisible by VC_TERM_SCALE_DOWN_FACTOR");
     vc_term_actual_width = new_width;
