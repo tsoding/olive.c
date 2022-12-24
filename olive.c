@@ -934,11 +934,53 @@ OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w
     }
 }
 
+
+OLIVECDEF double OLIVEC_BINOMIAL_COEFFS(int n, int i)
+{
+	double result = 1;
+	for(int j = 1; j <= i; j++)
+	{
+		result *= (n-i+j) /(double)j;
+	}
+	return result;
+}
+
+OLIVECDEF void olivec_bezier(Olivec_Canvas oc, int degree, uint32_t color,
+											   int x1, int y1, int cx1, int cy1,
+											   int cx2, int cy2, int x2, int y2)
+{
+	// TODO: Make the degree work for other than cubic.
+	// TODO: test case for bezier curves
+
+	int pointsx[4] = {x1, cx1, cx2, x2};
+	int pointsy[4] = {y1, cy1, cy2, y2};
+	double px = 0, py = 0;
+	// TODO: find a better iteration step size. 
+	double istep = 0.001;
+	double scale_factor = istep;
+	double x, y;
+
+	while(scale_factor < 1)
+	{
+		x = 0, y = 0;
+		for(int i = 0; i <= degree; i++)
+		{
+			double b = OLIVEC_BINOMIAL_COEFFS(degree, i) * pow(1-scale_factor, degree - i) * pow(scale_factor, i);
+			x += b*(double) pointsx[i];
+			y += b*(double) pointsy[i];
+		}
+		
+        OLIVEC_PIXEL(oc,(int) x,(int) y) = color;
+		px = x; py = y;
+
+		scale_factor += istep;
+	}
+}
+
 #endif // OLIVEC_IMPLEMENTATION
 
 // TODO: Benchmarking
 // TODO: SIMD implementations
-// TODO: bezier curves
 // TODO: olivec_ring
 // TODO: fuzzer
 // TODO: Stencil
