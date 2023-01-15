@@ -341,6 +341,7 @@ OLIVECDEF void olivec_triangle3c(Olivec_Canvas oc, int x1, int y1, int x2, int y
 OLIVECDEF void olivec_triangle3z(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float z1, float z2, float z3);
 OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
 OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int x2, int y2, int x3, int y3, float tx1, float ty1, float tx2, float ty2, float tx3, float ty3, float z1, float z2, float z3, Olivec_Canvas texture);
+OLIVECDEF void olivec_convex_polygon(Olivec_Canvas oc, size_t n, int *x, int *y, uint32_t color);
 OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int x, int y, Olivec_Font font, size_t size, uint32_t color);
 OLIVECDEF void olivec_sprite_blend(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
 OLIVECDEF void olivec_sprite_copy(Olivec_Canvas oc, int x, int y, int w, int h, Olivec_Canvas sprite);
@@ -807,6 +808,13 @@ OLIVECDEF void olivec_triangle(Olivec_Canvas oc, int x1, int y1, int x2, int y2,
                 }
             }
         }
+    }
+}
+
+OLIVECDEF void olivec_convex_polygon(Olivec_Canvas oc, size_t n, int *x, int *y, uint32_t color)
+{
+    for (size_t i = 2; i < n; ++i) {
+        olivec_triangle(oc, x[0], y[0], x[i], y[i], x[i - 1], y[i - 1], color);
     }
 }
 
