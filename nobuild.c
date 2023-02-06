@@ -192,8 +192,24 @@ int main(int argc, char **argv)
                     const char *platform = shift_args(&argc, &argv);
                     if (strcmp(platform, "sdl") == 0) {
                         pid_wait(build_sdl_demo(name));
+
+                        if (argc > 0) {
+                            const char *run = shift_args(&argc, &argv);
+                            if (strcmp(run, "run") != 0) {
+                                PANIC("unknown action `%s` for SDL demo: %s", run, name);
+                            }
+                            CMD(CONCAT("./build/demos/", name, ".sdl"));
+                        }
                     } else if (strcmp(platform, "term") == 0) {
                         pid_wait(build_term_demo(name));
+
+                        if (argc > 0) {
+                            const char *run = shift_args(&argc, &argv);
+                            if (strcmp(run, "run") != 0) {
+                                PANIC("unknown action `%s` for SDL demo: %s", run, name);
+                            }
+                            CMD(CONCAT("./build/demos/", name, ".term"));
+                        }
                     } else if (strcmp(platform, "wasm") == 0) {
                         pid_wait(build_wasm_demo(name));
                         copy_file(CONCAT("./build/demos/", name, ".wasm"), CONCAT("./wasm/", name, ".wasm"));
