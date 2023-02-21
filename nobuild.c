@@ -8,6 +8,7 @@ void build_tools(void)
     MKDIRS("build", "tools");
     CMD("clang", COMMON_CFLAGS, "-o", "./build/tools/png2c", "./tools/png2c.c", "-lm");
     CMD("clang", COMMON_CFLAGS, "-o", "./build/tools/obj2c", "./tools/obj2c.c", "-lm");
+    CMD("clang", COMMON_CFLAGS, "-I/usr/include/freetype2", "-I/usr/include/libpng16", "-L/usr/local/lib", "-lfreetype", "-o", "./build/tools/font2c", "./tools/font2c.c");
 }
 
 void build_assets(void)
@@ -19,6 +20,7 @@ void build_assets(void)
     CMD("./build/tools/png2c", "-n", "lavastone", "-o", "./build/assets/lavastone.c", "./assets/lavastone.png");
     CMD("./build/tools/obj2c", "-o", "./build/assets/tsodinCupLowPoly.c", "./assets/tsodinCupLowPoly.obj");
     CMD("./build/tools/obj2c", "-s", "0.40", "-o", "./build/assets/utahTeapot.c", "./assets/utahTeapot.obj");
+    CMD("./build/tools/font2c", "-o", "./build/assets/testFont.c", "-n", "test_font", "./fonts/LibreBaskerville-Regular.ttf");
 }
 
 void build_tests(void)
