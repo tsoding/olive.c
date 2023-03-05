@@ -207,7 +207,7 @@ int main(int argc, char **argv)
                         if (argc > 0) {
                             const char *run = shift_args(&argc, &argv);
                             if (strcmp(run, "run") != 0) {
-                                PANIC("unknown action `%s` for SDL demo: %s", run, name);
+                                PANIC("unknown action `%s` for Terminal demo: %s", run, name);
                             }
                             CMD(CONCAT("./build/demos/", name, ".term"));
                         }
