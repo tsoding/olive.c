@@ -14,6 +14,7 @@ void build_assets(void)
 {
     MKDIRS("build", "assets");
     CMD("./build/tools/png2c", "-n", "tsodinPog", "-o", "./build/assets/tsodinPog.c", "./assets/tsodinPog.png");
+    CMD("./build/tools/png2c", "-n", "Lena_112", "-o", "./build/assets/Lena_112.c", "./assets/Lena_112.png");
     CMD("./build/tools/png2c", "-n", "tsodinCup", "-o", "./build/assets/tsodinCup.c", "./assets/tsodinCup.png");
     CMD("./build/tools/png2c", "-n", "oldstone", "-o", "./build/assets/oldstone.c", "./assets/oldstone.png");
     CMD("./build/tools/png2c", "-n", "lavastone", "-o", "./build/assets/lavastone.c", "./assets/lavastone.png");
