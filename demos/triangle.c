@@ -2,8 +2,6 @@
 
 #define WIDTH 960
 #define HEIGHT 720
-// #define WIDTH 1920
-// #define HEIGHT 1080
 #define BACKGROUND_COLOR 0xFF181818
 #define CIRCLE_RADIUS 100
 #define CIRCLE_COLOR 0x99AA2020

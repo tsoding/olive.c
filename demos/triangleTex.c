@@ -1,5 +1,5 @@
 #include "vc.c"
-#include "assets/Lena_112.c"
+#include "assets/tsodinPog.c"
 
 #define WIDTH 960
 #define HEIGHT 720
@@ -18,7 +18,7 @@ float cosf(float x);
 Olivec_Canvas vc_render(float dt)
 {
     Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
-    Olivec_Canvas Lena_112 = olivec_canvas(Lena_112_pixels, Lena_112_width, Lena_112_height, Lena_112_width);
+    Olivec_Canvas tsodinPog = olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width);
 
     olivec_fill(oc, BACKGROUND_COLOR);
 
@@ -51,7 +51,7 @@ Olivec_Canvas vc_render(float dt)
                 uvs[i2][0], uvs[i2][1],
                 uvs[i3][0], uvs[i3][1],
                 1, 1, 1,
-                Lena_112
+                tsodinPog
             );
        }
     }
