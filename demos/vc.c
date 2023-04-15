@@ -558,7 +558,7 @@ int main(void)
         for (size_t y = 0; y < vc_term_scaled_down_height - 1; y = y + 2) {
             for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
                 // TODO: explore the idea of figuring out aspect ratio of the character using escape ANSI codes of the terminal and rendering the image accordingly
-                printf("\033[48;5;%dm\033[38;5;%dm%s", vc_term_char_canvas[y*vc_term_scaled_down_width + x], vc_term_char_canvas[y*vc_term_scaled_down_width + vc_term_scaled_down_width + x], "\u2584");
+                printf("\033[48;5;%dm\033[38;5;%dm\u2584", vc_term_char_canvas[y*vc_term_scaled_down_width + x], vc_term_char_canvas[y*vc_term_scaled_down_width + vc_term_scaled_down_width + x]);
             }
             printf("\033[0m\n");
         }
