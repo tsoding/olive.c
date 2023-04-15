@@ -115,19 +115,19 @@ Olivec_Canvas vc_render(float dt)
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
 
-#ifdef LIGHTING
-        Vector3 normal = cross(subtract3(v2, v1), subtract3(v3, v1));
-        normalize3(&normal);
-
-        float diff = (dot3(normal, sun) + 1.0f) / 2.0f;
-        int dq = (int)(diff * 255);
-#endif
-
 #ifdef BACKFACE_CULLING
         if ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0) continue;
 #endif
 #ifdef FRONTFACE_CULLING
         if ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) >= 0) continue;
+#endif
+
+#ifdef LIGHTING
+        Vector3 normal = cross(subtract3(v2, v1), subtract3(v3, v1));
+        normalize3(&normal);
+
+        float diffuse = (dot3(normal, sun) + 1.0f) / 2.0f;
+        int diffuse_byte_val = (int)(diffuse * 255);
 #endif
 
         int x1 = p1.x;
@@ -153,7 +153,7 @@ Olivec_Canvas vc_render(float dt)
                             zbuffer[y*WIDTH + x] = z;
                             OLIVEC_PIXEL(oc, x, y) = mix_colors3(0xFF1818FF, 0xFF18FF18, 0xFFFF1818, u1, u2, det);
 #ifdef LIGHTING
-                            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), ((255 - dq)<<(3*8)));
+                            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), (255 - diffuse_byte_val)<<(3*8));
 #endif
 
                             z = 1.0f/z;
