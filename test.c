@@ -612,6 +612,22 @@ Olivec_Canvas test_fill_ellipse(void)
     return dst;
 }
 
+Olivec_Canvas test_line_bug_offset(void)
+{
+    size_t factor = 3;
+    size_t width = 100*factor;
+    size_t height = 50*factor;
+    Olivec_Canvas dst = canvas_alloc(width, height);
+    olivec_fill(dst, BACKGROUND_COLOR);
+    int x1 = 50;
+    int y1 = 100;
+    int x2 = 0;
+    int y2 = -100;
+    olivec_line(dst, x1, y1, x2, y2, GREEN_COLOR);
+    olivec_circle(dst, x1, y1, 5, RED_COLOR);
+    return dst;
+}
+
 Test_Case test_cases[] = {
     DEFINE_TEST_CASE(fill_rect),
     DEFINE_TEST_CASE(fill_circle),
@@ -637,6 +653,7 @@ Test_Case test_cases[] = {
     DEFINE_TEST_CASE(barycentric_overflow),
     DEFINE_TEST_CASE(bilinear_interpolation),
     DEFINE_TEST_CASE(fill_ellipse),
+    DEFINE_TEST_CASE(line_bug_offset),
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
