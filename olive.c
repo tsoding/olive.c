@@ -326,6 +326,7 @@ typedef struct {
 
 OLIVECDEF Olivec_Canvas olivec_canvas(uint32_t *pixels, size_t width, size_t height, size_t stride);
 OLIVECDEF Olivec_Canvas olivec_subcanvas(Olivec_Canvas oc, int x, int y, int w, int h);
+OLIVECDEF bool olivec_in_bounds(Olivec_Canvas oc, int x, int y);
 OLIVECDEF void olivec_blend_color(uint32_t *c1, uint32_t c2);
 OLIVECDEF void olivec_fill(Olivec_Canvas oc, uint32_t color);
 OLIVECDEF void olivec_rect(Olivec_Canvas oc, int x, int y, int w, int h, uint32_t color);
@@ -546,6 +547,11 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
     }
 }
 
+OLIVECDEF bool olivec_in_bounds(Olivec_Canvas oc, int x, int y)
+{
+    return 0 <= x && x < (int) oc.width && 0 <= y && y < (int) oc.height;
+}
+
 // TODO: AA for line
 OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uint32_t color)
 {
@@ -554,7 +560,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
 
     // If both of the differences are 0 there will be a division by 0 below.
     if (dx == 0 && dy == 0) {
-        if (0 <= x1 && x1 < (int) oc.width && 0 <= y1 && y1 < (int) oc.height) {
+        if (olivec_in_bounds(oc, x1, y1)) {
             olivec_blend_color(&OLIVEC_PIXEL(oc, x1, y1), color);
         }
         return;
@@ -569,7 +575,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
         for (int x = x1; x <= x2; ++x) {
             int y = dy*(x - x1)/dx + y1;
             // TODO: move boundary checks out side of the loops in olivec_draw_line
-            if (0 <= x && x < (int) oc.width && 0 <= y && y < (int) oc.height) {
+            if (olivec_in_bounds(oc, x, y)) {
                 olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
             }
         }
@@ -582,7 +588,7 @@ OLIVECDEF void olivec_line(Olivec_Canvas oc, int x1, int y1, int x2, int y2, uin
         for (int y = y1; y <= y2; ++y) {
             int x = dx*(y - y1)/dy + x1;
             // TODO: move boundary checks out side of the loops in olivec_draw_line
-            if (0 <= x && x < (int) oc.width && 0 <= y && y < (int) oc.height) {
+            if (olivec_in_bounds(oc, x, y)) {
                 olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), color);
             }
         }
