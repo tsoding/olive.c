@@ -6,6 +6,7 @@
 // // vc.c expectes render() to be defined and also supplies it's own entry point
 // // if needed (some platforms like WASM_PLATFORM do not have the main()
 // // entry point)
+// add #define VC_TRUECOLOR for truecolor support
 // #include "vc.c"
 //
 // #define WIDTH 800
@@ -531,19 +532,28 @@ static void vc_term_compress_pixels(Olivec_Canvas oc)
             int g = OLIVEC_GREEN(cp);
             int b = OLIVEC_BLUE(cp);
             int a = OLIVEC_ALPHA(cp);
+            #ifndef VC_TRUECOLOR
             r = a*r/255;
             g = a*g/255;
             b = a*b/255;
             int h, s, l;
             rgb_to_hsl(r, g, b, &h, &s, &l);
             vc_term_char_canvas[y*vc_term_scaled_down_width + x] = find_ansi_index_by_hsl(h, s, l);
+            #else
+            printf("\033[48;2;%d;%d;%dm  ", r, g, b);
+            #endif
         }
+        #ifdef VC_TRUECOLOR
+        printf("\033[0m\n");
+        #endif
     }
 }
 
 int main(void)
 {
     for (;;) {
+
+        #ifndef VC_TRUECOLOR
         vc_term_compress_pixels(vc_render(1.f/60.f));
         for (size_t y = 0; y < vc_term_scaled_down_height; ++y) {
             for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
@@ -552,6 +562,9 @@ int main(void)
             }
             printf("\033[0m\n");
         }
+        #else
+        vc_term_compress_pixels(vc_render(1.f/60.f));
+        #endif
 
         usleep(1000*1000/60);
         printf("\033[%zuA", vc_term_scaled_down_height);

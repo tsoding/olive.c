@@ -1,3 +1,4 @@
+#define VC_TRUECOLOR
 #include "vc.c"
 
 float sqrtf(float x);
