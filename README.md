@@ -4,7 +4,8 @@
 <a href="https://tsoding.github.io/olive.c/"><img src="./assets/olivec-200.png"></a>
 </p>
 
-**IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
+> [!WARNING]
+> THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!
 
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel.
 
