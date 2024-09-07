@@ -1,7 +1,3 @@
-// This example renders a rotating 3D cube made out of circles.
-// This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
-// native with SDL, WebAssembly with HTML5 canvas, etc.
-#define SCALE_DOWN_FACTOR 10
 #include "vc.c"
 
 float sqrtf(float x);
@@ -21,20 +17,10 @@ float cosf(float x);
 #define Z_START 0.25
 #define ABOBA_PADDING 50
 
-uint32_t circle_colors[] = {
-    0xFF2020FF,
-    0xFF20FF20,
-    0xFFFF2020,
-    0xFF20FFFF,
-    0xFFFF20FF,
-    0xFFFFFF20,
-};
-#define circle_colors_count (sizeof(circle_colors)/sizeof(circle_colors[0]))
-
 static uint32_t pixels[WIDTH*HEIGHT];
 static float angle = 0;
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     angle += 0.25*PI*dt;
 
@@ -76,7 +62,7 @@ Olivec_Canvas render(float dt)
     }
 
     size_t size = 8;
-    olivec_text(oc, "aboba", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - default_font.height*size, default_font, size, 0xFFFFFFFF);
+    olivec_text(oc, "aboba", ABOBA_PADDING, HEIGHT - ABOBA_PADDING - olivec_default_font.height*size, olivec_default_font, size, 0xFFFFFFFF);
 
     return oc;
 }

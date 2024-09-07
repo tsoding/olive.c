@@ -10,29 +10,65 @@
     <p>Below is a bunch of demos written in C using this library compiled to WebAssembly. Every frame of the animations is generated pixel by pixel on CPU without using any special GPU APIs like OpenGL, Metal, etc. </p>
     <p>The source code of the library and the demos is available on GitHub: <a href="https://github.com/tsoding/olive.c">https://github.com/tsoding/olive.c</a></p>
 
-    <h2 id="demo-triangle"><a href="#demo-triangle">Triangle</a></h2>
-    <p>Rainbow triangle together with a transparent circle. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle.c">demos/triangle.c</a></p>
-    <canvas id="app-triangle"></canvas>
+    <div id="sec-triangle">
+      <h2 id="demo-triangle"><a href="#demo-triangle">Triangle</a></h2>
+      <p>Rainbow triangle together with a transparent circle. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle.c">demos/triangle.c</a></p>
+      <canvas id="app-triangle"></canvas>
+    </div>
 
-    <h2 id="demo-3d"><a href="#demo-3d">3D</a></h2>
-    <p>A bunch of 3D points projected onto your 2D screen plus a text with a builtin monospaced font. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/3d.c">demos/3d.c</a></p>
-    <canvas id="app-3d"></canvas>
+    <div id="sec-dots3d">
+      <h2 id="demo-dots3d"><a href="#demo-dots3d">Dots 3D</a></h2>
+      <p>A bunch of 3D dots projected onto your 2D screen plus a text with a builtin monospaced font. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/dots3d.c">demos/dots3d.c</a></p>
+      <canvas id="app-dots3d"></canvas>
+    </div>
 
-    <h2 id="demo-squish"><a href="#demo-squish">Squish</a></h2>
-    <p>Resizing images on the fly. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/squish.c">demos/squish.c</a></p>
-    <canvas id="app-squish"></canvas>
+    <div id="sec-squish">
+      <h2 id="demo-squish"><a href="#demo-squish">Squish</a></h2>
+      <p>Resizing images on the fly. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/squish.c">demos/squish.c</a></p>
+      <canvas id="app-squish"></canvas>
+    </div>
 
-    <h2 id="demo-triangle3d"><a href="#demo-triangle3d">Triangle 3D</a></h2>
-    Rotating rainbow triangle in 3D. Unlike <a href="#demo-3d">3D dots above</a> this is a solid shape. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle3d.c">demos/triangle3d.c</a></p>
-    <canvas id="app-triangle3d"></canvas>
+    <div id="sec-triangle3d">
+      <h2 id="demo-triangle3d"><a href="#demo-triangle3d">Triangle 3D</a></h2>
+      <p>Rotating rainbow triangle in 3D. Unlike <a href="#demo-3d">3D dots above</a> this is a solid shape. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle3d.c">demos/triangle3d.c</a></p>
+      <canvas id="app-triangle3d"></canvas>
+    </div>
+
+    <div id="sec-triangleTex">
+      <h2 id="demo-triangleTex"><a href="#demo-triangleTex">Rotating 2D Textures</a></h2>
+      <p>Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangleTex.c">demos/triangleTex.c</a></p>
+      <canvas id="app-triangleTex"></canvas>
+    </div>
+
+    <div id="sec-triangle3dTex">
+      <h2 id="demo-triangle3dTex"><a href="#demo-triangle3dTex">Rotating 3D Textures</a></h2>
+      <p>Textures by <a href="https://opengameart.org/content/handpainted-stone-texture">MELLE</a>. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/triangle3dTex.c">demos/triangle3dTex.c</a></p>
+      <canvas id="app-triangle3dTex"></canvas>
+    </div>
+
+    <div id="sec-cup3d">
+      <h2 id="demo-cup3d"><a href="#demo-cup3d">Cup 3D</a></h2>
+      <p>Design by <a href="https://github.com/rexim">rexim</a>. 3D model by <a href="https://github.com/kolumb">kolumb</a>. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/cup3d.c">demos/cup3d.c</a></p>
+      <canvas id="app-cup3d"></canvas>
+    </div>
+
+    <div id="sec-teapot3d">
+      <h2 id="demo-teapot3d"><a href="#demo-teapot3d">Utah Teapot</a></h2>
+      <p>Famous <a href="https://en.wikipedia.org/wiki/Utah_teapot">Utah Teapot</a>. Model by <a href="https://graphics.stanford.edu/courses/cs148-10-summer/as3/code/as3/teapot.obj">Standford University</a>. Source:&nbsp;<a href="https://github.com/tsoding/olive.c/blob/master/demos/teapot3d.c">demos/cup3d.c</a></p>
+      <p>(I have no idea why it runs with a reasonable FPS)</p>
+      <canvas id="app-teapot3d"></canvas>
+    </div>
 
     <script src="js/vc.js"></script>
     <script>
-      startDemo("app-triangle", "./wasm/triangle.wasm");
-      startDemo("app-3d", "./wasm/3d.wasm");
-      startDemo("app-squish", "./wasm/squish.wasm");
-      startDemo("app-triangle3d", "./wasm/triangle3d.wasm");
-      startDemo("app-squish", "./wasm/squish.wasm");
+      startDemo("triangle", "./wasm/triangle.wasm");
+      startDemo("dots3d", "./wasm/dots3d.wasm");
+      startDemo("squish", "./wasm/squish.wasm");
+      startDemo("triangle3d", "./wasm/triangle3d.wasm");
+      startDemo("triangleTex", "./wasm/triangleTex.wasm");
+      startDemo("triangle3dTex", "./wasm/triangle3dTex.wasm");
+      startDemo("cup3d", "./wasm/cup3d.wasm");
+      startDemo("teapot3d", "./wasm/teapot3d.wasm");
     </script>
   </body>
 </html>

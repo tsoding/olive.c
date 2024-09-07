@@ -1,7 +1,3 @@
-// This example renders a rotating triangle.
-// This idea is that you can take this code and compile it to different platforms with different rendering machanisms:
-// native with SDL, WebAssembly with HTML5 canvas, etc.
-#define SCALE_DOWN_FACTOR 20
 #include "vc.c"
 
 #define WIDTH 960
@@ -34,7 +30,7 @@ static inline void rotate_point(float *x, float *y)
     *y = sinf(dir)*mag + HEIGHT/2;
 }
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
 
@@ -50,7 +46,7 @@ Olivec_Canvas render(float dt)
         rotate_point(&x1, &y1);
         rotate_point(&x2, &y2);
         rotate_point(&x3, &y3);
-        olivec_triangle3(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20, 0xFFFF2020);
+        olivec_triangle3c(oc, x1, y1, x2, y2, x3, y3, 0xFF2020FF, 0xFF20FF20, 0xFFFF2020);
     }
 
     // Circle
@@ -74,4 +70,3 @@ Olivec_Canvas render(float dt)
 
     return oc;
 }
-

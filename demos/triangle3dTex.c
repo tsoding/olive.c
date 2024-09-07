@@ -1,4 +1,8 @@
+#define VC_TERM_SCALE_DOWN_FACTOR 10
 #include "vc.c"
+#include "./assets/tsodinPog.c"
+#include "./assets/oldstone.c"
+#include "./assets/lavastone.c"
 
 #define WIDTH 960
 #define HEIGHT 720
@@ -12,7 +16,7 @@ typedef struct {
     float x, y;
 } Vector2;
 
-Vector2 make_vector2(float x, float y)
+static Vector2 make_vector2(float x, float y)
 {
     Vector2 v2;
     v2.x = x;
@@ -59,6 +63,9 @@ Olivec_Canvas vc_render(float dt)
     Olivec_Canvas zb1 = olivec_canvas((uint32_t*)zbuffer1, WIDTH, HEIGHT, WIDTH);
     olivec_fill(zb1, 0);
 
+    Olivec_Canvas oldstone = olivec_canvas(oldstone_pixels, oldstone_width, oldstone_height, oldstone_width);
+    Olivec_Canvas lavastone = olivec_canvas(lavastone_pixels, lavastone_width, lavastone_height, lavastone_width);
+
     float z = 1.5;
     float t = 0.75;
     {
@@ -70,8 +77,16 @@ Olivec_Canvas vc_render(float dt)
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
 
+        olivec_triangle3uv_bilinear(
+            oc1,
+            p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
+            0/v1.z, 1/v1.z,
+            1/v2.z, 1/v2.z,
+            0.5/v3.z, 0/v3.z,
+            1/v1.z, 1/v2.z, 1/v3.z,
+            oldstone
+        );
         olivec_triangle3z(zb1, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 1.0f/v1.z, 1.0f/v2.z, 1.0f/v3.z);
-        olivec_triangle3c(oc1, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 0xFF1818FF, 0xFF18FF18, 0xFFFF1818);
     }
 
     Olivec_Canvas oc2 = olivec_canvas(pixels2, WIDTH, HEIGHT, WIDTH);
@@ -88,8 +103,17 @@ Olivec_Canvas vc_render(float dt)
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
 
+        olivec_triangle3uv_bilinear(
+            oc2,
+            p1.x, p1.y, p2.x, p2.y, p3.x, p3.y,
+            0/v1.z, 1/v1.z,
+            1/v2.z, 1/v2.z,
+            0.5/v3.z, 0/v3.z,
+            1/v1.z, 1/v2.z, 1/v3.z,
+            lavastone
+        );
+
         olivec_triangle3z(zb2, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 1.0f/v1.z, 1.0f/v2.z, 1.0f/v3.z);
-        olivec_triangle3c(oc2, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, 0xFF1818FF, 0xFF18FF18, 0xFFFF1818);
     }
 
     for (size_t y = 0; y < HEIGHT; ++y) {

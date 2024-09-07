@@ -1,10 +1,14 @@
 # Olive.c
 
+<p align="center">
+<a href="https://tsoding.github.io/olive.c/"><img src="./assets/olivec-200.png"></a>
+</p>
+
 **IMPORTANT! THIS LIBRARY IS A WORK IN PROGRESS! ANYTHING CAN CHANGE AT ANY MOMENT WITHOUT ANY NOTICE! USE THIS LIBRARY AT YOUR OWN RISK!**
 
 Simple graphics library that does not have any dependencies and renders everything into the given memory pixel by pixel.
 
-Visit [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) to see some demos.
+Visit [https://tsoding.github.io/olive.c/](https://tsoding.github.io/olive.c/) to see some demos.
 
 The library is not concerned with displaying the image. It only fills up the memory with pixels. It's up to you what to do with those pixels.
 
@@ -16,7 +20,8 @@ Olive.c is a classical [stb-style](https://github.com/nothings/stb) single heade
 
 ## Quick Example (Flag of Japan)
 
-<!-- TODO: get rid of the dependency on stb_image_write.h in here and replace it with PPM format -->
+> [!WARNING]
+> Always initialize your Canvas with a color that has Non-Zero Alpha Channel! A lot of functions use `olivec_blend_color()` function to blend with the Background which preserves the original Alpha of the Background. So you may easily end up with a result that is perceptually transparent if the Alpha is Zero.
 
 *This example also uses [stb_image_write.h](https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h) to create the PNG image*
 
@@ -35,7 +40,7 @@ uint32_t pixels[WIDTH*HEIGHT];
 
 int main(void)
 {
-    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT);
+    Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
     // Taken from https://upload.wikimedia.org/wikipedia/en/9/9e/Flag_of_Japan.svg
     olivec_fill(oc, 0xFFFFFFFF);
     olivec_circle(oc, WIDTH/2, HEIGHT/2, 180, 0xFF2D00BC);
@@ -51,10 +56,11 @@ int main(void)
 
 ## Building the Tests and Demos
 
-Even though the library does not require any special building, the tests and demos do. Just execute `build.sh` script to build everything.
+Even though the library does not require any special building, the tests and demos do. We use [nobuild](https://github.com/tsoding/nobuild) build system:
 
 ```console
-$ ./build.sh
+$ clang -o nobuild nobuild.c
+$ ./nobuild
 ```
 
 ## Tests
@@ -68,7 +74,7 @@ $ ./build/test run
 If the expected behavior of the library has changed in the way that breaks current test cases, you probably want to update them:
 
 ```console
-$ ./build/test record
+$ ./build/test update
 ```
 
 For more info see the help:
@@ -88,16 +94,16 @@ The source code for demos is located at [demos](./demos/). Each demo is compiled
 To run the SDL version of a demo do
 
 ```console
-$ ./build/<demo>.sdl
+$ ./build/demos/<demo>.sdl
 ```
 
 To run the Terminal version of a demo do
 
 ```console
-$ ./build/<demo>.term
+$ ./build/demos/<demo>.term
 ```
 
-To run the WASM versions of the demos from [https://tsoding.org/olive.c/](https://tsoding.org/olive.c/) locally do
+To run the WASM versions of the demos from [https://tsoding.github.io/olive.c/](https://tsoding.github.io/olive.c/) locally do
 
 ```console
 $ python3 -m http.server 6969

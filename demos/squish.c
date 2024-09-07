@@ -1,4 +1,3 @@
-#define SCALE_DOWN_FACTOR 10
 #include "vc.c"
 #include "./assets/tsodinPog.c"
 
@@ -7,12 +6,12 @@
 
 float sinf(float);
 
-uint32_t dst[WIDTH*HEIGHT];
-float global_time = 0;
+static uint32_t dst[WIDTH*HEIGHT];
+static float global_time = 0;
 
 #define SRC_SCALE 3
 
-Olivec_Canvas render(float dt)
+Olivec_Canvas vc_render(float dt)
 {
     global_time += dt;
 
@@ -23,13 +22,13 @@ Olivec_Canvas render(float dt)
     olivec_fill(dst_canvas, 0xFF181818);
 
     int factor = 100;
-    int w = png_width*SRC_SCALE - t*factor;
-    int h = png_height*SRC_SCALE + t*factor;
+    int w = tsodinPog_width*SRC_SCALE - t*factor;
+    int h = tsodinPog_height*SRC_SCALE + t*factor;
 
-    olivec_copy(
-        olivec_canvas(png, png_width, png_height, png_width),
+    olivec_sprite_copy_bilinear(
         dst_canvas,
-        WIDTH/2 - w/2, HEIGHT - h, w, h);
+        WIDTH/2 - w/2, HEIGHT - h, w, h,
+        olivec_canvas(tsodinPog_pixels, tsodinPog_width, tsodinPog_height, tsodinPog_width));
 
     return dst_canvas;
 }
