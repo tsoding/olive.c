@@ -20,6 +20,9 @@ Olive.c is a classical [stb-style](https://github.com/nothings/stb) single heade
 
 ## Quick Example (Flag of Japan)
 
+> [!WARNING]
+> Always initialize your Canvas with a color that has Non-Zero Alpha Channel! A lot of functions use `olivec_blend_color()` function to blend with the Background which preserves the original Alpha of the Background. So you may easily end up with a result that is perceptually transparent if the Alpha is Zero.
+
 *This example also uses [stb_image_write.h](https://raw.githubusercontent.com/nothings/stb/master/stb_image_write.h) to create the PNG image*
 
 ```c

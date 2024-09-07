@@ -314,6 +314,10 @@ static Olivec_Font olivec_default_font = {
     .height = OLIVEC_DEFAULT_FONT_HEIGHT,
 };
 
+// WARNING! Always initialize your Canvas with a color that has Non-Zero Alpha Channel!
+// A lot of functions use `olivec_blend_color()` function to blend with the Background
+// which preserves the original Alpha of the Background. So you may easily end up with
+// a result that is perceptually transparent if the Alpha is Zero.
 typedef struct {
     uint32_t *pixels;
     size_t width;
