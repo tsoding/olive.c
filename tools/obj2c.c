@@ -260,21 +260,21 @@ int main(int argc, char **argv)
 
                 line = sv_trim_left(line);
                 float x = strtof(line.data, &endptr);
-                line.data = endptr;
                 if (lx > x) lx = x;
                 if (hx < x) hx = x;
+                sv_chop_left(&line, endptr - line.data);
 
                 line = sv_trim_left(line);
                 float y = strtof(line.data, &endptr);
-                line.data = endptr;
                 if (ly > y) ly = y;
                 if (hy < y) hy = y;
+                sv_chop_left(&line, endptr - line.data);
 
                 line = sv_trim_left(line);
                 float z = strtof(line.data, &endptr);
-                line.data = endptr;
                 if (lz > z) lz = z;
                 if (hz < z) hz = z;
+                sv_chop_left(&line, endptr - line.data);
 
                 da_append(&vertices, make_vector3(x, y, z));
             } else if (sv_eq(kind, SV("f"))) {
