@@ -19,6 +19,7 @@ void build_assets(void)
     CMD("./build/tools/png2c", "-n", "lavastone", "-o", "./build/assets/lavastone.c", "./assets/lavastone.png");
     CMD("./build/tools/obj2c", "-o", "./build/assets/tsodinCupLowPoly.c", "./assets/tsodinCupLowPoly.obj");
     CMD("./build/tools/obj2c", "-s", "0.40", "-o", "./build/assets/utahTeapot.c", "./assets/utahTeapot.obj");
+    CMD("./build/tools/obj2c", "-s", "1.5", "-o", "./build/assets/penger.c", "./assets/penger_obj/penger.obj");
 }
 
 void build_tests(void)
@@ -142,6 +143,7 @@ void build_all_vc_demos(void)
         "triangle3dTex",
         "cup3d",
         "teapot3d",
+        "penger3d",
     };
     size_t names_sz = sizeof(names)/sizeof(names[0]);
     size_t thread_count = 6;

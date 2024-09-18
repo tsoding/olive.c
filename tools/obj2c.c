@@ -243,11 +243,15 @@ int main(int argc, char **argv)
     String_View content = sv_from_parts(buffer, buffer_size);
     Vertices vertices = {0};
     Faces faces = {0};
+    size_t normals_counts = 0;
+    size_t texture_coords_count = 0;
     float lx = FLT_MAX, hx = FLT_MIN;
     float ly = FLT_MAX, hy = FLT_MIN;
     float lz = FLT_MAX, hz = FLT_MIN;
     int lf = INT_MAX, hf = INT_MIN;
-    for (size_t line_number = 0; content.count > 0; ++line_number) {
+    bool one_object_encountered = false;
+    size_t one_object_line_number = 0;
+    for (size_t line_number = 1; content.count > 0; ++line_number) {
         String_View line = sv_trim_left(sv_chop_by_delim(&content, '\n'));
         if (line.count > 0 && *line.data != '#') {
             String_View kind = sv_chop_by_delim(&line, ' ');
@@ -276,35 +280,63 @@ int main(int argc, char **argv)
             } else if (sv_eq(kind, SV("f"))) {
                 char *endptr;
 
+                // TODO: Parse format f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+
                 line = sv_trim_left(line);
                 int a = strtol(line.data, &endptr, 10);
-                line.data = endptr;
                 if (lf > a) lf = a;
                 if (hf < a) hf = a;
+                sv_chop_left(&line, endptr - line.data);
+                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
 
                 line = sv_trim_left(line);
                 int b = strtol(line.data, &endptr, 10);
-                line.data = endptr;
                 if (lf > b) lf = b;
                 if (hf < b) hf = b;
+                sv_chop_left(&line, endptr - line.data);
+                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
 
                 line = sv_trim_left(line);
                 int c = strtol(line.data, &endptr, 10);
-                line.data = endptr;
                 if (lf > c) lf = c;
                 if (hf < c) hf = c;
+                sv_chop_left(&line, endptr - line.data);
+                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
 
                 da_append(&faces, make_face(a, b, c));
+            } else if (sv_eq(kind, SV("mtllib"))) {
+                fprintf(stderr, "%s:%zu: WARNING: mtllib is not supported yet. Ignoring it...\n", input_file_path, line_number);
+            } else if (sv_eq(kind, SV("usemtl"))) {
+                fprintf(stderr, "%s:%zu: WARNING: usemtl is not supported yet. Ignoring it...\n", input_file_path, line_number);
+            } else if (sv_eq(kind, SV("o"))) {
+                if (one_object_encountered) {
+                    fprintf(stderr, "%s:%zu: ERROR: %s supports only one object as of right now.\n", input_file_path, line_number, program_name);
+                    fprintf(stderr, "%s:%zu: NOTE: we already processing this object\n", input_file_path, one_object_line_number);
+                    return_defer(1);
+                }
+                line = sv_trim_left(line);
+                String_View name = line;
+                fprintf(stderr, "%s:%zu: INFO: processing object `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(name));
+                one_object_encountered = true;
+                one_object_line_number = line_number;
+            } else if (sv_eq(kind, SV("s"))) {
+                fprintf(stderr, "%s:%zu: WARNING: smooth groups are not supported right now. Ignoring them...\n", input_file_path, line_number);
+            } else if (sv_eq(kind, SV("vn"))) {
+                normals_counts += 1;
+            } else if (sv_eq(kind, SV("vt"))) {
+                texture_coords_count += 1;
             } else {
-                fprintf(stderr, "%s:%zu: unknown kind of entry `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(kind));
+                fprintf(stderr, "%s:%zu: ERROR: unknown kind of entry `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(kind));
                 return_defer(1);
             }
         }
     }
-    printf("Input:    %s\n", input_file_path);
-    printf("Output:   %s\n", output_file_path);
-    printf("Vertices: %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
-    printf("Faces:    %zu (index: %d..%d)\n", faces.count, lf, hf);
+    printf("Input:               %s\n", input_file_path);
+    printf("Output:              %s\n", output_file_path);
+    printf("Vertices:            %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
+    printf("Normals:             %zu\n", normals_counts);
+    printf("Texture Coordinates: %zu\n", texture_coords_count);
+    printf("Faces:               %zu (index: %d..%d)\n", faces.count, lf, hf);
 
     for (size_t i = 0; i < vertices.count; ++i) {
         vertices.items[i] = remap_object(vertices.items[i], scale, lx, hx, ly, hy, lz, hz);
