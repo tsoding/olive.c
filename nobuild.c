@@ -1,7 +1,7 @@
 #define NOBUILD_IMPLEMENTATION
 #include "./nobuild.h"
 
-#define COMMON_CFLAGS "-Wall", "-Wextra", "-pedantic", "-std=c99", "-ggdb", "-I.", "-I./build/", "-I./dev-deps/"
+#define COMMON_CFLAGS "-Wall", "-Wextra", "-pedantic", "-std=c11", "-ggdb", "-I.", "-I./build/", "-I./dev-deps/"
 
 void build_tools(void)
 {

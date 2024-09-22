@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdio.h>
 #include <errno.h>
 #include <float.h>
@@ -75,6 +76,7 @@ Vector2 make_vector2(float x, float y)
     return v2;
 }
 
+
 typedef struct {
     float x, y, z;
 } Vector3;
@@ -89,21 +91,51 @@ Vector3 make_vector3(float x, float y, float z)
 }
 
 typedef struct {
-    Vector3 *items;
+    int *items;
+    size_t capacity;
+    size_t count;
+} Face_Indices;
+
+typedef struct {
+    int *items;
+    size_t capacity;
+    size_t count;
+} Vertex_Indices;
+
+typedef struct {
+    Vector3 position;
+    Face_Indices faces;
+    int component;              // 0 means never visited, >0 is the index of the component vertex belongs to
+} Vertex;
+
+Vertex make_vertex(float x, float y, float z)
+{
+    return (Vertex) {
+        .position = make_vector3(x, y, z),
+    };
+}
+
+typedef struct {
+    Vertex *items;
     size_t capacity;
     size_t count;
 } Vertices;
 
+#define VERTICES_PER_FACE 3
+
 typedef struct {
-    int a, b, c;
+    int v[VERTICES_PER_FACE];
+    int vt[VERTICES_PER_FACE];
+    int vn[VERTICES_PER_FACE];
 } Face;
 
-Face make_face(int a, int b, int c)
+Face make_face(int v1, int v2, int v3, int vt1, int vt2, int vt3, int vn1, int vn2, int vn3)
 {
+    static_assert(VERTICES_PER_FACE == 3, "");
     Face f = {
-        .a = a,
-        .b = b,
-        .c = c,
+        .v  = {v1, v2, v3},
+        .vt = {vt1, vt2, vt3},
+        .vn = {vn1, vn2, vn3},
     };
     return f;
 }
@@ -133,25 +165,44 @@ typedef struct {
         (da)->items[(da)->count++] = (item);                                \
     } while (0)
 
-void generate_code(FILE *out, Vertices vertices, Faces faces)
+bool is_deleted_face(Vertices vertices, Face face, int delete_component)
+{
+    for (size_t i = 0; i < VERTICES_PER_FACE; ++i) {
+        if (vertices.items[face.v[i]].component == delete_component) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void generate_code(FILE *out, Vertices vertices, Faces faces, int delete_component)
 {
     fprintf(out, "#ifndef OBJ_H_\n");
     fprintf(out, "#define OBJ_H_\n");
     fprintf(out, "#define vertices_count %zu\n", vertices.count);
     fprintf(out, "static const float vertices[][3] = {\n");
     for (size_t i = 0; i < vertices.count; ++i) {
-        Vector3 v = vertices.items[i];
+        Vector3 v = vertices.items[i].position;
         fprintf(out, "    {%f, %f, %f},\n", v.x, v.y, v.z);
     }
     fprintf(out, "};\n");
 
-    fprintf(out, "static const int faces[%zu][3] = {\n", faces.count);
+    size_t visible_faces_count = 0;
     for (size_t i = 0; i < faces.count; ++i) {
-        Face f = faces.items[i];
-        fprintf(out, "    {%d, %d, %d},\n", f.a, f.b, f.c);
+        if (!is_deleted_face(vertices, faces.items[i], delete_component)) {
+            visible_faces_count += 1;
+        }
+    }
+
+    fprintf(out, "static const int faces[%zu][3] = {\n", visible_faces_count);
+    for (size_t i = 0; i < faces.count; ++i) {
+        if (!is_deleted_face(vertices, faces.items[i], delete_component)) {
+            Face f = faces.items[i];
+            fprintf(out, "    {%d, %d, %d},\n", f.v[0], f.v[1], f.v[2]);
+        }
     }
     fprintf(out, "};\n");
-    fprintf(out, "#define faces_count %zu\n", faces.count);
+    fprintf(out, "#define faces_count %zu\n", visible_faces_count);
     fprintf(out, "#endif // OBJ_H_\n");
 }
 
@@ -174,6 +225,40 @@ void usage(const char *program_name)
     fprintf(stderr, "    -s    scale the model\n");
 }
 
+void parse_face_triple(String_View *line, int *lf, int *hf, int *v, int *vt, int *vn)
+{
+    char *endptr;
+
+    *line = sv_trim_left(*line);
+    *v = strtol(line->data, &endptr, 10) - 1; // NOTE: -1 is to account for 1-based indexing.
+    if (*lf > *v) *lf = *v;
+    if (*hf < *v) *hf = *v;
+    sv_chop_left(line, endptr - line->data);
+    *vt = 0;
+    if (line->count > 0 && line->data[0] == '/') {
+        sv_chop_left(line, 1);
+        *vt = strtol(line->data, &endptr, 10);
+        sv_chop_left(line, endptr - line->data);
+    }
+    *vn = 0;
+    if (line->count > 0 && line->data[0] == '/') {
+        sv_chop_left(line, 1);
+        *vn = strtol(line->data, &endptr, 10);
+        sv_chop_left(line, endptr - line->data);
+    }
+    while (line->count > 0 && !isspace(*line->data)) sv_chop_left(line, 1);
+}
+
+int unvisited_vertex(Vertices vertices)
+{
+    for (size_t i = 0; i < vertices.count; ++i) {
+        if (!vertices.items[i].component) {
+            return (int)i;
+        }
+    }
+    return -1;
+}
+
 int main(int argc, char **argv)
 {
     int result = 0;
@@ -183,6 +268,7 @@ int main(int argc, char **argv)
     const char *output_file_path = NULL;
     const char *input_file_path = NULL;
     float scale = 0.75;
+    int delete_component = 0;
 
     // TODO: consider using https://github.com/tsoding/flag.h in here
     while (argc > 0) {
@@ -210,6 +296,15 @@ int main(int argc, char **argv)
 
             const char *value = shift(&argc, &argv);
             scale = strtof(value, NULL);
+        } else if (strcmp(flag, "-d") == 0) {
+            if (argc <= 0) {
+                usage(program_name);
+                fprintf(stderr, "ERROR: no value is provided for flag %s\n", flag);
+                return_defer(1);
+            }
+
+            const char *value = shift(&argc, &argv);
+            delete_component = atoi(value);
         } else {
             if (input_file_path != NULL) {
                 usage(program_name);
@@ -276,34 +371,27 @@ int main(int argc, char **argv)
                 if (hz < z) hz = z;
                 sv_chop_left(&line, endptr - line.data);
 
-                da_append(&vertices, make_vector3(x, y, z));
+                da_append(&vertices, make_vertex(x, y, z));
             } else if (sv_eq(kind, SV("f"))) {
-                char *endptr;
+                // TODO: This code assumes that we already parsed all of the vertices.
+                // Since we don't have any OBJ files in the assets that have faces before
+                // vertices, it does not really matter that much. If we ever have any
+                // of such OBJ files, it's easy to restructure this loop to support any
+                // order of the elements.
+                int v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3;
 
-                // TODO: Parse format f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+                int face_index = faces.count;
 
-                line = sv_trim_left(line);
-                int a = strtol(line.data, &endptr, 10);
-                if (lf > a) lf = a;
-                if (hf < a) hf = a;
-                sv_chop_left(&line, endptr - line.data);
-                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
+                parse_face_triple(&line, &lf, &hf, &v1, &vt1, &vn1);
+                da_append(&vertices.items[v1].faces, face_index);
 
-                line = sv_trim_left(line);
-                int b = strtol(line.data, &endptr, 10);
-                if (lf > b) lf = b;
-                if (hf < b) hf = b;
-                sv_chop_left(&line, endptr - line.data);
-                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
+                parse_face_triple(&line, &lf, &hf, &v2, &vt2, &vn2);
+                da_append(&vertices.items[v2].faces, face_index);
 
-                line = sv_trim_left(line);
-                int c = strtol(line.data, &endptr, 10);
-                if (lf > c) lf = c;
-                if (hf < c) hf = c;
-                sv_chop_left(&line, endptr - line.data);
-                while (line.count > 0 && !isspace(*line.data)) sv_chop_left(&line, 1);
+                parse_face_triple(&line, &lf, &hf, &v3, &vt3, &vn3);
+                da_append(&vertices.items[v3].faces, face_index);
 
-                da_append(&faces, make_face(a, b, c));
+                da_append(&faces, make_face(v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3));
             } else if (sv_eq(kind, SV("mtllib"))) {
                 fprintf(stderr, "%s:%zu: WARNING: mtllib is not supported yet. Ignoring it...\n", input_file_path, line_number);
             } else if (sv_eq(kind, SV("usemtl"))) {
@@ -331,21 +419,60 @@ int main(int argc, char **argv)
             }
         }
     }
+
+    int min_faces = INT_MAX;
+    int max_faces = INT_MIN;
+
+    for (size_t i = 0; i < vertices.count; ++i) {
+        int count = vertices.items[i].faces.count;
+        if (min_faces > count) min_faces = count;
+        if (max_faces < count) max_faces = count;
+    }
+
+    size_t comp_count = 0;
+    int start = unvisited_vertex(vertices);
+    while (start >= 0) {
+        comp_count += 1;
+
+        Vertex_Indices wave = {0};
+        Vertex_Indices next_wave = {0};
+
+        da_append(&wave, start);
+        vertices.items[start].component = comp_count;
+        while (wave.count > 0) {
+            for (size_t i = 0; i < wave.count; ++i) {
+                Vertex *vertex = &vertices.items[wave.items[i]];
+                for (size_t j = 0; j < vertex->faces.count; ++j) {
+                    for (size_t k = 0; k < VERTICES_PER_FACE; ++k) {
+                        int neighbor_index = faces.items[vertex->faces.items[j]].v[k];
+                        if (!vertices.items[neighbor_index].component) {
+                            da_append(&next_wave, neighbor_index);
+                            vertices.items[neighbor_index].component = comp_count;
+                        }
+                    }
+                }
+            }
+            wave.count = 0;
+
+            Vertex_Indices temp = wave;
+            wave = next_wave;
+            next_wave = temp;
+        }
+
+        start = unvisited_vertex(vertices);
+    }
+
     printf("Input:               %s\n", input_file_path);
     printf("Output:              %s\n", output_file_path);
     printf("Vertices:            %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
     printf("Normals:             %zu\n", normals_counts);
     printf("Texture Coordinates: %zu\n", texture_coords_count);
     printf("Faces:               %zu (index: %d..%d)\n", faces.count, lf, hf);
+    printf("Faces per vertex:    %d..%d\n", min_faces, max_faces);
+    printf("Components Count:    %zu\n", comp_count);
 
     for (size_t i = 0; i < vertices.count; ++i) {
-        vertices.items[i] = remap_object(vertices.items[i], scale, lx, hx, ly, hy, lz, hz);
-    }
-
-    for (size_t i = 0; i < faces.count; ++i) {
-        faces.items[i].a -= 1;
-        faces.items[i].b -= 1;
-        faces.items[i].c -= 1;
+        vertices.items[i].position = remap_object(vertices.items[i].position, scale, lx, hx, ly, hy, lz, hz);
     }
 
     FILE *out = fopen(output_file_path, "wb");
@@ -353,7 +480,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "ERROR: Could not write file %s: %s\n", output_file_path, strerror(errno));
         return_defer(1);
     }
-    generate_code(out, vertices, faces);
+    generate_code(out, vertices, faces, delete_component);
 
 defer:
     return result;
