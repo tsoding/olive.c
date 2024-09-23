@@ -61,6 +61,35 @@ static Vector3 rotate_y(Vector3 p, float delta_angle)
     return make_vector3(cosf(angle)*mag, p.y, sinf(angle)*mag);
 }
 
+static Vector3 cross(Vector3 a, Vector3 b) {
+    return make_vector3(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x);
+}
+
+static Vector3 subtract3(Vector3 l, Vector3 r) {
+    return make_vector3(l.x - r.x, l.y - r.y, l.z - r.z);
+}
+
+static void normalize3(Vector3 *v) {
+    float mag_sqr = v->x * v->x + v->y * v->y + v->z * v->z;
+    if (mag_sqr < EPSILON*EPSILON) {
+        v->x = 0;
+        v->y = 0;
+        v->z = 0;
+        return;
+    }
+    float mag = sqrtf(mag_sqr);
+    v->x /= mag;
+    v->y /= mag;
+    v->z /= mag;
+}
+
+static float dot3(Vector3 a, Vector3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
 Olivec_Canvas vc_render(float dt)
 {
     angle += 0.25*PI*dt;
@@ -68,6 +97,11 @@ Olivec_Canvas vc_render(float dt)
     Olivec_Canvas oc = olivec_canvas(pixels, WIDTH, HEIGHT, WIDTH);
     olivec_fill(oc, BACKGROUND_COLOR);
     for (size_t i = 0; i < WIDTH*HEIGHT; ++i) zbuffer[i] = 0;
+
+#ifdef LIGHTING
+    Vector3 sun = make_vector3(1, 3, -2);
+    normalize3(&sun);
+#endif
 
     for (size_t i = 0; i < faces_count; ++i) {
         int a = faces[i][0];
@@ -81,6 +115,21 @@ Olivec_Canvas vc_render(float dt)
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
 
+#ifdef BACKFACE_CULLING
+        if ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) <= 0) continue;
+#endif
+#ifdef FRONTFACE_CULLING
+        if ((p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x) >= 0) continue;
+#endif
+
+#ifdef LIGHTING
+        Vector3 normal = cross(subtract3(v2, v1), subtract3(v3, v1));
+        normalize3(&normal);
+
+        float diffuse = (dot3(normal, sun) + 1.0f) / 2.0f;
+        int diffuse_byte_val = (int)(diffuse * 255);
+#endif
+
         int x1 = p1.x;
         int x2 = p2.x;
         int x3 = p3.x;
@@ -90,9 +139,12 @@ Olivec_Canvas vc_render(float dt)
         int lx, hx, ly, hy;
         if (olivec_normalize_triangle(oc.width, oc.height, x1, y1, x2, y2, x3, y3, &lx, &hx, &ly, &hy)) {
             for (int y = ly; y <= hy; ++y) {
+                bool has_entered = false;
+            
                 for (int x = lx; x <= hx; ++x) {
                     int u1, u2, det;
                     if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
+                        has_entered = true;
                         int u3 = det - u1 - u2;
                         float z = 1/v1.z*u1/det + 1/v2.z*u2/det + 1/v3.z*u3/det;
                         float near = 0.1f;
@@ -100,6 +152,9 @@ Olivec_Canvas vc_render(float dt)
                         if (1.0f/far < z && z < 1.0f/near && z > zbuffer[y*WIDTH + x]) {
                             zbuffer[y*WIDTH + x] = z;
                             OLIVEC_PIXEL(oc, x, y) = mix_colors3(0xFF1818FF, 0xFF18FF18, 0xFFFF1818, u1, u2, det);
+#ifdef LIGHTING
+                            olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), (255 - diffuse_byte_val)<<(3*8));
+#endif
 
                             z = 1.0f/z;
                             if (z >= 1.0) {
@@ -109,7 +164,7 @@ Olivec_Canvas vc_render(float dt)
                                 olivec_blend_color(&OLIVEC_PIXEL(oc, x, y), (v<<(3*8)));
                             }
                         }
-                    }
+                    } else if (has_entered) break;
                 }
             }
         }

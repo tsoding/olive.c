@@ -541,20 +541,30 @@ static void vc_term_compress_pixels(Olivec_Canvas oc)
     }
 }
 
+void sig_handler(int signo)
+{
+  if (signo == SIGINT) {
+    printf("\033[?25h");
+    exit(0);
+  }
+}
+
 int main(void)
 {
+    signal(SIGINT, sig_handler);
+    printf("\033[?25l");
     for (;;) {
         vc_term_compress_pixels(vc_render(1.f/60.f));
-        for (size_t y = 0; y < vc_term_scaled_down_height; ++y) {
+        for (size_t y = 0; y < vc_term_scaled_down_height - 1; y = y + 2) {
             for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
                 // TODO: explore the idea of figuring out aspect ratio of the character using escape ANSI codes of the terminal and rendering the image accordingly
-                printf("\033[48;5;%dm  ", vc_term_char_canvas[y*vc_term_scaled_down_width + x]);
+                printf("\033[48;5;%dm\033[38;5;%dm\u2584", vc_term_char_canvas[y*vc_term_scaled_down_width + x], vc_term_char_canvas[y*vc_term_scaled_down_width + vc_term_scaled_down_width + x]);
             }
             printf("\033[0m\n");
         }
 
         usleep(1000*1000/60);
-        printf("\033[%zuA", vc_term_scaled_down_height);
+        printf("\033[%zuA", vc_term_scaled_down_height / 2);
         printf("\033[%zuD", vc_term_scaled_down_width);
     }
     return 0;
