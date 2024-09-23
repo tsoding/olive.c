@@ -165,17 +165,26 @@ typedef struct {
         (da)->items[(da)->count++] = (item);                                \
     } while (0)
 
-bool is_deleted_face(Vertices vertices, Face face, int delete_component)
+typedef struct {
+    int *items;
+    size_t count;
+    size_t capacity;
+} Component_Indices;
+
+bool is_deleted_face(Vertices vertices, Face face, Component_Indices delete_components)
 {
     for (size_t i = 0; i < VERTICES_PER_FACE; ++i) {
-        if (vertices.items[face.v[i]].component == delete_component) {
-            return true;
+        // TODO: @perf if this is too slow due to too many deleted components you can always just pre-sort the indices and do a binary search
+        for (size_t j = 0; j < delete_components.count; ++j) {
+            if (vertices.items[face.v[i]].component == delete_components.items[j]) {
+                return true;
+            }
         }
     }
     return false;
 }
 
-void generate_code(FILE *out, Vertices vertices, Faces faces, int delete_component)
+void generate_code(FILE *out, Vertices vertices, Faces faces, Component_Indices delete_components)
 {
     fprintf(out, "#ifndef OBJ_H_\n");
     fprintf(out, "#define OBJ_H_\n");
@@ -189,14 +198,14 @@ void generate_code(FILE *out, Vertices vertices, Faces faces, int delete_compone
 
     size_t visible_faces_count = 0;
     for (size_t i = 0; i < faces.count; ++i) {
-        if (!is_deleted_face(vertices, faces.items[i], delete_component)) {
+        if (!is_deleted_face(vertices, faces.items[i], delete_components)) {
             visible_faces_count += 1;
         }
     }
 
     fprintf(out, "static const int faces[%zu][3] = {\n", visible_faces_count);
     for (size_t i = 0; i < faces.count; ++i) {
-        if (!is_deleted_face(vertices, faces.items[i], delete_component)) {
+        if (!is_deleted_face(vertices, faces.items[i], delete_components)) {
             Face f = faces.items[i];
             fprintf(out, "    {%d, %d, %d},\n", f.v[0], f.v[1], f.v[2]);
         }
@@ -268,7 +277,7 @@ int main(int argc, char **argv)
     const char *output_file_path = NULL;
     const char *input_file_path = NULL;
     float scale = 0.75;
-    int delete_component = 0;
+    Component_Indices delete_components = {0};
 
     // TODO: consider using https://github.com/tsoding/flag.h in here
     while (argc > 0) {
@@ -304,7 +313,7 @@ int main(int argc, char **argv)
             }
 
             const char *value = shift(&argc, &argv);
-            delete_component = atoi(value);
+            da_append(&delete_components, atoi(value));
         } else {
             if (input_file_path != NULL) {
                 usage(program_name);
@@ -470,6 +479,11 @@ int main(int argc, char **argv)
     printf("Faces:               %zu (index: %d..%d)\n", faces.count, lf, hf);
     printf("Faces per vertex:    %d..%d\n", min_faces, max_faces);
     printf("Components Count:    %zu\n", comp_count);
+    printf("Deleted Components:  ");
+    for (size_t i = 0; i < delete_components.count; ++i) {
+        printf("%d ", delete_components.items[i]);
+    }
+    printf("\n");
 
     for (size_t i = 0; i < vertices.count; ++i) {
         vertices.items[i].position = remap_object(vertices.items[i].position, scale, lx, hx, ly, hy, lz, hz);
@@ -480,7 +494,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "ERROR: Could not write file %s: %s\n", output_file_path, strerror(errno));
         return_defer(1);
     }
-    generate_code(out, vertices, faces, delete_component);
+    generate_code(out, vertices, faces, delete_components);
 
 defer:
     return result;
