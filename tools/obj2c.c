@@ -146,6 +146,18 @@ typedef struct {
     size_t count;
 } Faces;
 
+typedef struct {
+    Vector3 *items;
+    size_t capacity;
+    size_t count;
+} Normals;
+
+typedef struct {
+    Vector2 *items;
+    size_t capacity;
+    size_t count;
+} TexCoords;
+
 #define DA_INIT_CAPACITY 8192
 #define DA_REALLOC context_realloc
 #define da_append(da, item)                                                 \
@@ -184,17 +196,45 @@ bool is_deleted_face(Vertices vertices, Face face, Component_Indices delete_comp
     return false;
 }
 
-void generate_code(FILE *out, Vertices vertices, Faces faces, Component_Indices delete_components)
+void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals normals, Faces faces, Component_Indices delete_components)
 {
     fprintf(out, "#ifndef OBJ_H_\n");
     fprintf(out, "#define OBJ_H_\n");
     fprintf(out, "#define vertices_count %zu\n", vertices.count);
-    fprintf(out, "static const float vertices[][3] = {\n");
-    for (size_t i = 0; i < vertices.count; ++i) {
-        Vector3 v = vertices.items[i].position;
-        fprintf(out, "    {%f, %f, %f},\n", v.x, v.y, v.z);
+    if (vertices.count == 0) {
+        fprintf(out, "static const float vertices[1][3];\n");
+    } else {
+        fprintf(out, "static const float vertices[][3] = {\n");
+        for (size_t i = 0; i < vertices.count; ++i) {
+            Vector3 v = vertices.items[i].position;
+            fprintf(out, "    {%f, %f, %f},\n", v.x, v.y, v.z);
+        }
+        fprintf(out, "};\n");
     }
-    fprintf(out, "};\n");
+
+    fprintf(out, "#define texcoords_count %zu\n", texcoords.count);
+    if (texcoords.count == 0) {
+        fprintf(out, "static const float texcoords[1][3];\n");
+    } else {
+        fprintf(out, "static const float texcoords[][3] = {\n");
+        for (size_t i = 0; i < texcoords.count; ++i) {
+            Vector2 vt = texcoords.items[i];
+            fprintf(out, "    {%f, %f},\n", vt.x, vt.y);
+        }
+        fprintf(out, "};\n");
+    }
+
+    fprintf(out, "#define normals_count %zu\n", normals.count);
+    if (normals.count == 0) {
+        fprintf(out, "static const float normals[1][3];\n");
+    } else {
+        fprintf(out, "static const float normals[][3] = {\n");
+        for (size_t i = 0; i < normals.count; ++i) {
+            Vector3 vn = normals.items[i];
+            fprintf(out, "    {%f, %f, %f},\n", vn.x, vn.y, vn.z);
+        }
+        fprintf(out, "};\n");
+    }
 
     size_t visible_faces_count = 0;
     for (size_t i = 0; i < faces.count; ++i) {
@@ -203,15 +243,19 @@ void generate_code(FILE *out, Vertices vertices, Faces faces, Component_Indices 
         }
     }
 
-    fprintf(out, "static const int faces[%zu][3] = {\n", visible_faces_count);
-    for (size_t i = 0; i < faces.count; ++i) {
-        if (!is_deleted_face(vertices, faces.items[i], delete_components)) {
-            Face f = faces.items[i];
-            fprintf(out, "    {%d, %d, %d},\n", f.v[0], f.v[1], f.v[2]);
-        }
-    }
-    fprintf(out, "};\n");
     fprintf(out, "#define faces_count %zu\n", visible_faces_count);
+    if (visible_faces_count == 0) {
+        fprintf(out, "static const int faces[1][9];\n");
+    } else {
+        fprintf(out, "static const int faces[%zu][9] = {\n", visible_faces_count);
+        for (size_t i = 0; i < faces.count; ++i) {
+            if (!is_deleted_face(vertices, faces.items[i], delete_components)) {
+                Face f = faces.items[i];
+                fprintf(out, "    {%d, %d, %d, %d, %d, %d, %d, %d, %d},\n", f.v[0], f.v[1], f.v[2], f.vt[0], f.vt[1], f.vt[2], f.vn[0], f.vn[1], f.vn[2]);
+            }
+        }
+        fprintf(out, "};\n");
+    }
     fprintf(out, "#endif // OBJ_H_\n");
 }
 
@@ -246,13 +290,13 @@ void parse_face_triple(String_View *line, int *lf, int *hf, int *v, int *vt, int
     *vt = 0;
     if (line->count > 0 && line->data[0] == '/') {
         sv_chop_left(line, 1);
-        *vt = strtol(line->data, &endptr, 10);
+        *vt = strtol(line->data, &endptr, 10) - 1; // NOTE: -1 is to account for 1-based indexing.
         sv_chop_left(line, endptr - line->data);
     }
     *vn = 0;
     if (line->count > 0 && line->data[0] == '/') {
         sv_chop_left(line, 1);
-        *vn = strtol(line->data, &endptr, 10);
+        *vn = strtol(line->data, &endptr, 10) - 1; // NOTE: -1 is to account for 1-based indexing.
         sv_chop_left(line, endptr - line->data);
     }
     while (line->count > 0 && !isspace(*line->data)) sv_chop_left(line, 1);
@@ -346,9 +390,9 @@ int main(int argc, char **argv)
 
     String_View content = sv_from_parts(buffer, buffer_size);
     Vertices vertices = {0};
+    TexCoords texcoords = {0};
+    Normals normals = {0};
     Faces faces = {0};
-    size_t normals_counts = 0;
-    size_t texture_coords_count = 0;
     float lx = FLT_MAX, hx = FLT_MIN;
     float ly = FLT_MAX, hy = FLT_MIN;
     float lz = FLT_MAX, hz = FLT_MIN;
@@ -419,9 +463,33 @@ int main(int argc, char **argv)
             } else if (sv_eq(kind, SV("s"))) {
                 fprintf(stderr, "%s:%zu: WARNING: smooth groups are not supported right now. Ignoring them...\n", input_file_path, line_number);
             } else if (sv_eq(kind, SV("vn"))) {
-                normals_counts += 1;
+                char *endptr;
+
+                line = sv_trim_left(line);
+                float x = strtof(line.data, &endptr);
+                sv_chop_left(&line, endptr - line.data);
+
+                line = sv_trim_left(line);
+                float y = strtof(line.data, &endptr);
+                sv_chop_left(&line, endptr - line.data);
+
+                line = sv_trim_left(line);
+                float z = strtof(line.data, &endptr);
+                sv_chop_left(&line, endptr - line.data);
+
+                da_append(&normals, make_vector3(x, y, z));
             } else if (sv_eq(kind, SV("vt"))) {
-                texture_coords_count += 1;
+                char *endptr;
+
+                line = sv_trim_left(line);
+                float x = strtof(line.data, &endptr);
+                sv_chop_left(&line, endptr - line.data);
+
+                line = sv_trim_left(line);
+                float y = strtof(line.data, &endptr);
+                sv_chop_left(&line, endptr - line.data);
+
+                da_append(&texcoords, make_vector2(x, y));
             } else {
                 fprintf(stderr, "%s:%zu: ERROR: unknown kind of entry `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(kind));
                 return_defer(1);
@@ -474,8 +542,8 @@ int main(int argc, char **argv)
     printf("Input:               %s\n", input_file_path);
     printf("Output:              %s\n", output_file_path);
     printf("Vertices:            %zu (x: %f..%f, y: %f..%f, z: %f..%f)\n", vertices.count, lx, hx, ly, hy, lz, hz);
-    printf("Normals:             %zu\n", normals_counts);
-    printf("Texture Coordinates: %zu\n", texture_coords_count);
+    printf("Normals:             %zu\n", normals.count);
+    printf("Texture Coordinates: %zu\n", texcoords.count);
     printf("Faces:               %zu (index: %d..%d)\n", faces.count, lf, hf);
     printf("Faces per vertex:    %d..%d\n", min_faces, max_faces);
     printf("Components Count:    %zu\n", comp_count);
@@ -494,7 +562,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "ERROR: Could not write file %s: %s\n", output_file_path, strerror(errno));
         return_defer(1);
     }
-    generate_code(out, vertices, faces, delete_components);
+    generate_code(out, vertices, texcoords, normals, faces, delete_components);
 
 defer:
     return result;

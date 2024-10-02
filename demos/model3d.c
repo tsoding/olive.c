@@ -61,6 +61,23 @@ static Vector3 rotate_y(Vector3 p, float delta_angle)
     return make_vector3(cosf(angle)*mag, p.y, sinf(angle)*mag);
 }
 
+typedef enum {
+    FACE_V1,
+    FACE_V2,
+    FACE_V3,
+    FACE_VT1,
+    FACE_VT2,
+    FACE_VT3,
+    FACE_VN1,
+    FACE_VN2,
+    FACE_VN3,
+} Face_Index;
+
+float vector3_dot(Vector3 a, Vector3 b)
+{
+    return a.x*b.x + a.y*b.y + a.z*b.z;
+}
+
 Olivec_Canvas vc_render(float dt)
 {
     angle += 0.25*PI*dt;
@@ -69,14 +86,29 @@ Olivec_Canvas vc_render(float dt)
     olivec_fill(oc, BACKGROUND_COLOR);
     for (size_t i = 0; i < WIDTH*HEIGHT; ++i) zbuffer[i] = 0;
 
+    Vector3 camera = {0, 0, 1};
     for (size_t i = 0; i < faces_count; ++i) {
-        int a = faces[i][0];
-        int b = faces[i][1];
-        int c = faces[i][2];
+        int a, b, c;
+
+        a = faces[i][FACE_V1];
+        b = faces[i][FACE_V2];
+        c = faces[i][FACE_V3];
         Vector3 v1 = rotate_y(make_vector3(vertices[a][0], vertices[a][1], vertices[a][2]), angle);
         Vector3 v2 = rotate_y(make_vector3(vertices[b][0], vertices[b][1], vertices[b][2]), angle);
         Vector3 v3 = rotate_y(make_vector3(vertices[c][0], vertices[c][1], vertices[c][2]), angle);
         v1.z += 1.5; v2.z += 1.5; v3.z += 1.5;
+
+        a = faces[i][FACE_VN1];
+        b = faces[i][FACE_VN2];
+        c = faces[i][FACE_VN3];
+        Vector3 vn1 = rotate_y(make_vector3(normals[a][0], normals[a][1], normals[a][2]), angle);
+        Vector3 vn2 = rotate_y(make_vector3(normals[b][0], normals[b][1], normals[b][2]), angle);
+        Vector3 vn3 = rotate_y(make_vector3(normals[c][0], normals[c][1], normals[c][2]), angle);
+        if (vector3_dot(camera, vn1) > 0.0 &&
+            vector3_dot(camera, vn2) > 0.0 &&
+            vector3_dot(camera, vn3) > 0.0) continue;
+
+
         Vector2 p1 = project_2d_scr(project_3d_2d(v1));
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
