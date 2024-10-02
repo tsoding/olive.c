@@ -202,7 +202,7 @@ void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals no
     fprintf(out, "#define OBJ_H_\n");
     fprintf(out, "#define vertices_count %zu\n", vertices.count);
     if (vertices.count == 0) {
-        fprintf(out, "static const float vertices[1][3];\n");
+        fprintf(out, "static const float vertices[1][3] = {0};\n");
     } else {
         fprintf(out, "static const float vertices[][3] = {\n");
         for (size_t i = 0; i < vertices.count; ++i) {
@@ -214,7 +214,7 @@ void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals no
 
     fprintf(out, "#define texcoords_count %zu\n", texcoords.count);
     if (texcoords.count == 0) {
-        fprintf(out, "static const float texcoords[1][3];\n");
+        fprintf(out, "static const float texcoords[1][3] = {0};\n");
     } else {
         fprintf(out, "static const float texcoords[][3] = {\n");
         for (size_t i = 0; i < texcoords.count; ++i) {
@@ -226,7 +226,7 @@ void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals no
 
     fprintf(out, "#define normals_count %zu\n", normals.count);
     if (normals.count == 0) {
-        fprintf(out, "static const float normals[1][3];\n");
+        fprintf(out, "static const float normals[1][3] = {0};\n");
     } else {
         fprintf(out, "static const float normals[][3] = {\n");
         for (size_t i = 0; i < normals.count; ++i) {
@@ -245,7 +245,7 @@ void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals no
 
     fprintf(out, "#define faces_count %zu\n", visible_faces_count);
     if (visible_faces_count == 0) {
-        fprintf(out, "static const int faces[1][9];\n");
+        fprintf(out, "static const int faces[1][9] = {0};\n");
     } else {
         fprintf(out, "static const int faces[%zu][9] = {\n", visible_faces_count);
         for (size_t i = 0; i < faces.count; ++i) {
