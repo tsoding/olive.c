@@ -40,13 +40,13 @@
 
 typedef struct {
     size_t width, height;
-    const char *glyphs;
+    const unsigned char *glyphs;
 } Olivec_Font;
 
 #define OLIVEC_DEFAULT_FONT_HEIGHT 6
 #define OLIVEC_DEFAULT_FONT_WIDTH 6
 // TODO: allocate proper descender and acender areas for the default font
-static char olivec_default_glyphs[128][OLIVEC_DEFAULT_FONT_HEIGHT][OLIVEC_DEFAULT_FONT_WIDTH] = {
+static unsigned char olivec_default_glyphs[128][OLIVEC_DEFAULT_FONT_HEIGHT][OLIVEC_DEFAULT_FONT_WIDTH] = {
     ['a'] = {
         {0, 0, 0, 0, 0},
         {0, 1, 1, 0, 0},
@@ -893,7 +893,7 @@ OLIVECDEF void olivec_text(Olivec_Canvas oc, const char *text, int tx, int ty, O
     for (size_t i = 0; *text; ++i, ++text) {
         int gx = tx + i*font.width*glyph_size;
         int gy = ty;
-        const char *glyph = &font.glyphs[(*text)*sizeof(char)*font.width*font.height];
+        const unsigned char *glyph = &font.glyphs[((unsigned)*text)*sizeof(unsigned char)*font.width*font.height];
         for (int dy = 0; (size_t) dy < font.height; ++dy) {
             for (int dx = 0; (size_t) dx < font.width; ++dx) {
                 int px = gx + dx*glyph_size;
@@ -1013,6 +1013,67 @@ OLIVECDEF void olivec_sprite_copy_bilinear(Olivec_Canvas oc, int x, int y, int w
 }
 
 #endif // OLIVEC_IMPLEMENTATION
+
+#ifdef OLIVEC_LOADFONT
+
+#define OLIVEC_LOADFONT_LOG //
+
+// This function loads the font from a byte buffer (unsigned char *) as loaded
+// form stbi_load and outputs a pointer to an Olivec Font. It assumes that the
+// texture is filled in it's entirety with characters in the same bounding box
+// and ordered  according to ASCII  (so it will load up to 256 characters). It
+// will index the caracters starting at "offset". Returns NULL on failure.
+
+OLIVECDEF Olivec_Font
+olivec_loadfont_frombuff(unsigned char * buffer, int w, int h, int channels, int glyph_w, int glyph_h, char offset) {
+    uint32_t* pixels = (uint32_t*) malloc(w*h*sizeof(uint32_t));
+    for (int i = 0; i < w*h; i++)
+    {
+        pixels[i] = (uint32_t)buffer[i*channels];
+    }
+
+    Olivec_Canvas atlas = olivec_canvas(pixels, (size_t)w, (size_t)h, (size_t)w);
+    size_t glyph_count = offset + ((w / glyph_w) * (h / glyph_h));
+    size_t glyphs_per_row = w / glyph_w;
+    unsigned char * glyphs = (unsigned char *) calloc(glyph_count * glyph_w * glyph_h, sizeof(unsigned char));
+
+    for (size_t codepoint = 0; codepoint < glyph_count; ++codepoint) {
+        OLIVEC_LOADFONT_LOG("Loading glyph %d of %d, codepoint: %x '%c'\n", codepoint, glyph_count, codepoint, (char)codepoint);
+        int g_index = (unsigned char)codepoint - offset;
+        int32_t g_x = (g_index % glyphs_per_row);
+        int32_t g_y = (g_index - g_x) / glyphs_per_row;
+        g_x *= glyph_w;
+        g_y *= glyph_h;
+
+        if (codepoint < offset) {
+            continue;
+        }
+
+        for (size_t py = 0; py < glyph_h; ++py) {
+            for (size_t px = 0; px < glyph_w; ++px)
+            {
+                glyphs[codepoint*sizeof(unsigned char)*glyph_h*glyph_w + glyph_w*py + px] 
+                = OLIVEC_PIXEL(atlas, g_x+px, g_y+py) == 0 ? 0 : 1;
+            }
+        }
+    }
+
+    free(pixels);
+    Olivec_Font font = {
+        .width  = (size_t)glyph_w,
+        .height = (size_t)glyph_h,
+        .glyphs = glyphs,
+    };
+
+    return font;
+}
+
+OLIVECDEF void
+olivec_loadfont_free(Olivec_Font font) {
+    free((void*)font.glyphs)
+}
+
+#endif //OLIVEC_LADFONT
 
 // TODO: Benchmarking
 // TODO: SIMD implementations
