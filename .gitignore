@@ -1,5 +1,5 @@
 *.ppm
 build/
 *.swp
-nobuild
-nobuild.old
+nob
+nob.old

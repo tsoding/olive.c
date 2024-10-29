@@ -60,8 +60,8 @@ int main(void)
 Even though the library does not require any special building, the tests and demos do. We use [nobuild](https://github.com/tsoding/nobuild) build system:
 
 ```console
-$ clang -o nobuild nobuild.c
-$ ./nobuild
+$ clang -o nob nob.c
+$ ./nob
 ```
 
 ## Tests
