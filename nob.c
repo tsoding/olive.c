@@ -235,7 +235,7 @@ int main(int argc, char** argv)
                     Nob_Procs procs = {0};
                     build_vc_demo(name, &procs);
                     nob_procs_wait(procs);
-                    nob_copy_file(nob_temp_sprintf("./build/demos/", name, ".wasm"), nob_temp_sprintf("./wasm/%s.wasm", name));
+                    nob_copy_file(nob_temp_sprintf("./build/demos/%s.wasm", name), nob_temp_sprintf("./wasm/%s.wasm", name));
                 }
             } else {
                 build_all_vc_demos();
