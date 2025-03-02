@@ -5,64 +5,9 @@
 #include <limits.h>
 #include <string.h>
 
-#define SV_IMPLEMENTATION
-#include "sv.h"
-
-#define ARENA_IMPLEMENTATION
-#include "arena.h"
-
-#define return_defer(value) do { result = (value); goto defer; } while (0)
-typedef int Errno;
-#define UNUSED(x) (void)(x)
-
-const char *shift(int *argc, char ***argv)
-{
-    assert(*argc > 0);
-    const char *result = *argv[0];
-    *argc -= 1;
-    *argv += 1;
-    return result;
-}
-
-static Arena default_arena = {0};
-static Arena *context_arena = &default_arena;
-
-static void *context_alloc(size_t size)
-{
-    assert(context_arena);
-    return arena_alloc(context_arena, size);
-}
-
-static void *context_realloc(void *oldp, size_t oldsz, size_t newsz)
-{
-    if (newsz <= oldsz) return oldp;
-    return memcpy(context_alloc(newsz), oldp, oldsz);
-}
-
-Errno read_entire_file(const char *file_path, char **buffer, size_t *buffer_size)
-{
-    Errno result = 0;
-    FILE *f = NULL;
-
-    f = fopen(file_path, "rb");
-    if (f == NULL) return_defer(errno);
-
-    if (fseek(f, 0, SEEK_END) < 0) return_defer(errno);
-    long m = ftell(f);
-    if (m < 0) return_defer(errno);
-    if (fseek(f, 0, SEEK_SET) < 0) return_defer(errno);
-
-    *buffer_size = m;
-    *buffer = context_alloc(*buffer_size + 1);
-    (*buffer)[*buffer_size] = '\0';
-
-    fread(*buffer, *buffer_size, 1, f);
-    if (ferror(f)) return_defer(errno);
-
-defer:
-    if (f) fclose(f);
-    return result;
-}
+#define NOB_IMPLEMENTATION
+#define NOB_STRIP_PREFIX
+#include "nob.h"
 
 typedef struct {
     float x, y;
@@ -75,7 +20,6 @@ Vector2 make_vector2(float x, float y)
     v2.y = y;
     return v2;
 }
-
 
 typedef struct {
     float x, y, z;
@@ -157,25 +101,6 @@ typedef struct {
     size_t capacity;
     size_t count;
 } TexCoords;
-
-#define DA_INIT_CAPACITY 8192
-#define DA_REALLOC context_realloc
-#define da_append(da, item)                                                 \
-    do {                                                                    \
-        if ((da)->count >= (da)->capacity) {                                \
-            size_t new_capacity = (da)->capacity*2;                         \
-            if (new_capacity == 0) {                                        \
-                new_capacity = DA_INIT_CAPACITY;                            \
-            }                                                               \
-                                                                            \
-            (da)->items = DA_REALLOC((da)->items,                           \
-                                     (da)->capacity*sizeof((da)->items[0]), \
-                                     new_capacity*sizeof((da)->items[0]));  \
-            (da)->capacity = new_capacity;                                  \
-        }                                                                   \
-                                                                            \
-        (da)->items[(da)->count++] = (item);                                \
-    } while (0)
 
 typedef struct {
     int *items;
@@ -317,7 +242,7 @@ int main(int argc, char **argv)
     int result = 0;
 
     assert(argc > 0);
-    const char *program_name = shift(&argc, &argv);
+    const char *program_name = shift(argv, argc);
     const char *output_file_path = NULL;
     const char *input_file_path = NULL;
     float scale = 0.75;
@@ -325,7 +250,7 @@ int main(int argc, char **argv)
 
     // TODO: consider using https://github.com/tsoding/flag.h in here
     while (argc > 0) {
-        const char *flag = shift(&argc, &argv);
+        const char *flag = shift(argv, argc);
         if (strcmp(flag, "-o") == 0) {
             if (argc <= 0) {
                 usage(program_name);
@@ -339,7 +264,7 @@ int main(int argc, char **argv)
                 return_defer(1);
             }
 
-            output_file_path = shift(&argc, &argv);
+            output_file_path = shift(argv, argc);
         } else if (strcmp(flag, "-s") == 0) {
             if (argc <= 0) {
                 usage(program_name);
@@ -347,7 +272,7 @@ int main(int argc, char **argv)
                 return_defer(1);
             }
 
-            const char *value = shift(&argc, &argv);
+            const char *value = shift(argv, argc);
             scale = strtof(value, NULL);
         } else if (strcmp(flag, "-d") == 0) {
             if (argc <= 0) {
@@ -356,7 +281,7 @@ int main(int argc, char **argv)
                 return_defer(1);
             }
 
-            const char *value = shift(&argc, &argv);
+            const char *value = shift(argv, argc);
             da_append(&delete_components, atoi(value));
         } else {
             if (input_file_path != NULL) {
@@ -380,15 +305,10 @@ int main(int argc, char **argv)
         return_defer(1);
     }
 
-    char *buffer;
-    size_t buffer_size;
-    Errno err = read_entire_file(input_file_path, &buffer, &buffer_size);
-    if (err != 0) {
-        fprintf(stderr, "ERROR: could not read file %s: %s\n", input_file_path, strerror(errno));
-        return_defer(1);
-    }
+    String_Builder buffer = {0};
+    if (!read_entire_file(input_file_path, &buffer)) return_defer(1);
 
-    String_View content = sv_from_parts(buffer, buffer_size);
+    String_View content = sb_to_sv(buffer);
     Vertices vertices = {0};
     TexCoords texcoords = {0};
     Normals normals = {0};
@@ -403,7 +323,7 @@ int main(int argc, char **argv)
         String_View line = sv_trim_left(sv_chop_by_delim(&content, '\n'));
         if (line.count > 0 && *line.data != '#') {
             String_View kind = sv_chop_by_delim(&line, ' ');
-            if (sv_eq(kind, SV("v"))) {
+            if (sv_eq(kind, sv_from_cstr("v"))) {
                 char *endptr;
 
                 line = sv_trim_left(line);
@@ -425,7 +345,7 @@ int main(int argc, char **argv)
                 sv_chop_left(&line, endptr - line.data);
 
                 da_append(&vertices, make_vertex(x, y, z));
-            } else if (sv_eq(kind, SV("f"))) {
+            } else if (sv_eq(kind, sv_from_cstr("f"))) {
                 // TODO: This code assumes that we already parsed all of the vertices.
                 // Since we don't have any OBJ files in the assets that have faces before
                 // vertices, it does not really matter that much. If we ever have any
@@ -445,11 +365,11 @@ int main(int argc, char **argv)
                 da_append(&vertices.items[v3].faces, face_index);
 
                 da_append(&faces, make_face(v1, v2, v3, vt1, vt2, vt3, vn1, vn2, vn3));
-            } else if (sv_eq(kind, SV("mtllib"))) {
+            } else if (sv_eq(kind, sv_from_cstr("mtllib"))) {
                 fprintf(stderr, "%s:%zu: WARNING: mtllib is not supported yet. Ignoring it...\n", input_file_path, line_number);
-            } else if (sv_eq(kind, SV("usemtl"))) {
+            } else if (sv_eq(kind, sv_from_cstr("usemtl"))) {
                 fprintf(stderr, "%s:%zu: WARNING: usemtl is not supported yet. Ignoring it...\n", input_file_path, line_number);
-            } else if (sv_eq(kind, SV("o"))) {
+            } else if (sv_eq(kind, sv_from_cstr("o"))) {
                 if (one_object_encountered) {
                     fprintf(stderr, "%s:%zu: ERROR: %s supports only one object as of right now.\n", input_file_path, line_number, program_name);
                     fprintf(stderr, "%s:%zu: NOTE: we already processing this object\n", input_file_path, one_object_line_number);
@@ -460,9 +380,9 @@ int main(int argc, char **argv)
                 fprintf(stderr, "%s:%zu: INFO: processing object `"SV_Fmt"`\n", input_file_path, line_number, SV_Arg(name));
                 one_object_encountered = true;
                 one_object_line_number = line_number;
-            } else if (sv_eq(kind, SV("s"))) {
+            } else if (sv_eq(kind, sv_from_cstr("s"))) {
                 fprintf(stderr, "%s:%zu: WARNING: smooth groups are not supported right now. Ignoring them...\n", input_file_path, line_number);
-            } else if (sv_eq(kind, SV("vn"))) {
+            } else if (sv_eq(kind, sv_from_cstr("vn"))) {
                 char *endptr;
 
                 line = sv_trim_left(line);
@@ -478,7 +398,7 @@ int main(int argc, char **argv)
                 sv_chop_left(&line, endptr - line.data);
 
                 da_append(&normals, make_vector3(x, y, z));
-            } else if (sv_eq(kind, SV("vt"))) {
+            } else if (sv_eq(kind, sv_from_cstr("vt"))) {
                 char *endptr;
 
                 line = sv_trim_left(line);

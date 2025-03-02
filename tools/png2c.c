@@ -10,16 +10,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "./stb_image.h"
 
-#define return_defer(value) do { result = (value); goto defer; } while (0)
-
-const char *shift(int *argc, char ***argv)
-{
-    assert(*argc > 0);
-    const char *result = *argv[0];
-    *argc -= 1;
-    *argv += 1;
-    return result;
-}
+#define NOB_IMPLEMENTATION
+#define NOB_STRIP_PREFIX
+#include "nob.h"
 
 void usage(FILE *out, const char *program_name)
 {
@@ -97,13 +90,13 @@ defer:
 int main(int argc, char *argv[])
 {
     assert(argc > 0);
-    const char *program_name = shift(&argc, &argv);
+    const char *program_name = shift(argv, argc);
     const char *output_file_path = NULL;
     const char *input_file_path = NULL;
     const char *name = NULL;
 
     while (argc > 0) {
-        const char *flag = shift(&argc, &argv);
+        const char *flag = shift(argv, argc);
         if (strcmp(flag, "-o") == 0) {
             if (argc <= 0) {
                 usage(stderr, program_name);
@@ -117,7 +110,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
 
-            output_file_path = shift(&argc, &argv);
+            output_file_path = shift(argv, argc);
         } else if (strcmp(flag, "-n") == 0) {
             if (argc <= 0) {
                 usage(stderr, program_name);
@@ -131,7 +124,7 @@ int main(int argc, char *argv[])
                 return 1;
             }
 
-            name = shift(&argc, &argv);
+            name = shift(argv, argc);
         } else {
             if (input_file_path != NULL) {
                 usage(stderr, program_name);
