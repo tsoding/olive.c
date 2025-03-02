@@ -8,20 +8,11 @@
 #include "./assets/tsodinPog.c"
 #include "./assets/tsodinCup.c"
 
-#define PI 3.14159265359
+#define NOB_IMPLEMENTATION
+#define NOB_STRIP_PREFIX
+#include "nob.h"
 
-#define return_defer(value) do { result = (value); goto defer; } while (0)
-#define UNUSED(x) (void)(x)
-#define UNIMPLEMENTED(message) \
-    do { \
-        fprintf(stderr, "%s:%d: UNIMPLEMENTED: %s\n", __FILE__, __LINE__, message); \
-        exit(1); \
-    } while (0)
-#define UNREACHABLE(message) \
-    do { \
-        fprintf(stderr, "%s:%d: UNREACHABLE: %s\n", __FILE__, __LINE__, message); \
-        exit(1); \
-    } while (0)
+#define PI 3.14159265359
 
 #define ARENA_IMPLEMENTATION
 #include "./arena.h"
@@ -657,15 +648,6 @@ Test_Case test_cases[] = {
 };
 #define TEST_CASES_COUNT (sizeof(test_cases)/sizeof(test_cases[0]))
 
-const char *shift(int *argc, char ***argv)
-{
-    assert(*argc > 0);
-    const char *result = *argv[0];
-    *argc -= 1;
-    *argv += 1;
-    return result;
-}
-
 void list_available_tests(void)
 {
     fprintf(stderr, "Available tests:\n");
@@ -699,7 +681,7 @@ int subcmd_run(const char *program_path, int argc, char **argv)
             arena_reset(&default_arena);
         }
     } else {
-        const char *test_case_id = shift(&argc, &argv);
+        const char *test_case_id = shift(argv, argc);
         Test_Case *tc = find_test_case_by_id(test_case_id);
         if (tc == NULL) {
             list_available_tests();
@@ -723,7 +705,7 @@ int subcmd_update(const char *program_path, int argc, char **argv)
             arena_reset(&default_arena);
         }
     } else {
-        const char *test_case_id = shift(&argc, &argv);
+        const char *test_case_id = shift(argv, argc);
         Test_Case *tc = find_test_case_by_id(test_case_id);
         if (tc == NULL) {
             list_available_tests();
@@ -800,7 +782,7 @@ int main(int argc, char **argv)
     int result = 0;
 
     {
-        const char *program_path = shift(&argc,  &argv);
+        const char *program_path = shift(argv, argc);
 
         if (argc <= 0) {
             usage(program_path);
@@ -808,7 +790,7 @@ int main(int argc, char **argv)
             return_defer(1);
         }
 
-        const char *subcmd_id = shift(&argc, &argv);
+        const char *subcmd_id = shift(argv, argc);
         Subcmd *subcmd = find_subcmd_by_id(subcmd_id);
         if (subcmd != NULL) {
             return_defer(subcmd->run(program_path, argc, argv));
