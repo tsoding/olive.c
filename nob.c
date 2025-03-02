@@ -5,85 +5,82 @@
 
 #define COMMON_CFLAGS "-Wall", "-Wextra", "-pedantic", "-ggdb", "-I.", "-I./build/", "-I./dev-deps/"
 
-Cmd cmd = {0};
-Procs procs = {0};
-
-bool build_tools(void)
+bool build_tools(Cmd *cmd)
 {
     if (!mkdir_if_not_exists("build")) return false;
     if (!mkdir_if_not_exists("build/tools")) return false;
 
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/png2c", "./tools/png2c.c", "-lm");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/png2c", "./tools/png2c.c", "-lm");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/obj2c", "./tools/obj2c.c", "-lm");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/obj2c", "./tools/obj2c.c", "-lm");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
     return true;
 }
 
-bool build_assets(void)
+bool build_assets(Cmd *cmd)
 {
     if (!mkdir_if_not_exists("build")) return false;
     if (!mkdir_if_not_exists("build/assets")) return false;
 
-    cmd_append(&cmd, "./build/tools/png2c", "-n", "tsodinPog", "-o", "./build/assets/tsodinPog.c", "./assets/tsodinPog.png");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/png2c", "-n", "tsodinPog", "-o", "./build/assets/tsodinPog.c", "./assets/tsodinPog.png");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/png2c", "-n", "tsodinCup", "-o", "./build/assets/tsodinCup.c", "./assets/tsodinCup.png");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/png2c", "-n", "tsodinCup", "-o", "./build/assets/tsodinCup.c", "./assets/tsodinCup.png");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/png2c", "-n", "oldstone", "-o", "./build/assets/oldstone.c", "./assets/oldstone.png");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/png2c", "-n", "oldstone", "-o", "./build/assets/oldstone.c", "./assets/oldstone.png");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/png2c", "-n", "lavastone", "-o", "./build/assets/lavastone.c", "./assets/lavastone.png");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/png2c", "-n", "lavastone", "-o", "./build/assets/lavastone.c", "./assets/lavastone.png");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/obj2c", "-o", "./build/assets/tsodinCupLowPoly.c", "./assets/tsodinCupLowPoly.obj");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/obj2c", "-o", "./build/assets/tsodinCupLowPoly.c", "./assets/tsodinCupLowPoly.obj");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/obj2c", "-s", "0.40", "-o", "./build/assets/utahTeapot.c", "./assets/utahTeapot.obj");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/obj2c", "-s", "0.40", "-o", "./build/assets/utahTeapot.c", "./assets/utahTeapot.obj");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
-    cmd_append(&cmd, "./build/tools/obj2c", "-s", "1.5", "-o", "./build/assets/penger.c", "./assets/penger_obj/penger.obj");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "./build/tools/obj2c", "-s", "1.5", "-o", "./build/assets/penger.c", "./assets/penger_obj/penger.obj");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
 
     return true;
 }
 
-bool build_tests(void)
+bool build_tests(Cmd *cmd)
 {
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-fsanitize=memory", "-o", "./build/test", "test.c", "-lm");
-    if (!cmd_run_sync_and_reset(&cmd)) return false;
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-fsanitize=memory", "-o", "./build/test", "test.c", "-lm");
+    if (!cmd_run_sync_and_reset(cmd)) return false;
     return true;
 }
 
-void build_wasm_demo(const char *name)
+void build_wasm_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", temp_sprintf("./build/demos/%s.wasm", name), "-DVC_PLATFORM=VC_WASM_PLATFORM", temp_sprintf("./demos/%s.c", name));
-    da_append(&procs, cmd_run_async_and_reset(&cmd));
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", temp_sprintf("./build/demos/%s.wasm", name), "-DVC_PLATFORM=VC_WASM_PLATFORM", temp_sprintf("./demos/%s.c", name));
+    da_append(procs, cmd_run_async_and_reset(cmd));
 }
 
-void build_term_demo(const char *name)
+void build_term_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.term", name), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", temp_sprintf("./demos/%s.c", name), "-lm");
-    da_append(&procs, cmd_run_async_and_reset(&cmd));
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.term", name), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", temp_sprintf("./demos/%s.c", name), "-lm");
+    da_append(procs, cmd_run_async_and_reset(cmd));
 }
 
-void build_sdl_demo(const char *name)
+void build_sdl_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(&cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.sdl", name), "-DVC_PLATFORM=VC_SDL_PLATFORM", temp_sprintf("./demos/%s.c", name), "-lm", "-lSDL2", NULL);
-    da_append(&procs, cmd_run_async_and_reset(&cmd));
+    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.sdl", name), "-DVC_PLATFORM=VC_SDL_PLATFORM", temp_sprintf("./demos/%s.c", name), "-lm", "-lSDL2", NULL);
+    da_append(procs, cmd_run_async_and_reset(cmd));
 }
 
-void build_vc_demo(const char *name)
+void build_vc_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    build_wasm_demo(name);
-    build_term_demo(name);
-    build_sdl_demo(name);
+    build_wasm_demo(cmd, procs, name);
+    build_term_demo(cmd, procs, name);
+    build_sdl_demo(cmd, procs, name);
 }
 
-bool build_all_vc_demos(void)
+bool build_all_vc_demos(Cmd *cmd, Procs *procs)
 {
     if (!mkdir_if_not_exists("build")) return false;
     if (!mkdir_if_not_exists("build/demos")) return false;
@@ -102,12 +99,12 @@ bool build_all_vc_demos(void)
     size_t thread_count = 6;
 
     for (size_t i = 0; i < ARRAY_LEN(names); ++i) {
-        build_vc_demo(names[i]);
-        if (procs.count >= thread_count) {
-            if (!nob_procs_wait_and_reset(&procs)) return false;
+        build_vc_demo(cmd, procs, names[i]);
+        if (procs->count >= thread_count) {
+            if (!nob_procs_wait_and_reset(procs)) return false;
         }
     }
-    if (!nob_procs_wait_and_reset(&procs)) return false;
+    if (!nob_procs_wait_and_reset(procs)) return false;
 
     for (size_t i = 0; i < ARRAY_LEN(names); ++i) {
         const char *src_path = temp_sprintf("./build/demos/%s.wasm", names[i]);
@@ -143,16 +140,19 @@ int main(int argc, char **argv)
 {
     NOB_GO_REBUILD_URSELF(argc, argv);
 
+    Cmd cmd = {0};
+    Procs procs = {0};
+
     const char *program = shift_args(&argc, &argv);
 
     if (argc > 0) {
         const char *subcmd = shift_args(&argc, &argv);
         if (strcmp(subcmd, "tools") == 0) {
-            if (!build_tools()) return 1;
+            if (!build_tools(&cmd)) return 1;
         } else if (strcmp(subcmd, "assets") == 0) {
-            if (!build_assets()) return 1;
+            if (!build_assets(&cmd)) return 1;
         } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
-            if (!build_tests()) return 1;
+            if (!build_tests(&cmd)) return 1;
             if (argc > 0) {
                 cmd_append(&cmd, "./build/test");
                 da_append_many(&cmd, argv, argc);
@@ -160,13 +160,13 @@ int main(int argc, char **argv)
             }
         } else if (strcmp(subcmd, "demos") == 0) {
             if (argc <= 0) {
-                if (!build_all_vc_demos()) return 1;
+                if (!build_all_vc_demos(&cmd, &procs)) return 1;
                 return 0;
             }
 
             const char *name = shift(argv, argc);
             if (argc <= 0) {
-                build_vc_demo(name);
+                build_vc_demo(&cmd, &procs, name);
                 if (!procs_wait_and_reset(&procs)) return 1;
                 const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
                 const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
@@ -176,7 +176,7 @@ int main(int argc, char **argv)
 
             const char *platform = shift(argv, argc);
             if (strcmp(platform, "sdl") == 0) {
-                build_sdl_demo(name);
+                build_sdl_demo(&cmd, &procs, name);
                 if (!procs_wait_and_reset(&procs)) return 1;
                 if (argc <= 0) return 0;
                 const char *run = shift(argv, argc);
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
                 if (!cmd_run_sync_and_reset(&cmd)) return 1;
                 return 0;
             } else if (strcmp(platform, "term") == 0) {
-                build_term_demo(name);
+                build_term_demo(&cmd, &procs, name);
                 if (!procs_wait_and_reset(&procs)) return 1;
                 if (argc <= 0) return 0;
                 const char *run = shift(argv, argc);
@@ -202,7 +202,7 @@ int main(int argc, char **argv)
                 if (!cmd_run_sync_and_reset(&cmd)) return 1;
                 return 0;
             } else if (strcmp(platform, "wasm") == 0) {
-                build_wasm_demo(name);
+                build_wasm_demo(&cmd, &procs, name);
                 if (!procs_wait_and_reset(&procs)) return 1;
                 const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
                 const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
@@ -220,10 +220,10 @@ int main(int argc, char **argv)
             return 1;
         }
     } else {
-        if (!build_tools()) return 1;
-        if (!build_assets()) return 1;
-        if (!build_tests()) return 1;
-        if (!build_all_vc_demos()) return 1;
+        if (!build_tools(&cmd)) return 1;
+        if (!build_assets(&cmd)) return 1;
+        if (!build_tests(&cmd)) return 1;
+        if (!build_all_vc_demos(&cmd, &procs)) return 1;
     }
 
     return 0;
