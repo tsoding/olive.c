@@ -1,4 +1,4 @@
-/* nob - v1.14.1+ - Public Domain - https://github.com/tsoding/nob.h
+/* nob - v1.15.0 - Public Domain - https://github.com/tsoding/nob.h
 
    This library is the next generation of the [NoBuild](https://github.com/tsoding/nobuild) idea.
 
@@ -1878,6 +1878,7 @@ int closedir(DIR *dirp)
 /*
    Revision history:
 
+     1.15.0 (2025-03-03) Add nob_sv_chop_left()
      1.14.1 (2025-03-02) Add NOB_EXPERIMENTAL_DELETE_OLD flag that enables deletion of nob.old in Go Rebuild Urself™ Technology
      1.14.0 (2025-02-17) Add nob_da_last()
                          Add nob_da_remove_unordered()
