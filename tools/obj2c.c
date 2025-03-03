@@ -139,9 +139,9 @@ void generate_code(FILE *out, Vertices vertices, TexCoords texcoords, Normals no
 
     fprintf(out, "#define texcoords_count %zu\n", texcoords.count);
     if (texcoords.count == 0) {
-        fprintf(out, "static const float texcoords[1][3] = {0};\n");
+        fprintf(out, "static const float texcoords[1][2] = {0};\n");
     } else {
-        fprintf(out, "static const float texcoords[][3] = {\n");
+        fprintf(out, "static const float texcoords[][2] = {\n");
         for (size_t i = 0; i < texcoords.count; ++i) {
             Vector2 vt = texcoords.items[i];
             fprintf(out, "    {%f, %f},\n", vt.x, vt.y);
