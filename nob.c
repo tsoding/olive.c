@@ -157,10 +157,12 @@ int main(int argc, char **argv)
     if (strcmp(subcmd, "tools") == 0) {
         if (!build_tools(&cmd)) return 1;
         return 0;
-    } else if (strcmp(subcmd, "assets") == 0) {
+    }
+    if (strcmp(subcmd, "assets") == 0) {
         if (!build_assets(&cmd)) return 1;
         return 0;
-    } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
+    }
+    if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
         if (!build_tests(&cmd)) return 1;
         if (argc > 0) {
             cmd_append(&cmd, "./build/test");
@@ -168,7 +170,8 @@ int main(int argc, char **argv)
             if (!cmd_run_sync_and_reset(&cmd)) return 1;
         }
         return 0;
-    } else if (strcmp(subcmd, "demos") == 0) {
+    } 
+    if (strcmp(subcmd, "demos") == 0) {
         if (argc <= 0) {
             if (!build_all_vc_demos(&cmd, &procs)) return 1;
             return 0;
@@ -198,7 +201,8 @@ int main(int argc, char **argv)
             cmd_append(&cmd, temp_sprintf("./build/demos/%s.sdl", name));
             if (!cmd_run_sync_and_reset(&cmd)) return 1;
             return 0;
-        } else if (strcmp(platform, "term") == 0) {
+        }
+        if (strcmp(platform, "term") == 0) {
             build_term_demo(&cmd, &procs, name);
             if (!procs_wait_and_reset(&procs)) return 1;
             if (argc <= 0) return 0;
@@ -211,27 +215,25 @@ int main(int argc, char **argv)
             cmd_append(&cmd, temp_sprintf("./build/demos/%s.term", name));
             if (!cmd_run_sync_and_reset(&cmd)) return 1;
             return 0;
-        } else if (strcmp(platform, "wasm") == 0) {
+        }
+        if (strcmp(platform, "wasm") == 0) {
             build_wasm_demo(&cmd, &procs, name);
             if (!procs_wait_and_reset(&procs)) return 1;
             const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
             const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
             if (!copy_file(src_path, dst_path)) return 1;
             return 0;
-        } else {
-            usage(program);
-            nob_log(ERROR, "unknown demo platform %s", platform);
-            return 1;
         }
-        return 0;
-    } else if (strcmp(subcmd, "help") == 0) {
         usage(program);
-        return 0;
-    } else {
-        usage(program);
-        nob_log(ERROR, "Unknown command `%s`", subcmd);
+        nob_log(ERROR, "unknown demo platform %s", platform);
         return 1;
     }
+    if (strcmp(subcmd, "help") == 0) {
+        usage(program);
+        return 0;
+    }
 
-    return 0;
+    usage(program);
+    nob_log(ERROR, "Unknown command `%s`", subcmd);
+    return 1;
 }
