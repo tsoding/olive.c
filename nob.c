@@ -215,6 +215,7 @@ int main(int argc, char **argv)
             }
         } else if(strcmp(subcmd, "help") == 0) {
             usage(program);
+            return 0;
         } else {
             usage(program);
             nob_log(ERROR, "Unknown command `%s`", subcmd);
