@@ -158,6 +158,7 @@ int main(int argc, char **argv)
                 da_append_many(&cmd, argv, argc);
                 if (!cmd_run_sync_and_reset(&cmd)) return 1;
             }
+            return 0;
         } else if (strcmp(subcmd, "demos") == 0) {
             if (argc <= 0) {
                 if (!build_all_vc_demos(&cmd, &procs)) return 1;
