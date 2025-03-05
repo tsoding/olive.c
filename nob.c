@@ -152,6 +152,7 @@ int main(int argc, char **argv)
             return 0;
         } else if (strcmp(subcmd, "assets") == 0) {
             if (!build_assets(&cmd)) return 1;
+            return 0;
         } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
             if (!build_tests(&cmd)) return 1;
             if (argc > 0) {
