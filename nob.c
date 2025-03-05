@@ -145,91 +145,92 @@ int main(int argc, char **argv)
 
     const char *program = shift_args(&argc, &argv);
 
-    if (argc > 0) {
-        const char *subcmd = shift_args(&argc, &argv);
-        if (strcmp(subcmd, "tools") == 0) {
-            if (!build_tools(&cmd)) return 1;
-            return 0;
-        } else if (strcmp(subcmd, "assets") == 0) {
-            if (!build_assets(&cmd)) return 1;
-            return 0;
-        } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
-            if (!build_tests(&cmd)) return 1;
-            if (argc > 0) {
-                cmd_append(&cmd, "./build/test");
-                da_append_many(&cmd, argv, argc);
-                if (!cmd_run_sync_and_reset(&cmd)) return 1;
-            }
-            return 0;
-        } else if (strcmp(subcmd, "demos") == 0) {
-            if (argc <= 0) {
-                if (!build_all_vc_demos(&cmd, &procs)) return 1;
-                return 0;
-            }
-
-            const char *name = shift(argv, argc);
-            if (argc <= 0) {
-                build_vc_demo(&cmd, &procs, name);
-                if (!procs_wait_and_reset(&procs)) return 1;
-                const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
-                const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
-                if (!copy_file(src_path, dst_path)) return 1;
-                return 0;
-            }
-
-            const char *platform = shift(argv, argc);
-            if (strcmp(platform, "sdl") == 0) {
-                build_sdl_demo(&cmd, &procs, name);
-                if (!procs_wait_and_reset(&procs)) return 1;
-                if (argc <= 0) return 0;
-                const char *run = shift(argv, argc);
-                if (strcmp(run, "run") != 0) {
-                    usage(program);
-                    nob_log(ERROR, "unknown action `%s` for SDL demo: %s", run, name);
-                    return 1;
-                }
-                cmd_append(&cmd, temp_sprintf("./build/demos/%s.sdl", name));
-                if (!cmd_run_sync_and_reset(&cmd)) return 1;
-                return 0;
-            } else if (strcmp(platform, "term") == 0) {
-                build_term_demo(&cmd, &procs, name);
-                if (!procs_wait_and_reset(&procs)) return 1;
-                if (argc <= 0) return 0;
-                const char *run = shift(argv, argc);
-                if (strcmp(run, "run") != 0) {
-                    usage(program);
-                    nob_log(ERROR, "unknown action `%s` for Terminal demo: %s", run, name);
-                    return 1;
-                }
-                cmd_append(&cmd, temp_sprintf("./build/demos/%s.term", name));
-                if (!cmd_run_sync_and_reset(&cmd)) return 1;
-                return 0;
-            } else if (strcmp(platform, "wasm") == 0) {
-                build_wasm_demo(&cmd, &procs, name);
-                if (!procs_wait_and_reset(&procs)) return 1;
-                const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
-                const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
-                if (!copy_file(src_path, dst_path)) return 1;
-                return 0;
-            } else {
-                usage(program);
-                nob_log(ERROR, "unknown demo platform %s", platform);
-                return 1;
-            }
-            return 0;
-        } else if(strcmp(subcmd, "help") == 0) {
-            usage(program);
-            return 0;
-        } else {
-            usage(program);
-            nob_log(ERROR, "Unknown command `%s`", subcmd);
-            return 1;
-        }
-    } else {
+    if (argc <= 0) {
         if (!build_tools(&cmd)) return 1;
         if (!build_assets(&cmd)) return 1;
         if (!build_tests(&cmd)) return 1;
         if (!build_all_vc_demos(&cmd, &procs)) return 1;
+        return 0;
+    }
+
+    const char *subcmd = shift_args(&argc, &argv);
+    if (strcmp(subcmd, "tools") == 0) {
+        if (!build_tools(&cmd)) return 1;
+        return 0;
+    } else if (strcmp(subcmd, "assets") == 0) {
+        if (!build_assets(&cmd)) return 1;
+        return 0;
+    } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
+        if (!build_tests(&cmd)) return 1;
+        if (argc > 0) {
+            cmd_append(&cmd, "./build/test");
+            da_append_many(&cmd, argv, argc);
+            if (!cmd_run_sync_and_reset(&cmd)) return 1;
+        }
+        return 0;
+    } else if (strcmp(subcmd, "demos") == 0) {
+        if (argc <= 0) {
+            if (!build_all_vc_demos(&cmd, &procs)) return 1;
+            return 0;
+        }
+
+        const char *name = shift(argv, argc);
+        if (argc <= 0) {
+            build_vc_demo(&cmd, &procs, name);
+            if (!procs_wait_and_reset(&procs)) return 1;
+            const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
+            const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
+            if (!copy_file(src_path, dst_path)) return 1;
+            return 0;
+        }
+
+        const char *platform = shift(argv, argc);
+        if (strcmp(platform, "sdl") == 0) {
+            build_sdl_demo(&cmd, &procs, name);
+            if (!procs_wait_and_reset(&procs)) return 1;
+            if (argc <= 0) return 0;
+            const char *run = shift(argv, argc);
+            if (strcmp(run, "run") != 0) {
+                usage(program);
+                nob_log(ERROR, "unknown action `%s` for SDL demo: %s", run, name);
+                return 1;
+            }
+            cmd_append(&cmd, temp_sprintf("./build/demos/%s.sdl", name));
+            if (!cmd_run_sync_and_reset(&cmd)) return 1;
+            return 0;
+        } else if (strcmp(platform, "term") == 0) {
+            build_term_demo(&cmd, &procs, name);
+            if (!procs_wait_and_reset(&procs)) return 1;
+            if (argc <= 0) return 0;
+            const char *run = shift(argv, argc);
+            if (strcmp(run, "run") != 0) {
+                usage(program);
+                nob_log(ERROR, "unknown action `%s` for Terminal demo: %s", run, name);
+                return 1;
+            }
+            cmd_append(&cmd, temp_sprintf("./build/demos/%s.term", name));
+            if (!cmd_run_sync_and_reset(&cmd)) return 1;
+            return 0;
+        } else if (strcmp(platform, "wasm") == 0) {
+            build_wasm_demo(&cmd, &procs, name);
+            if (!procs_wait_and_reset(&procs)) return 1;
+            const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
+            const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
+            if (!copy_file(src_path, dst_path)) return 1;
+            return 0;
+        } else {
+            usage(program);
+            nob_log(ERROR, "unknown demo platform %s", platform);
+            return 1;
+        }
+        return 0;
+    } else if (strcmp(subcmd, "help") == 0) {
+        usage(program);
+        return 0;
+    } else {
+        usage(program);
+        nob_log(ERROR, "Unknown command `%s`", subcmd);
+        return 1;
     }
 
     return 0;
