@@ -149,6 +149,7 @@ int main(int argc, char **argv)
         const char *subcmd = shift_args(&argc, &argv);
         if (strcmp(subcmd, "tools") == 0) {
             if (!build_tools(&cmd)) return 1;
+            return 0;
         } else if (strcmp(subcmd, "assets") == 0) {
             if (!build_assets(&cmd)) return 1;
         } else if (strcmp(subcmd, "tests") == 0 || strcmp(subcmd, "test") == 0) {
