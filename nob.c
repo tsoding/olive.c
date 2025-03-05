@@ -207,6 +207,7 @@ int main(int argc, char **argv)
                 const char *src_path = temp_sprintf("./build/demos/%s.wasm", name);
                 const char *dst_path = temp_sprintf("./wasm/%s.wasm", name);
                 if (!copy_file(src_path, dst_path)) return 1;
+                return 0;
             } else {
                 usage(program);
                 nob_log(ERROR, "unknown demo platform %s", platform);
