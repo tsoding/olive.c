@@ -214,6 +214,7 @@ int main(int argc, char **argv)
                 nob_log(ERROR, "unknown demo platform %s", platform);
                 return 1;
             }
+            return 0;
         } else if(strcmp(subcmd, "help") == 0) {
             usage(program);
             return 0;
