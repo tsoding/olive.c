@@ -86,7 +86,6 @@ Olivec_Canvas vc_render(float dt)
     olivec_fill(oc, BACKGROUND_COLOR);
     for (size_t i = 0; i < WIDTH*HEIGHT; ++i) zbuffer[i] = 0;
 
-    Vector3 camera = {0, 0, 1};
     for (size_t i = 0; i < faces_count; ++i) {
         int a, b, c;
 
@@ -98,20 +97,23 @@ Olivec_Canvas vc_render(float dt)
         Vector3 v3 = rotate_y(make_vector3(vertices[c][0], vertices[c][1], vertices[c][2]), angle);
         v1.z += 1.5; v2.z += 1.5; v3.z += 1.5;
 
-        a = faces[i][FACE_VN1];
-        b = faces[i][FACE_VN2];
-        c = faces[i][FACE_VN3];
-        Vector3 vn1 = rotate_y(make_vector3(normals[a][0], normals[a][1], normals[a][2]), angle);
-        Vector3 vn2 = rotate_y(make_vector3(normals[b][0], normals[b][1], normals[b][2]), angle);
-        Vector3 vn3 = rotate_y(make_vector3(normals[c][0], normals[c][1], normals[c][2]), angle);
-        if (vector3_dot(camera, vn1) > 0.0 &&
-            vector3_dot(camera, vn2) > 0.0 &&
-            vector3_dot(camera, vn3) > 0.0) continue;
-
+        // TODO: these are unused now, but probabily useful in the future. Comment out for now
+        // a = faces[i][FACE_VN1];
+        // b = faces[i][FACE_VN2];
+        // c = faces[i][FACE_VN3];
+        // Vector3 vn1 = rotate_y(make_vector3(normals[a][0], normals[a][1], normals[a][2]), angle);
+        // Vector3 vn2 = rotate_y(make_vector3(normals[b][0], normals[b][1], normals[b][2]), angle);
+        // Vector3 vn3 = rotate_y(make_vector3(normals[c][0], normals[c][1], normals[c][2]), angle);
 
         Vector2 p1 = project_2d_scr(project_3d_2d(v1));
         Vector2 p2 = project_2d_scr(project_3d_2d(v2));
         Vector2 p3 = project_2d_scr(project_3d_2d(v3));
+
+        // Backface cull using after-projection triangle winding order
+        Vector2 p1p2 = { p2.x - p1.x, p2.y - p1.y };
+        Vector2 p1p3 = { p3.x - p1.x, p3.y - p1.y };
+        float cross = p1p2.x*p1p3.y - p1p2.y*p1p3.x;
+        if (cross < 0) continue;
 
         int x1 = p1.x;
         int x2 = p2.x;
