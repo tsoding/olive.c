@@ -40,14 +40,15 @@ Olivec_Canvas vc_render(float dt);
 
 // Possible values of VC_PLATFORM
 #define VC_WASM_PLATFORM 0
-#define VC_SDL_PLATFORM 1
+#define VC_SDL_PLATFORM  1
 #define VC_TERM_PLATFORM 2
+#define VC_TIGR_PLATFORM 3
+
+#define return_defer(value) do { result = (value); goto defer; } while (0)
 
 #if VC_PLATFORM == VC_SDL_PLATFORM
 #include <stdio.h>
 #include <SDL2/SDL.h>
-
-#define return_defer(value) do { result = (value); goto defer; } while (0)
 
 static SDL_Texture *vc_sdl_texture = NULL;
 static size_t vc_sdl_actual_width = 0;
@@ -561,6 +562,47 @@ int main(void)
 }
 #elif VC_PLATFORM == VC_WASM_PLATFORM
 // Do nothing because all the work is done in ../js/vc.js
+#elif VC_PLATFORM == VC_TIGR_PLATFORM
+#include <stdio.h>
+#include <tigr.h>
+
+int main(void)
+{
+    int result = 0;
+
+    Tigr *window = tigrWindow(1,1,"",0);
+    if(!window) return_defer(1);
+
+    bool pause = false;
+    do {
+        // Compute Delta Time
+        float dt = tigrTime();
+        if (!pause) {
+            // Render the texture
+            Olivec_Canvas oc_src = vc_render(dt);
+            if (oc_src.width != window->w || oc_src.height != window->h) {
+                tigrFree(window);
+		window = tigrWindow(oc_src.width, oc_src.height, "Olivec", TIGR_AUTO);
+		if(!window) return_defer(1);
+		window->pix = (TPixel*)oc_src.pixels;
+            }
+        }
+
+        // Display the texture
+        tigrUpdate(window);
+    } while(!tigrClosed(window));
+
+defer:
+    switch (result) {
+    case 0:
+        printf("OK\n");
+        break;
+    default:
+        fprintf(stderr, "TIGR ERROR\n");
+    }
+    if (window) tigrFree(window);
+    return result;
+}
 #else
 #error "Unknown VC platform"
 #endif // VC_SDL_PLATFORM

@@ -623,7 +623,7 @@ OLIVECDEF void olivec_circle(Olivec_Canvas oc, int cx, int cy, int r, uint32_t c
                     // TODO: switch to 64 bits to make the overflow less likely
                     // Also research the probability of overflow
                     int res1 = (OLIVEC_AA_RES + 1);
-                    int dx = (x*res1*2 + 2 + sox*2 - res1*cx*2 - res1);
+		    int dx = (x*res1*2 + 2 + sox*2 - res1*cx*2 - res1);
                     int dy = (y*res1*2 + 2 + soy*2 - res1*cy*2 - res1);
                     if (dx*dx + dy*dy <= res1*res1*r*r*2*2) count += 1;
                 }
@@ -763,8 +763,8 @@ OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, in
     if (*hx < x2) *hx = x2;
     if (*hx < x3) *hx = x3;
     if (*lx < 0) *lx = 0;
-    if ((size_t) *lx >= width) return false;;
-    if (*hx < 0) return false;;
+    if ((size_t) *lx >= width) return false;
+    if (*hx < 0) return false;
     if ((size_t) *hx >= width) *hx = width-1;
 
     *ly = y1;
@@ -774,8 +774,8 @@ OLIVECDEF bool olivec_normalize_triangle(size_t width, size_t height, int x1, in
     if (*hy < y2) *hy = y2;
     if (*hy < y3) *hy = y3;
     if (*ly < 0) *ly = 0;
-    if ((size_t) *ly >= height) return false;;
-    if (*hy < 0) return false;;
+    if ((size_t) *ly >= height) return false;
+    if (*hy < 0) return false;
     if ((size_t) *hy >= height) *hy = height-1;
 
     return true;
@@ -822,9 +822,30 @@ OLIVECDEF void olivec_triangle3uv(Olivec_Canvas oc, int x1, int y1, int x2, int 
                 int u1, u2, det;
                 if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
                     int u3 = det - u1 - u2;
-                    float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
-                    float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
-                    float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+                    
+		    /*
+		    original code:
+		    	float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
+                    	float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
+                    	float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+		    refactoring:
+		        first of all, we have u3, so it's good to use it everywhere :p
+			float z = z1*u1/det + z2*u2/det + z3*u3/det;
+
+		    	each variable is in the form a/x + b/x + c/x, they have a common factor 1/x,
+			therefore we can join the three divisions into just one, so:
+			a/x + b/x + c/x = (a + b + c)/x
+
+			then, we are dividing tx/z and ty/z, but now we know that both of them are in the form
+			x/det, where x is just some number, therefore, we have (a/det) / (b/det), which can just be
+			rewritten as (a * 1/det) / (b * 1/det), but a*c / b*c = a/b, so this can be simplified:
+			(a/det) / (b/det) = a/b
+
+			so we can literally remove the whole division on z, tx and ty!
+		    */
+		    float z = z1*u1 + z2*u2 + z3*u3;
+		    float tx = tx1*u1 + tx2*u2 + tx3*u3;
+		    float ty = ty1*u1 + ty2*u2 + ty3*u3;
 
                     int texture_x = tx/z*texture.width;
                     if (texture_x < 0) texture_x = 0;
@@ -849,9 +870,10 @@ OLIVECDEF void olivec_triangle3uv_bilinear(Olivec_Canvas oc, int x1, int y1, int
                 int u1, u2, det;
                 if (olivec_barycentric(x1, y1, x2, y2, x3, y3, x, y, &u1, &u2, &det)) {
                     int u3 = det - u1 - u2;
-                    float z = z1*u1/det + z2*u2/det + z3*(det - u1 - u2)/det;
-                    float tx = tx1*u1/det + tx2*u2/det + tx3*u3/det;
-                    float ty = ty1*u1/det + ty2*u2/det + ty3*u3/det;
+                    /* same optimization as the one done in olivec_triangle3uv */
+		    float z = z1*u1+ z2*u2 + z3*u3;
+                    float tx = tx1*u1 + tx2*u2 + tx3*u3;
+                    float ty = ty1*u1 + ty2*u2 + ty3*u3;
 
                     float texture_x = tx/z*texture.width;
                     if (texture_x < 0) texture_x = 0;

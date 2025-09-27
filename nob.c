@@ -6,15 +6,31 @@
 
 #define COMMON_CFLAGS "-Wall", "-Wextra", "-pedantic", "-ggdb", "-I.", "-I./build/", "-I./dev-deps/"
 
+#define C_COMPILER "clang"
+// #define C_COMPILER "cc"
+
+#ifndef _WIN32
+	#define OUTPUT_EXT	""
+	#define LINK_MATH_LIB   "-lm"
+	#define LINK_TIGR_LIBS  "-lGLU", "-lGL",  "-lX11"
+#else
+	#define OUTPUT_EXT	".exe"
+	#define LINK_MATH_LIB   ""
+	#define LINK_TIGR_LIBS  "-lopengl32", "-lgdi32"
+#endif // _WIN32
+
+// #define CLANG_SANITIZER "memory"
+#define CLANG_SANITIZER "address"
+
 bool build_tools(Cmd *cmd, Procs *procs)
 {
     if (!mkdir_if_not_exists("build")) return false;
     if (!mkdir_if_not_exists("build/tools")) return false;
 
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/png2c", "./tools/png2c.c", "-lm");
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-o", "./build/tools/png2c"OUTPUT_EXT, "./tools/png2c.c", LINK_MATH_LIB);
     if (!cmd_run(cmd, .async = procs)) return false;
 
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-o", "./build/tools/obj2c", "./tools/obj2c.c", "-lm");
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-o", "./build/tools/obj2c"OUTPUT_EXT, "./tools/obj2c.c", LINK_MATH_LIB);
     if (!cmd_run(cmd, .async = procs)) return false;
 
     return true;
@@ -51,26 +67,32 @@ bool build_assets(Cmd *cmd, Procs *procs)
 
 bool build_tests(Cmd *cmd, Procs *procs)
 {
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-fsanitize=memory", "-o", "./build/test", "test.c", "-lm");
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-fsanitize="CLANG_SANITIZER, "-o", "./build/test"OUTPUT_EXT, "test.c", LINK_MATH_LIB);
     if (!cmd_run(cmd, .async = procs)) return false;
     return true;
 }
 
 bool build_wasm_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", temp_sprintf("./build/demos/%s.wasm", name), "-DVC_PLATFORM=VC_WASM_PLATFORM", temp_sprintf("./demos/%s.c", name));
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-O2", "-fno-builtin", "--target=wasm32", "--no-standard-libraries", "-Wl,--no-entry", "-Wl,--export=vc_render", "-Wl,--export=__heap_base", "-Wl,--allow-undefined", "-o", temp_sprintf("./build/demos/%s.wasm", name), "-DVC_PLATFORM=VC_WASM_PLATFORM", temp_sprintf("./demos/%s.c", name));
     return cmd_run(cmd, .async = procs);
 }
 
 bool build_term_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.term", name), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", temp_sprintf("./demos/%s.c", name), "-lm");
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.term"OUTPUT_EXT, name), "-DVC_PLATFORM=VC_TERM_PLATFORM", "-D_XOPEN_SOURCE=600", temp_sprintf("./demos/%s.c", name), LINK_MATH_LIB);
     return cmd_run(cmd, .async = procs);
 }
 
 bool build_sdl_demo(Cmd *cmd, Procs *procs, const char *name)
 {
-    cmd_append(cmd, "clang", COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.sdl", name), "-DVC_PLATFORM=VC_SDL_PLATFORM", temp_sprintf("./demos/%s.c", name), "-lm", "-lSDL2", NULL);
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.sdl"OUTPUT_EXT, name), "-DVC_PLATFORM=VC_SDL_PLATFORM", temp_sprintf("./demos/%s.c", name), LINK_MATH_LIB, "-lSDL2", NULL);
+    return cmd_run(cmd, .async = procs);
+}
+
+bool build_tigr_demo(Cmd *cmd, Procs *procs, const char *name)
+{
+    cmd_append(cmd, C_COMPILER, COMMON_CFLAGS, "-O2", "-o", temp_sprintf("./build/demos/%s.tigr"OUTPUT_EXT, name), "-DVC_PLATFORM=VC_TIGR_PLATFORM", temp_sprintf("./demos/%s.c", name), "./dev-deps/tigr.c", "-I./dev-deps/", LINK_TIGR_LIBS, LINK_MATH_LIB);
     return cmd_run(cmd, .async = procs);
 }
 
@@ -79,6 +101,7 @@ bool build_vc_demo(Cmd *cmd, Procs *procs, const char *name)
     if (!build_wasm_demo(cmd, procs, name)) return false;
     if (!build_term_demo(cmd, procs, name)) return false;
     if (!build_sdl_demo(cmd, procs, name))  return false;
+    if (!build_tigr_demo(cmd, procs, name)) return false;
     return true;
 }
 
@@ -204,6 +227,19 @@ int main(int argc, char **argv)
                     return 1;
                 }
                 cmd_append(&cmd, temp_sprintf("./build/demos/%s.term", name));
+                if (!cmd_run(&cmd)) return 1;
+                return 0;
+            } else if (strcmp(platform, "tigr") == 0) {
+                if (!build_tigr_demo(&cmd, &procs, name)) return 1;
+                if (!procs_flush(&procs)) return 1;
+                if (argc <= 0) return 0;
+                const char *run = shift(argv, argc);
+                if (strcmp(run, "run") != 0) {
+                    usage(program);
+                    nob_log(ERROR, "unknown action `%s` for TIGR demo: %s", run, name);
+                    return 1;
+                }
+                cmd_append(&cmd, temp_sprintf("./build/demos/%s.tigr", name));
                 if (!cmd_run(&cmd)) return 1;
                 return 0;
             } else if (strcmp(platform, "wasm") == 0) {
