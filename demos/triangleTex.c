@@ -1,3 +1,4 @@
+#define VC_TRUECOLOR
 #include "vc.c"
 #include "assets/tsodinPog.c"
 

@@ -1,4 +1,5 @@
 #define VC_TERM_SCALE_DOWN_FACTOR 10
+#define VC_TRUECOLOR
 #include "vc.c"
 #include "./assets/tsodinPog.c"
 #include "./assets/oldstone.c"
