@@ -469,6 +469,10 @@ static uint32_t vc_term_compress_pixels_chunk(Olivec_Canvas oc)
 #define VC_TERM_SCALE_DOWN_FACTOR 20
 #endif // VC_TERM_SCALE_DOWN_FACTOR
 
+#ifndef VC_TERM_ASPECT_RATIO
+#define VC_TERM_ASPECT_RATIO 2
+#endif // VC_TERM_ASPECT_RATIO
+
 static void vc_term_resize_char_canvas(size_t new_width, size_t new_height)
 {
     // TODO: warn the user if vc_term_actual_width does not fit into the screen
@@ -479,7 +483,7 @@ static void vc_term_resize_char_canvas(size_t new_width, size_t new_height)
     assert(new_height%VC_TERM_SCALE_DOWN_FACTOR == 0 && "Height must be divisible by VC_TERM_SCALE_DOWN_FACTOR");
     vc_term_actual_width = new_width;
     vc_term_actual_height = new_height;
-    vc_term_scaled_down_width  = vc_term_actual_width/VC_TERM_SCALE_DOWN_FACTOR;
+    vc_term_scaled_down_width  = (vc_term_actual_width*VC_TERM_ASPECT_RATIO)/VC_TERM_SCALE_DOWN_FACTOR;
     vc_term_scaled_down_height = vc_term_actual_height/VC_TERM_SCALE_DOWN_FACTOR;
     free(vc_term_char_canvas);
     vc_term_char_canvas = malloc(sizeof(*vc_term_char_canvas)*vc_term_scaled_down_width*vc_term_scaled_down_height);
@@ -525,7 +529,7 @@ static void vc_term_compress_pixels(Olivec_Canvas oc)
 
     for (size_t y = 0; y < vc_term_scaled_down_height; ++y) {
         for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
-            Olivec_Canvas soc = olivec_subcanvas(oc, x*VC_TERM_SCALE_DOWN_FACTOR, y*VC_TERM_SCALE_DOWN_FACTOR, VC_TERM_SCALE_DOWN_FACTOR, VC_TERM_SCALE_DOWN_FACTOR);
+            Olivec_Canvas soc = olivec_subcanvas(oc, x*VC_TERM_SCALE_DOWN_FACTOR/VC_TERM_ASPECT_RATIO, y*VC_TERM_SCALE_DOWN_FACTOR, VC_TERM_SCALE_DOWN_FACTOR/VC_TERM_ASPECT_RATIO, VC_TERM_SCALE_DOWN_FACTOR);
             uint32_t cp = vc_term_compress_pixels_chunk(soc);
             int r = OLIVEC_RED(cp);
             int g = OLIVEC_GREEN(cp);
@@ -548,7 +552,7 @@ int main(void)
         for (size_t y = 0; y < vc_term_scaled_down_height; ++y) {
             for (size_t x = 0; x < vc_term_scaled_down_width; ++x) {
                 // TODO: explore the idea of figuring out aspect ratio of the character using escape ANSI codes of the terminal and rendering the image accordingly
-                printf("\033[48;5;%dm  ", vc_term_char_canvas[y*vc_term_scaled_down_width + x]);
+                printf("\033[48;5;%dm ", vc_term_char_canvas[y*vc_term_scaled_down_width + x]);
             }
             printf("\033[0m\n");
         }
