@@ -23,9 +23,9 @@ No copies. No return values. The bitmap memory is the render target.
 * render frame
 * apply rotation
 
-## Native (pseudo)
+## Native
 
-```c
+```
 void *bitmapPixels;
 AndroidBitmap_lockPixels(env, bmp, &bitmapPixels);
 memcpy(bitmapPixels, pixels, sizeof(pixels));
