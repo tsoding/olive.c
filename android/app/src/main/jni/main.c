@@ -8,7 +8,7 @@
 
 #define OLIVEC_IMPLEMENTATION
 
-#include "olive.c"
+#include "../../../../../olive.c"
 
 /* Canvas */
 #define WIDTH 1100
@@ -134,7 +134,7 @@ Java_com_me_app_MainActivity_drawTriangle(JNIEnv *env, jobject thiz, jobject bmp
         circle_y = ny;
     }
 
-    // == DRAWING TH CIRCLE WITHIN THE TRIANGLE == //
+    // == DRAWING THE CIRCLE WITHIN THE TRIANGLE == //
     olivec_circle(oc, (int) circle_x, (int) circle_y, CIRCLE_RADIUS, CIRCLE_COLOR);
 
     // == CREATE THE BITMAP WITH THE GIVEN POINTER == //

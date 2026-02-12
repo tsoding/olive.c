@@ -6,8 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_library(olivest SHARED
         main.c
-        olive.c
-        vc.c
+        ../../../../../olive.c
 )
 
 find_library(jnigraphics-lib jnigraphics)

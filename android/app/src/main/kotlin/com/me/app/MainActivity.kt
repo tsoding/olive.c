@@ -36,11 +36,15 @@ class  MainActivity : AppCompatActivity() {
             false
         }
         super.onCreate(savedInstanceState)
+
+        // == HIDE SYSTEM BARS == //
         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
             controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior =
                 WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
+
+        // == KEEP THE SCREEN ON == //
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -58,7 +62,6 @@ class  MainActivity : AppCompatActivity() {
                 delay(10)
                 drawTriangle(bitmap)
                 binding.surface.setImageBitmap(bitmap)
-
             }
         }
     }

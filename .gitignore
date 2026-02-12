@@ -4,3 +4,4 @@ build/
 nobuild
 nob
 *.old
+.idea
