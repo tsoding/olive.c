@@ -1,0 +1,15 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+.idea
+.idea/
+.DS_Store
+/build
+/app/release
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+.kotlin
+test.jks

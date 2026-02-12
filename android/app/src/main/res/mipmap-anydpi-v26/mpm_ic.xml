@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/mpm_bg"/>
+    <foreground android:drawable="@drawable/main_ic"/>
+    <monochrome android:drawable="@color/mpm_bg_color"/>
+</adaptive-icon>
